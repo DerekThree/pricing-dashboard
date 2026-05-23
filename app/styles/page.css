@@ -1,0 +1,9 @@
+.page {
+  width: 100%;
+}
+
+.page-heading {
+  color: rgb(15 23 42);
+  font-size: 1rem;
+  font-weight: 700;
+}

@@ -1,0 +1,111 @@
+.layout {
+  background: linear-gradient(180deg, rgb(248 250 252), rgb(239 246 255));
+  color: rgb(15 23 42);
+  display: flex;
+  min-height: 100vh;
+}
+
+.layout-sidebar {
+  background: rgb(255 255 255);
+  border-right: 1px solid rgb(203 213 225);
+  box-shadow: 1px 0 0 rgb(241 245 249);
+  flex: 0 0 14rem;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.layout-sidebar-brand {
+  color: rgb(15 23 42);
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.layout-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.layout-nav-button {
+  border-radius: 0.375rem;
+  color: rgb(51 65 85);
+  font-weight: 600;
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  transition: background 120ms ease, color 120ms ease;
+  width: 100%;
+}
+
+.layout-nav-button:hover {
+  background: rgb(239 246 255);
+  color: rgb(29 78 216);
+}
+
+.layout-nav-button-active {
+  background: rgb(37 99 235);
+  color: white;
+}
+
+.layout-nav-button-active:hover {
+  background: rgb(29 78 216);
+  color: white;
+}
+
+.layout-nav-group-button {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.layout-nav-group-icon {
+  font-size: 0.85rem;
+}
+
+.layout-nav-sublist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.15rem;
+  padding-left: 0.75rem;
+}
+
+.layout-nav-subbutton {
+  font-size: 0.9rem;
+  padding-block: 0.5rem;
+}
+
+.layout-main {
+  flex: 1;
+  overflow: auto;
+}
+
+.layout-content {
+  padding: 1.5rem;
+}
+
+.layout-header {
+  align-items: center;
+  display: flex;
+  margin-bottom: 1.5rem;
+}
+
+.layout-title {
+  color: rgb(15 23 42);
+  font-size: 1.5rem;
+  font-weight: 750;
+}
+
+.layout-home-button {
+  background: white;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.375rem;
+  color: rgb(30 41 59);
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+}
+
+.layout-home-button:hover {
+  background: rgb(239 246 255);
+  border-color: rgb(147 197 253);
+  color: rgb(29 78 216);
+}

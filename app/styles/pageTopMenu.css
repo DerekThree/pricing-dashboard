@@ -1,0 +1,40 @@
+.page-top-menu {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.page-top-menu-title {
+  color: rgb(15 23 42);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.page-top-menu-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.page-top-menu-action {
+  background: white;
+  border: 1px solid rgb(147 197 253);
+  border-radius: 0.25rem;
+  color: rgb(29 78 216);
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+}
+
+.page-top-menu-action:hover {
+  background: rgb(239 246 255);
+  border-color: rgb(37 99 235);
+}
+
+.page-top-menu-action:disabled {
+  background: rgb(241 245 249);
+  border-color: rgb(203 213 225);
+  color: rgb(148 163 184);
+  cursor: not-allowed;
+}
