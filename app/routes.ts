@@ -1,14 +1,14 @@
 import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
-  index("routes/stateList.tsx", { id: "index" }),
-  route("state", "routes/stateList.tsx"),
-  route("state/crud/:operation", "routes/stateCrud.tsx"),
-  route("region", "routes/regionList.tsx"),
-  route("region/crud/:operation", "routes/regionCrud.tsx"),
-  route("product", "routes/productList.tsx"),
-  route("product/crud/:operation", "routes/productCrud.tsx"),
-  route("schema/fee", "routes/feeList.tsx"),
-  route("schema/rate", "routes/rateList.tsx"),
-  route("simulator", "routes/simulator.tsx"),
+  index("routes/branches/list.tsx", { id: "index" }),
+  route("branches", "routes/branches/list.tsx"),
+  route("branches/:action/:id?", "routes/branches/crud.tsx"),
+  route("regions", "routes/regions/list.tsx"),
+  route("regions/:action", "routes/regions/crud.tsx"),
+  route("products", "routes/products/list.tsx"),
+  route("products/:action", "routes/products/crud.tsx"),
+  route("pricing-plans", "routes/pricingPlans/list.tsx"),
+  route("pricing-plans/:action", "routes/pricingPlans/crud.tsx"),
+  route("simulator", "routes/simulator/index.tsx"),
 ] satisfies RouteConfig;

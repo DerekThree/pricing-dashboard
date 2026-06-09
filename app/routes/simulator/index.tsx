@@ -1,4 +1,6 @@
-import Layout from "./layout";
+import "./styles.css";
+
+import Layout from "../layout";
 
 function SimulatorContent() {
   return (
