@@ -1,3 +1,4 @@
 @import "tailwindcss";
 @import "./styles/globals.css";
 @import "./styles/page.css";
+@import "./styles/crud.css";

@@ -5,10 +5,11 @@ type PageTopMenuProps = {
   actions?: PageTopMenuAction[];
 };
 
-type PageTopMenuAction = {
+export type PageTopMenuAction = {
   label: string;
   onClick?: () => void;
   disabled?: boolean;
+  type?: "button" | "submit" | "reset";
   variant?: "cancel";
 };
 
@@ -29,7 +30,7 @@ export default function PageTopMenu({
               }`}
               disabled={action.disabled}
               onClick={action.onClick}
-              type="button"
+              type={action.type ?? "button"}
             >
               {action.label}
             </button>

@@ -12,7 +12,10 @@ export class ApiError extends Error {
   }
 }
 
-async function apiRequest<T>(apiEndpoint: string, init?: RequestInit): Promise<T> {
+async function apiRequest<TResponse>(
+  apiEndpoint: string,
+  init?: RequestInit,
+): Promise<TResponse> {
   let response: Response;
 
   try {
@@ -35,11 +38,11 @@ async function apiRequest<T>(apiEndpoint: string, init?: RequestInit): Promise<T
 
   const responseText = await response.text();
 
-  return (responseText ? JSON.parse(responseText) : undefined) as T;
+  return (responseText ? JSON.parse(responseText) : undefined) as TResponse;
 }
 
-export function getApi<T>(apiEndpoint: string): Promise<T> {
-  return apiRequest<T>(apiEndpoint);
+export function getApi<TResponse>(apiEndpoint: string): Promise<TResponse> {
+  return apiRequest<TResponse>(apiEndpoint);
 }
 
 export function postApi<TResponse, TBody>(
@@ -68,8 +71,8 @@ export function putApi<TResponse, TBody>(
   });
 }
 
-export function deleteApi<T>(apiEndpoint: string): Promise<T> {
-  return apiRequest<T>(apiEndpoint, {
+export function deleteApi<TResponse>(apiEndpoint: string): Promise<TResponse> {
+  return apiRequest<TResponse>(apiEndpoint, {
     method: "DELETE",
   });
 }

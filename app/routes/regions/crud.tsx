@@ -1,46 +1,116 @@
 import "./styles.css";
 
-import { useNavigate, useParams } from "react-router";
+import { Form, useLoaderData, useParams } from "react-router";
 
-import PageTopMenu from "../../components/PageTopMenu";
-import Layout from "../layout";
+import CrudPageTopMenu from "../../components/CrudPageTopMenu";
+import useFormValues from "../../hooks/useFormValues";
+import {
+  createCrudRouteHandlers,
+  type FormValues,
+} from "../../utils/crudRouteUtils";
 
-function formatAction(action: string | undefined) {
-  if (!action) {
-    return "Unknown";
-  }
+const regionFields = [
+  "regionCode",
+  "regionName",
+  "states",
+  "zipCodes",
+  "branches",
+] as const;
 
-  return action.charAt(0).toUpperCase() + action.slice(1);
-}
+type RegionFormValues = FormValues<typeof regionFields>;
+
+const routeHandlers = createCrudRouteHandlers({
+  fields: regionFields,
+  apiUrl: "/regions",
+  listRouteUrl: "/regions",
+});
+
+export const action = routeHandlers.action;
+export const loader = routeHandlers.loader;
 
 export default function Crud() {
-  const navigate = useNavigate();
-  const params = useParams();
+  const { action } = useParams();
+  const { record, loaderError } = useLoaderData<typeof loader>();
+  const inputsDisabled = !!loaderError || action === "view" || action === "delete";
+  const { formValues, updateField } = useFormValues<RegionFormValues>(record);
 
   return (
-    <Layout>
-      <section className="page">
-        <PageTopMenu
-          title={`${formatAction(params.action)} Region`}
-          actions={[
-            ...(params.action === "create" ||
-            params.action === "update" ||
-            params.action === "delete"
-              ? [
-                  {
-                    label: "Cancel",
-                    onClick: () => navigate(-1),
-                    variant: "cancel" as const,
-                  },
-                ]
-              : []),
-            {
-              label: params.action === "view" ? "Done" : formatAction(params.action),
-              onClick: () => undefined,
-            },
-          ]}
+    <section className="page">
+      <Form method="post">
+        <CrudPageTopMenu
+          action={action}
+          entityTitle="Region"
+          listRouteUrl="/regions"
+          loaderError={loaderError}
         />
-      </section>
-    </Layout>
+        {loaderError && <p className="crud-loader-error">{loaderError}</p>}
+        <div className="crud-form-column">
+          <label className="crud-form-field" htmlFor="region-code">
+            <span>Region Code</span>
+            <input
+              disabled={inputsDisabled}
+              id="region-code"
+              name="regionCode"
+              required
+              type="text"
+              value={formValues.regionCode}
+              onChange={(event) =>
+                updateField("regionCode", event.target.value.toUpperCase())
+              }
+            />
+          </label>
+          <label className="crud-form-field" htmlFor="region-name">
+            <span>Region Name</span>
+            <input
+              disabled={inputsDisabled}
+              id="region-name"
+              name="regionName"
+              required
+              type="text"
+              value={formValues.regionName}
+              onChange={(event) =>
+                updateField("regionName", event.target.value)
+              }
+            />
+          </label>
+          <label className="crud-form-field" htmlFor="states">
+            <span>States</span>
+            <input
+              disabled={inputsDisabled}
+              id="states"
+              name="states"
+              required
+              type="text"
+              value={formValues.states}
+              onChange={(event) => updateField("states", event.target.value)}
+            />
+          </label>
+          <label className="crud-form-field" htmlFor="zip-codes">
+            <span>Zip Codes</span>
+            <input
+              disabled={inputsDisabled}
+              id="zip-codes"
+              name="zipCodes"
+              required
+              type="text"
+              value={formValues.zipCodes}
+              onChange={(event) => updateField("zipCodes", event.target.value)}
+            />
+          </label>
+          <label className="crud-form-field" htmlFor="branches">
+            <span>Branches</span>
+            <input
+              disabled={inputsDisabled}
+              id="branches"
+              name="branches"
+              required
+              type="text"
+              value={formValues.branches}
+              onChange={(event) => updateField("branches", event.target.value)}
+            />
+          </label>
+        </div>
+      </Form>
+    </section>
   );
 }

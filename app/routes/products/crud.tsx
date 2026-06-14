@@ -1,46 +1,92 @@
 import "./styles.css";
 
-import { useNavigate, useParams } from "react-router";
+import { Form, useLoaderData, useParams } from "react-router";
 
-import PageTopMenu from "../../components/PageTopMenu";
-import Layout from "../layout";
+import CrudPageTopMenu from "../../components/CrudPageTopMenu";
+import useFormValues from "../../hooks/useFormValues";
+import {
+  createCrudRouteHandlers,
+  type FormValues,
+} from "../../utils/crudRouteUtils";
 
-function formatAction(action: string | undefined) {
-  if (!action) {
-    return "Unknown";
-  }
+const productFields = [
+  "productCode",
+  "productName",
+  "accountType",
+] as const;
 
-  return action.charAt(0).toUpperCase() + action.slice(1);
-}
+type ProductFormValues = FormValues<typeof productFields>;
+
+const routeHandlers = createCrudRouteHandlers({
+  fields: productFields,
+  apiUrl: "/products",
+  listRouteUrl: "/products",
+});
+
+export const action = routeHandlers.action;
+export const loader = routeHandlers.loader;
 
 export default function Crud() {
-  const navigate = useNavigate();
-  const params = useParams();
+  const { action } = useParams();
+  const { record, loaderError } = useLoaderData<typeof loader>();
+  const inputsDisabled = !!loaderError || action === "view" || action === "delete";
+  const { formValues, updateField } = useFormValues<ProductFormValues>(record);
 
   return (
-    <Layout>
-      <section className="page">
-        <PageTopMenu
-          title={`${formatAction(params.action)} Product`}
-          actions={[
-            ...(params.action === "create" ||
-            params.action === "update" ||
-            params.action === "delete"
-              ? [
-                  {
-                    label: "Cancel",
-                    onClick: () => navigate(-1),
-                    variant: "cancel" as const,
-                  },
-                ]
-              : []),
-            {
-              label: params.action === "view" ? "Done" : formatAction(params.action),
-              onClick: () => undefined,
-            },
-          ]}
+    <section className="page">
+      <Form method="post">
+        <CrudPageTopMenu
+          action={action}
+          entityTitle="Product"
+          listRouteUrl="/products"
+          loaderError={loaderError}
         />
-      </section>
-    </Layout>
+        {loaderError && <p className="crud-loader-error">{loaderError}</p>}
+        <div className="crud-form-column">
+          <label className="crud-form-field" htmlFor="product-code">
+            <span>Product Code</span>
+            <input
+              disabled={inputsDisabled}
+              id="product-code"
+              name="productCode"
+              required
+              type="text"
+              value={formValues.productCode}
+              onChange={(event) =>
+                updateField("productCode", event.target.value.toUpperCase())
+              }
+            />
+          </label>
+          <label className="crud-form-field" htmlFor="product-name">
+            <span>Product Name</span>
+            <input
+              disabled={inputsDisabled}
+              id="product-name"
+              name="productName"
+              required
+              type="text"
+              value={formValues.productName}
+              onChange={(event) =>
+                updateField("productName", event.target.value)
+              }
+            />
+          </label>
+          <label className="crud-form-field" htmlFor="account-type">
+            <span>Account Type</span>
+            <input
+              disabled={inputsDisabled}
+              id="account-type"
+              name="accountType"
+              required
+              type="text"
+              value={formValues.accountType}
+              onChange={(event) =>
+                updateField("accountType", event.target.value)
+              }
+            />
+          </label>
+        </div>
+      </Form>
+    </section>
   );
 }
