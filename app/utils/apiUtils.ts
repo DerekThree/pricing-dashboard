@@ -5,18 +5,32 @@ export type TableRecord = Record<string, unknown>;
 export class ApiError extends Error {
   status: number;
 
-  constructor(status: number, message?: string) {
-    super(message ?? `Request failed: ${status}`);
+  constructor(status: number, message: string) {
+    super(message);
     this.name = "ApiError";
     this.status = status;
   }
 }
 
 async function apiRequest<T>(apiEndpoint: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(getApiUrl(apiEndpoint), init);
+  let response: Response;
+
+  try {
+    response = await fetch(getApiUrl(apiEndpoint), init);
+  } catch {
+    throw new ApiError(
+      503,
+      `The app cannot reach the backend right now. Please try again later.`,
+    );
+  }
 
   if (!response.ok) {
-    throw new ApiError(response.status);
+    throw new ApiError(
+      response.status,
+      response.status === 404
+        ? `The requested record could not be found.`
+        : `The backend returned an error status ${response.status}.`,
+    );
   }
 
   const responseText = await response.text();

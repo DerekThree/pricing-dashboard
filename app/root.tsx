@@ -8,7 +8,14 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
+import ErrorPage from "./components/ErrorPage";
+import AppLayout from "./routes/layout";
+import { ApiError } from "./utils/apiUtils";
 import "./app.css";
+
+function getString(value: unknown) {
+  return typeof value === "string" ? value : undefined;
+}
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -46,30 +53,29 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
+  let status = "Error";
+  let statusText = "An unexpected error occurred.";
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
-    details =
-      error.status === 404
+    status = String(error.status);
+    statusText =
+      getString(error.data) ??
+      (error.status === 404
         ? "The requested page could not be found."
-        : error.statusText || details;
+        : error.statusText || statusText);
+  } else if (error instanceof ApiError) {
+    status = String(error.status);
+    statusText = error.message;
+    stack = import.meta.env.DEV ? error.stack : undefined;
   } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
+    statusText = error.message;
     stack = error.stack;
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
+    <AppLayout>
+      <ErrorPage stack={stack} status={status} statusText={statusText} />
+    </AppLayout>
   );
 }

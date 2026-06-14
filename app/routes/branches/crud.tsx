@@ -2,11 +2,9 @@ import "./styles.css";
 
 import { useState, type FormEvent } from "react";
 import {
-  isRouteErrorResponse,
   useLoaderData,
   useNavigate,
   useParams,
-  useRouteError,
   type LoaderFunctionArgs,
 } from "react-router";
 
@@ -24,6 +22,10 @@ type BranchDetails = {
 
 type BranchFormValues = Omit<BranchDetails, "id">;
 type BranchAction = "create" | "view" | "update" | "delete";
+type CrudLoaderData = {
+  branch: BranchDetails | null;
+  loaderError: string | null;
+};
 
 const validActions = new Set<BranchAction>([
   "create",
@@ -47,24 +49,32 @@ function getInitialFormValues(branch: BranchDetails | null): BranchFormValues {
   };
 }
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({
+  params,
+}: LoaderFunctionArgs): Promise<CrudLoaderData> {
   if (!params.action || !validActions.has(params.action as BranchAction)) {
-    throw new Response("Invalid branch action", { status: 404 });
+    throw new Response(`The requested page could not be found: ${params.action} is not supported`, {
+      status: 404,
+    });
   }
 
   if (params.action === "create") {
-    return null;
+    return { branch: null, loaderError: null };
   }
 
-  if (!params.id) {
-    throw new Response("Missing branch id", { status: 400 });
+  if (!params.id || !/^\d+$/.test(params.id)) {
+    throw new Response("The requested page could not be found. Missing or invalid record id", {
+      status: 404,
+    });
   }
 
   try {
-    return await getApi<BranchDetails>(`/branches/${params.id}`);
+    const branch = await getApi<BranchDetails>(`/branches/${params.id}`);
+
+    return { branch, loaderError: null };
   } catch (error) {
     if (error instanceof ApiError) {
-      throw new Response(error.message, { status: error.status });
+      return { branch: null, loaderError: error.message };
     }
 
     throw error;
@@ -74,9 +84,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
 export default function Crud() {
   const navigate = useNavigate();
   const { action } = useParams();
-  const branch = useLoaderData<typeof loader>();
-  const inputsDisabled =
-    action === "view" || action === "delete";
+  const { branch, loaderError } = useLoaderData<typeof loader>();
+  const inputsDisabled = !!loaderError || action === "view" || action === "delete";
   const [formValues, setFormValues] = useState(() =>
     getInitialFormValues(branch),
   );
@@ -89,6 +98,11 @@ export default function Crud() {
   }
 
   function onAction() {
+    if (loaderError) {
+      navigate("/branches");
+      return;
+    }
+
     const form = document.getElementById("branch-crud-form");
 
     if (form instanceof HTMLFormElement) {
@@ -99,6 +113,10 @@ export default function Crud() {
   // TODO: convert this to function action for router to use
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (loaderError) {
+      return;
+    }
 
     if (action === "create") {
       await postApi("/branches", formValues);
@@ -116,9 +134,10 @@ export default function Crud() {
       <section className="page">
         <PageTopMenu
           title={`${formatAction(action)} Branch`}
-          action={action}
+          action={loaderError ? "view" : action}
           onAction={onAction}
         />
+        {loaderError && <p className="crud-loader-error">{loaderError}</p>}
         <form
           className="crud-form-column"
           id="branch-crud-form"
@@ -193,26 +212,6 @@ export default function Crud() {
             />
           </label>
         </form>
-      </section>
-    </Layout>
-  );
-}
-
-export function ErrorBoundary() {
-  const error = useRouteError();
-  const description = isRouteErrorResponse(error)
-    ? error.status === 404
-      ? "That branch page could not be found."
-      : error.status === 400
-        ? "That branch request is missing information."
-        : "Something went wrong while opening this branch page."
-    : "Something went wrong while opening this branch page.";
-
-  return (
-    <Layout>
-      <section className="page">
-        <PageTopMenu title="Branch" />
-        <p>{description}</p>
       </section>
     </Layout>
   );
