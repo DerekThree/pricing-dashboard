@@ -1,15 +1,21 @@
-import "./styles.css";
-
-import { useState } from "react";
-import { useLoaderData, useNavigate } from "react-router";
+import { useLoaderData } from "react-router";
 import type { ColDef } from "ag-grid-community";
 
-import DataTable from "../../components/DataTable";
-import PageTopMenu from "../../components/PageTopMenu";
-import { getApi, type TableRecord } from "../../utils/apiUtils";
-import Layout from "../layout";
+import ListPage from "../../components/ListPage";
+import { getApi } from "../../utils/apiUtils";
 
-const columnDefs: ColDef<TableRecord>[] = [
+type RegionRow = {
+  id: number;
+  regionCode: string;
+  regionName: string;
+  states: string;
+  zipCodes: string;
+  branches: string;
+  updatedOn: string;
+  updatedBy: string;
+};
+
+const columnDefs: ColDef<RegionRow>[] = [
   { field: "regionCode", headerName: "Region Code" },
   { field: "regionName", headerName: "Region Name" },
   { field: "states", headerName: "States" },
@@ -20,37 +26,18 @@ const columnDefs: ColDef<TableRecord>[] = [
 ];
 
 export async function loader() {
-  return getApi<TableRecord[]>("/regions");
+  return getApi<RegionRow[]>("/regions");
 }
 
-export default function List() {
-  const navigate = useNavigate();
-  const [selectedRow, setSelectedRow] = useState<TableRecord | null>(null);
+export default function RegionList() {
   const rowData = useLoaderData<typeof loader>();
 
-  function openCrudPage(action: string) {
-    navigate(`/regions/${action}`, {
-      state: { row: selectedRow },
-    });
-  }
-
   return (
-    <Layout>
-      <section className="page">
-        <PageTopMenu
-          title="Regions"
-          onCreate={() => openCrudPage("create")}
-          onView={() => openCrudPage("view")}
-          onUpdate={() => openCrudPage("update")}
-          onDelete={() => openCrudPage("delete")}
-          actionsEnabled={Boolean(selectedRow)}
-        />
-        <DataTable
-          columnDefs={columnDefs}
-          rowData={rowData}
-          setSelectedRow={setSelectedRow}
-        />
-      </section>
-    </Layout>
+    <ListPage
+      title="Regions"
+      columnDefs={columnDefs}
+      rowData={rowData}
+      crudRouteUrl="/regions"
+    />
   );
 }

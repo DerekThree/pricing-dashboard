@@ -1,15 +1,24 @@
-import "./styles.css";
-
-import { useState } from "react";
-import { useLoaderData, useNavigate } from "react-router";
+import { useLoaderData } from "react-router";
 import type { ColDef } from "ag-grid-community";
 
-import DataTable from "../../components/DataTable";
-import PageTopMenu from "../../components/PageTopMenu";
-import { getApi, type TableRecord } from "../../utils/apiUtils";
-import Layout from "../layout";
+import ListPage from "../../components/ListPage";
+import { getApi } from "../../utils/apiUtils";
 
-const columnDefs: ColDef<TableRecord>[] = [
+type PricingPlanRow = {
+  id: number;
+  planCode: string;
+  planName: string;
+  productCode: string;
+  productName: string;
+  regionCode: string;
+  regionName: string;
+  activeFrom: string;
+  activeTo: string;
+  updatedOn: string;
+  updatedBy: string;
+};
+
+const columnDefs: ColDef<PricingPlanRow>[] = [
   { field: "planCode", headerName: "Plan Code" },
   { field: "planName", headerName: "Plan Name" },
   { field: "productCode", headerName: "Product Code" },
@@ -23,37 +32,18 @@ const columnDefs: ColDef<TableRecord>[] = [
 ];
 
 export async function loader() {
-  return getApi<TableRecord[]>("/pricing-plans");
+  return getApi<PricingPlanRow[]>("/pricing-plans");
 }
 
-export default function List() {
-  const navigate = useNavigate();
-  const [selectedRow, setSelectedRow] = useState<TableRecord | null>(null);
+export default function PricingPlanList() {
   const rowData = useLoaderData<typeof loader>();
 
-  function openCrudPage(action: string) {
-    navigate(`/pricing-plans/${action}`, {
-      state: { row: selectedRow },
-    });
-  }
-
   return (
-    <Layout>
-      <section className="page">
-        <PageTopMenu
-          title="Pricing Plans"
-          onCreate={() => openCrudPage("create")}
-          onView={() => openCrudPage("view")}
-          onUpdate={() => openCrudPage("update")}
-          onDelete={() => openCrudPage("delete")}
-          actionsEnabled={Boolean(selectedRow)}
-        />
-        <DataTable
-          columnDefs={columnDefs}
-          rowData={rowData}
-          setSelectedRow={setSelectedRow}
-        />
-      </section>
-    </Layout>
+    <ListPage
+      title="Pricing Plans"
+      columnDefs={columnDefs}
+      rowData={rowData}
+      crudRouteUrl="/pricing-plans"
+    />
   );
 }

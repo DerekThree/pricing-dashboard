@@ -1,13 +1,8 @@
-import "./styles.css";
-
-import { useState } from "react";
-import { useLoaderData, useNavigate } from "react-router";
+import { useLoaderData } from "react-router";
 import type { ColDef } from "ag-grid-community";
 
-import DataTable from "../../components/DataTable";
-import PageTopMenu from "../../components/PageTopMenu";
+import ListPage from "../../components/ListPage";
 import { getApi } from "../../utils/apiUtils";
-import Layout from "../layout";
 
 type BranchRow = {
   id: number;
@@ -32,36 +27,15 @@ export async function loader() {
   return getApi<BranchRow[]>("/branches");
 }
 
-export default function List() {
-  const navigate = useNavigate();
-  const [selectedRow, setSelectedRow] = useState<BranchRow>();
+export default function BranchList() {
   const rowData = useLoaderData<typeof loader>();
 
-  function openCrudPage(action: string) {
-    if (action === "create") {
-      navigate("/branches/create");
-    } else if (selectedRow) {
-      navigate(`/branches/${action}/${selectedRow.id}`);
-    }
-  }
-
   return (
-    <Layout>
-      <section className="page">
-        <PageTopMenu
-          title="Branches"
-          onCreate={() => openCrudPage("create")}
-          onView={() => openCrudPage("view")}
-          onUpdate={() => openCrudPage("update")}
-          onDelete={() => openCrudPage("delete")}
-          actionsEnabled={!!selectedRow}
-        />
-        <DataTable
-          columnDefs={columnDefs}
-          rowData={rowData}
-          setSelectedRow={setSelectedRow}
-        />
-      </section>
-    </Layout>
+    <ListPage
+      title="Branches"
+      columnDefs={columnDefs}
+      rowData={rowData}
+      crudRouteUrl="/branches"
+    />
   );
 }

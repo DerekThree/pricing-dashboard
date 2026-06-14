@@ -1,6 +1,6 @@
 import "./styles.css";
 
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
 import PageTopMenu from "../../components/PageTopMenu";
 import Layout from "../layout";
@@ -14,6 +14,7 @@ function formatAction(action: string | undefined) {
 }
 
 export default function Crud() {
+  const navigate = useNavigate();
   const params = useParams();
 
   return (
@@ -21,9 +22,23 @@ export default function Crud() {
       <section className="page">
         <PageTopMenu
           title={`${formatAction(params.action)} Pricing Plan`}
-          onAction={() => undefined}
-          action={params.action}
-          actionsEnabled={Boolean(false)}
+          actions={[
+            ...(params.action === "create" ||
+            params.action === "update" ||
+            params.action === "delete"
+              ? [
+                  {
+                    label: "Cancel",
+                    onClick: () => navigate(-1),
+                    variant: "cancel" as const,
+                  },
+                ]
+              : []),
+            {
+              label: params.action === "view" ? "Done" : formatAction(params.action),
+              onClick: () => undefined,
+            },
+          ]}
         />
       </section>
     </Layout>

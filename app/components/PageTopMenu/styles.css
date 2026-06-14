@@ -42,16 +42,6 @@
   border-color: rgb(220 38 38);
 }
 
-.page-top-menu-action--action {
-  border-color: rgb(134 239 172);
-  color: rgb(21 128 61);
-}
-
-.page-top-menu-action--action:hover {
-  background: rgb(240 253 244);
-  border-color: rgb(22 163 74);
-}
-
 .page-top-menu-action:disabled {
   background: rgb(241 245 249);
   border-color: rgb(203 213 225);

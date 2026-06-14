@@ -1,5 +1,9 @@
 import "./styles.css";
 
+import { useNavigate } from "react-router";
+
+import PageTopMenu from "../PageTopMenu";
+
 type ErrorPageProps = {
   stack?: string;
   status: string;
@@ -11,36 +15,32 @@ export default function ErrorPage({
   status,
   statusText,
 }: ErrorPageProps) {
+  const navigate = useNavigate();
+
   return (
-    <section className="error-page">
-      <div className="error-panel">
+    <section className="page">
+      <PageTopMenu
+        title="Error"
+        actions={[
+          {
+            label: "Try again",
+            onClick: () => window.location.reload(),
+          },      
+          {
+            label: "Home",
+            onClick: () => navigate("/"),
+            variant: "cancel",
+          },              
+          {
+            label: "Back",
+            onClick: () => navigate(-1),
+            variant: "cancel",
+          },
+        ]}
+      />
+      <div className="error-page">
         <h2 className="error-status">{status}</h2>
         <p className="error-message">{statusText}</p>
-        <div className="error-actions">
-          <button
-            className="error-action"
-            onClick={() => window.history.back()}
-            type="button"
-          >
-            Back
-          </button>
-          <button
-            className="error-action"
-            onClick={() => {
-              window.location.href = "/";
-            }}
-            type="button"
-          >
-            Home
-          </button>
-          <button
-            className="error-action error-action--primary"
-            onClick={() => window.location.reload()}
-            type="button"
-          >
-            Try again
-          </button>
-        </div>
         {import.meta.env.DEV && stack && (
           <details className="error-details">
             <summary>Technical details</summary>

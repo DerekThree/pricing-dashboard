@@ -1,10 +1,13 @@
 import "./styles.css";
 
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import {
+  Form,
+  redirect,
   useLoaderData,
   useNavigate,
   useParams,
+  type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "react-router";
 
@@ -12,27 +15,50 @@ import PageTopMenu from "../../components/PageTopMenu";
 import { ApiError, getApi, postApi, putApi, deleteApi } from "../../utils/apiUtils";
 import Layout from "../layout";
 
-type BranchDetails = {
-  id: number;
+type RecordFormValues = {
   branchCode: string;
   branchName: string;
   state: string;
   zipCode: string;
 };
 
-type BranchFormValues = Omit<BranchDetails, "id">;
-type BranchAction = "create" | "view" | "update" | "delete";
-type CrudLoaderData = {
-  branch: BranchDetails | null;
+type LoaderData = {
+  record: RecordFormValues;
   loaderError: string | null;
 };
 
-const validActions = new Set<BranchAction>([
+const emptyRecord: RecordFormValues = {
+  branchCode: "",
+  branchName: "",
+  state: "",
+  zipCode: "",
+};
+
+const validActions = new Set([
   "create",
   "view",
   "update",
   "delete",
 ]);
+
+function validateRouteParams(params: LoaderFunctionArgs["params"]) {
+  if (!params.action || !validActions.has(params.action)) {
+    throw new Response(`The requested page could not be found: ${params.action} is not supported`, {
+      status: 404,
+    });
+  }
+
+  if (params.action !== "create" && (!params.id || !/^\d+$/.test(params.id))) {
+    throw new Response("The requested page could not be found. Missing or invalid record id", {
+      status: 404,
+    });
+  }
+
+  return {
+    action: params.action,
+    id: params.id,
+  };
+}
 
 function formatAction(action: string | undefined) {
   return action
@@ -40,57 +66,77 @@ function formatAction(action: string | undefined) {
     : "Unknown";
 }
 
-function getInitialFormValues(branch: BranchDetails | null): BranchFormValues {
+function getSubmittedFormValues(formData: FormData): RecordFormValues {
   return {
-    branchCode: branch?.branchCode ?? "",
-    branchName: branch?.branchName ?? "",
-    state: branch?.state ?? "",
-    zipCode: branch?.zipCode ?? "",
+    branchCode: String(formData.get("branchCode") ?? ""),
+    branchName: String(formData.get("branchName") ?? ""),
+    state: String(formData.get("state") ?? ""),
+    zipCode: String(formData.get("zipCode") ?? ""),
   };
 }
 
 export async function loader({
   params,
-}: LoaderFunctionArgs): Promise<CrudLoaderData> {
-  if (!params.action || !validActions.has(params.action as BranchAction)) {
-    throw new Response(`The requested page could not be found: ${params.action} is not supported`, {
-      status: 404,
-    });
-  }
+}: LoaderFunctionArgs): Promise<LoaderData> {
+  const { action, id } = validateRouteParams(params);
 
-  if (params.action === "create") {
-    return { branch: null, loaderError: null };
-  }
-
-  if (!params.id || !/^\d+$/.test(params.id)) {
-    throw new Response("The requested page could not be found. Missing or invalid record id", {
-      status: 404,
-    });
+  if (action === "create") {
+    return { record: emptyRecord, loaderError: null };
   }
 
   try {
-    const branch = await getApi<BranchDetails>(`/branches/${params.id}`);
+    const record = await getApi<RecordFormValues>(`/branches/${id}`);
 
-    return { branch, loaderError: null };
+    return { record, loaderError: null };
   } catch (error) {
     if (error instanceof ApiError) {
-      return { branch: null, loaderError: error.message };
+      return { record: emptyRecord, loaderError: error.message };
     }
 
     throw error;
   }
 }
 
+export async function action({ request, params }: ActionFunctionArgs) {
+  const { action: recordAction, id } = validateRouteParams(params);
+  const formData = await request.formData();
+  const submittedValues = getSubmittedFormValues(formData);
+
+  if (recordAction === "create") {
+    await postApi("/branches", submittedValues);
+  } else {
+    if (recordAction === "update") {
+      await putApi(`/branches/${id}`, submittedValues);
+    } else if (recordAction === "delete") {
+      await deleteApi(`/branches/${id}`);
+    }
+  }
+
+  return redirect("/branches");
+}
+
 export default function Crud() {
   const navigate = useNavigate();
   const { action } = useParams();
-  const { branch, loaderError } = useLoaderData<typeof loader>();
+  const { record, loaderError } = useLoaderData<typeof loader>();
   const inputsDisabled = !!loaderError || action === "view" || action === "delete";
-  const [formValues, setFormValues] = useState(() =>
-    getInitialFormValues(branch),
-  );
+  const shouldShowDone = !!loaderError || action === "view";
+  const [formValues, setFormValues] = useState(record);
+  const doneAction = {
+    label: "Done",
+    onClick: () => navigate("/branches"),
+  };
+  const submitAction = {
+    label: formatAction(action),
+    onClick: onAction,
+  };
+  const cancelAction = {
+    label: "Cancel",
+    onClick: () => navigate("/branches"),
+    variant: "cancel" as const,
+  };
 
-  function updateField(field: keyof BranchFormValues, value: string) {
+  function updateField(field: keyof RecordFormValues, value: string) {
     setFormValues((currentValues) => ({
       ...currentValues,
       [field]: value,
@@ -98,11 +144,6 @@ export default function Crud() {
   }
 
   function onAction() {
-    if (loaderError) {
-      navigate("/branches");
-      return;
-    }
-
     const form = document.getElementById("branch-crud-form");
 
     if (form instanceof HTMLFormElement) {
@@ -110,45 +151,25 @@ export default function Crud() {
     }
   }
 
-  // TODO: convert this to function action for router to use
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (loaderError) {
-      return;
-    }
-
-    if (action === "create") {
-      await postApi("/branches", formValues);
-    } else if (action === "update" && branch) {
-      await putApi(`/branches/${branch.id}`, formValues);
-    } else if (action === "delete" && branch) {
-      await deleteApi(`/branches/${branch.id}`);
-    }
-
-    navigate("/branches");
-  }
-
   return (
     <Layout>
       <section className="page">
         <PageTopMenu
           title={`${formatAction(action)} Branch`}
-          action={loaderError ? "view" : action}
-          onAction={onAction}
+          actions={shouldShowDone ? [doneAction] : [submitAction, cancelAction]}
         />
         {loaderError && <p className="crud-loader-error">{loaderError}</p>}
-        <form
+        <Form
           className="crud-form-column"
           id="branch-crud-form"
-          onSubmit={onSubmit}
+          method="post"
         >
           <label className="crud-form-field" htmlFor="branch-code">
             <span>Branch Code</span>
             <input
               disabled={inputsDisabled}
               id="branch-code"
-              name="branch-code"
+              name="branchCode"
               required
               type="text"
               value={formValues.branchCode}
@@ -162,7 +183,7 @@ export default function Crud() {
             <input
               disabled={inputsDisabled}
               id="branch-name"
-              name="branch-name"
+              name="branchName"
               required
               type="text"
               value={formValues.branchName}
@@ -198,7 +219,7 @@ export default function Crud() {
               id="zip-code"
               inputMode="numeric"
               maxLength={5}
-              name="zip-code"
+              name="zipCode"
               pattern="[0-9]{5}"
               required
               type="text"
@@ -211,7 +232,7 @@ export default function Crud() {
               }
             />
           </label>
-        </form>
+        </Form>
       </section>
     </Layout>
   );
