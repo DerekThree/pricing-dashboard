@@ -6,27 +6,30 @@ import {
 
 import { ApiError, deleteApi, getApi, postApi, putApi } from "./apiUtils";
 
-const validActions = new Set(["create", "view", "update", "delete"]);
+const validOperations = new Set(["create", "view", "update", "delete"]);
 
 export type FormValues<TFields extends readonly string[]> = {
   [TField in TFields[number]]: string;
 };
 
-type CrudRouteHandlersConfig<TFields extends readonly string[]> = {
+type CrudRouteConfig<TFields extends readonly string[]> = {
   fields: TFields;
   apiUrl: string;
   listRouteUrl: string;
 };
 
 function validateRouteParams(params: LoaderFunctionArgs["params"]) {
-  if (!params.action || !validActions.has(params.action)) {
+  if (!params.operation || !validOperations.has(params.operation)) {
     throw new Response(
-      `The requested page could not be found: ${params.action} is not supported`,
+      `The requested page could not be found: ${params.operation} is not supported`,
       { status: 404 },
     );
   }
 
-  if (params.action !== "create" && (!params.id || !/^\d+$/.test(params.id))) {
+  if (
+    params.operation !== "create" &&
+    (!params.id || !/^\d+$/.test(params.id))
+  ) {
     throw new Response(
       "The requested page could not be found. Missing or invalid record id",
       { status: 404 },
@@ -34,7 +37,7 @@ function validateRouteParams(params: LoaderFunctionArgs["params"]) {
   }
 
   return {
-    action: params.action,
+    operation: params.operation,
     id: params.id,
   };
 }
@@ -48,19 +51,18 @@ function getSubmittedFormValues<TFields extends readonly string[]>(
   ) as FormValues<TFields>;
 }
 
-export function createCrudRouteHandlers<const TFields extends readonly string[]>({
+export function createRouteLoader<const TFields extends readonly string[]>({
   fields,
   apiUrl,
-  listRouteUrl,
-}: CrudRouteHandlersConfig<TFields>) {
+}: CrudRouteConfig<TFields>) {
   const emptyRecord = Object.fromEntries(
-    fields.map((field) => [field, ""])
+    fields.map((field) => [field, ""]),
   ) as FormValues<typeof fields>;
 
-  async function loader({ params }: LoaderFunctionArgs) {
-    const { action, id } = validateRouteParams(params);
+  return async function loader({ params }: LoaderFunctionArgs) {
+    const { operation, id } = validateRouteParams(params);
 
-    if (action === "create") {
+    if (operation === "create") {
       return { record: emptyRecord, loaderError: null };
     }
 
@@ -75,26 +77,30 @@ export function createCrudRouteHandlers<const TFields extends readonly string[]>
 
       throw error;
     }
-  }
+  };
+}
 
-  async function action({ request, params }: ActionFunctionArgs) {
-    const { action: recordAction, id } = validateRouteParams(params);
+export function createRouteAction<const TFields extends readonly string[]>({
+  fields,
+  apiUrl,
+  listRouteUrl,
+}: CrudRouteConfig<TFields>) {
+  return async function action({ request, params }: ActionFunctionArgs) {
+    const { operation, id } = validateRouteParams(params);
 
-    if (recordAction === "create" || recordAction === "update") {
+    if (operation === "create" || operation === "update") {
       const formData = await request.formData();
       const submittedValues = getSubmittedFormValues(formData, fields);
 
-      if (recordAction === "create") {
+      if (operation === "create") {
         await postApi(apiUrl, submittedValues);
       } else {
         await putApi(`${apiUrl}/${id}`, submittedValues);
       }
-    } else if (recordAction === "delete") {
+    } else if (operation === "delete") {
       await deleteApi(`${apiUrl}/${id}`);
     }
 
     return redirect(listRouteUrl);
-  }
-
-  return { action, loader };
+  };
 }

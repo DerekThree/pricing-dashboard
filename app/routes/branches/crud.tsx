@@ -5,7 +5,8 @@ import { Form, useLoaderData, useParams } from "react-router";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
 import {
-  createCrudRouteHandlers,
+  createRouteAction,
+  createRouteLoader,
   type FormValues,
 } from "../../utils/crudRouteUtils";
 
@@ -18,26 +19,27 @@ const branchFields = [
 
 type BranchFormValues = FormValues<typeof branchFields>;
 
-const routeHandlers = createCrudRouteHandlers({
+const routeConfig = {
   fields: branchFields,
   apiUrl: "/branches",
   listRouteUrl: "/branches",
-});
+} as const;
 
-export const action = routeHandlers.action;
-export const loader = routeHandlers.loader;
+export const action = createRouteAction(routeConfig);
+export const loader = createRouteLoader(routeConfig);
 
 export default function Crud() {
-  const { action } = useParams();
+  const { operation } = useParams();
   const { record, loaderError } = useLoaderData<typeof loader>();
-  const inputsDisabled = !!loaderError || action === "view" || action === "delete";
+  const inputsDisabled =
+    !!loaderError || operation === "view" || operation === "delete";
   const { formValues, updateField } = useFormValues<BranchFormValues>(record);
 
   return (
     <section className="page">
         <Form method="post">
           <CrudPageTopMenu
-            action={action}
+            operation={operation}
             entityTitle="Branch"
             listRouteUrl="/branches"
             loaderError={loaderError}

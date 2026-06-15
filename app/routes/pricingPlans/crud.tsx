@@ -5,7 +5,8 @@ import { Form, useLoaderData, useParams } from "react-router";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
 import {
-  createCrudRouteHandlers,
+  createRouteAction,
+  createRouteLoader,
   type FormValues,
 } from "../../utils/crudRouteUtils";
 
@@ -22,19 +23,20 @@ const pricingPlanFields = [
 
 type PricingPlanFormValues = FormValues<typeof pricingPlanFields>;
 
-const routeHandlers = createCrudRouteHandlers({
+const routeConfig = {
   fields: pricingPlanFields,
   apiUrl: "/pricing-plans",
   listRouteUrl: "/pricing-plans",
-});
+} as const;
 
-export const action = routeHandlers.action;
-export const loader = routeHandlers.loader;
+export const action = createRouteAction(routeConfig);
+export const loader = createRouteLoader(routeConfig);
 
 export default function Crud() {
-  const { action } = useParams();
+  const { operation } = useParams();
   const { record, loaderError } = useLoaderData<typeof loader>();
-  const inputsDisabled = !!loaderError || action === "view" || action === "delete";
+  const inputsDisabled =
+    !!loaderError || operation === "view" || operation === "delete";
   const { formValues, updateField } =
     useFormValues<PricingPlanFormValues>(record);
 
@@ -42,7 +44,7 @@ export default function Crud() {
     <section className="page">
       <Form method="post">
         <CrudPageTopMenu
-          action={action}
+          operation={operation}
           entityTitle="Pricing Plan"
           listRouteUrl="/pricing-plans"
           loaderError={loaderError}

@@ -3,33 +3,31 @@ import { useNavigate } from "react-router";
 import PageTopMenu, { type PageTopMenuAction } from "../PageTopMenu";
 
 type CrudPageTopMenuProps = {
-  action: string | undefined;
+  operation: string | undefined;
   entityTitle: string;
   listRouteUrl: string;
   loaderError: string | null;
 };
 
-function formatAction(action: string | undefined) {
-  return action
-    ? action.charAt(0).toUpperCase() + action.slice(1)
-    : "Unknown";
+function formatOperation(op: string | undefined) {
+  return op ? op.charAt(0).toUpperCase() + op.slice(1) : "Unknown";
 }
 
 export default function CrudPageTopMenu({
-  action,
+  operation,
   entityTitle,
   listRouteUrl,
   loaderError,
 }: CrudPageTopMenuProps) {
   const navigate = useNavigate();
   const navigateToList = () => navigate(listRouteUrl);
-  const shouldShowDone = !!loaderError || action === "view";
+  const shouldShowDone = !!loaderError || operation === "view";
   const done: PageTopMenuAction = {
     label: "Done",
     onClick: navigateToList,
   };
   const submit: PageTopMenuAction = {
-    label: formatAction(action),
+    label: formatOperation(operation),
     type: "submit",
   };
   const cancel: PageTopMenuAction = {
@@ -40,7 +38,7 @@ export default function CrudPageTopMenu({
 
   return (
     <PageTopMenu
-      title={`${formatAction(action)} ${entityTitle}`}
+      title={`${formatOperation(operation)} ${entityTitle}`}
       actions={shouldShowDone ? [done] : [submit, cancel]}
     />
   );

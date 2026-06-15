@@ -5,7 +5,8 @@ import { Form, useLoaderData, useParams } from "react-router";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
 import {
-  createCrudRouteHandlers,
+  createRouteAction,
+  createRouteLoader,
   type FormValues,
 } from "../../utils/crudRouteUtils";
 
@@ -19,26 +20,27 @@ const regionFields = [
 
 type RegionFormValues = FormValues<typeof regionFields>;
 
-const routeHandlers = createCrudRouteHandlers({
+const routeConfig = {
   fields: regionFields,
   apiUrl: "/regions",
   listRouteUrl: "/regions",
-});
+} as const;
 
-export const action = routeHandlers.action;
-export const loader = routeHandlers.loader;
+export const action = createRouteAction(routeConfig);
+export const loader = createRouteLoader(routeConfig);
 
 export default function Crud() {
-  const { action } = useParams();
+  const { operation } = useParams();
   const { record, loaderError } = useLoaderData<typeof loader>();
-  const inputsDisabled = !!loaderError || action === "view" || action === "delete";
+  const inputsDisabled =
+    !!loaderError || operation === "view" || operation === "delete";
   const { formValues, updateField } = useFormValues<RegionFormValues>(record);
 
   return (
     <section className="page">
       <Form method="post">
         <CrudPageTopMenu
-          action={action}
+          operation={operation}
           entityTitle="Region"
           listRouteUrl="/regions"
           loaderError={loaderError}
