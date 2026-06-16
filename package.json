@@ -5,6 +5,7 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
+    "generate:api": "orval",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
   },
@@ -23,6 +24,7 @@
     "@types/node": "^22",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "orval": "^7.13.2",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
     "vite": "^8.0.3"
