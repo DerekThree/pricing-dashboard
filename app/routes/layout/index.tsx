@@ -1,6 +1,11 @@
 import React from "react";
 import { Outlet, useLocation, useNavigate, useNavigation } from "react-router";
+import { isRouteErrorResponse } from "react-router";
 import "./styles.css";
+import ErrorPage from "../../components/ErrorPage";
+import { routeUrls } from "../../routes";
+import { ApiError } from "../../utils/apiUtils";
+import type { Route } from "./+types";
 
 type SidebarLink = {
   id: string;
@@ -11,15 +16,15 @@ type SidebarLink = {
 
 function Sidebar() {
   const items: SidebarLink[] = [
-    { id: "branches", label: "Branches", path: "/branches", hasDividerBefore: true },
-    { id: "regions", label: "Regions", path: "/regions" },
-    { id: "products", label: "Products", path: "/products" },
-    { id: "pricing-plans", label: "Pricing Plans", path: "/pricing-plans" },
-    { id: "simulator", label: "Simulator", path: "/simulator", hasDividerBefore: true },
+    { id: "branches", label: "Branches", path: routeUrls.branches, hasDividerBefore: true },
+    { id: "regions", label: "Regions", path: routeUrls.regions },
+    { id: "products", label: "Products", path: routeUrls.products },
+    { id: "pricing-plans", label: "Pricing Plans", path: routeUrls.pricingPlans },
+    { id: "simulator", label: "Simulator", path: routeUrls.simulator, hasDividerBefore: true },
   ];
   const navigate = useNavigate();
   const loc = useLocation();
-  const activePath = loc.pathname === "/" ? "/branches" : loc.pathname;
+  const activePath = loc.pathname === "/" ? routeUrls.branches : loc.pathname;
 
   return (
     <aside className="layout-sidebar">
@@ -75,3 +80,35 @@ export function Layout({ children }: { children?: React.ReactNode }) {
 }
 
 export default Layout;
+
+function getString(value: unknown) {
+  return typeof value === "string" ? value : undefined;
+}
+
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  let status = "Error";
+  let statusText = "An unexpected error occurred.";
+  let stack: string | undefined;
+
+  if (isRouteErrorResponse(error)) {
+    status = String(error.status);
+    statusText =
+      getString(error.data) ??
+      (error.status === 404
+        ? "The requested page could not be found."
+        : error.statusText || statusText);
+  } else if (error instanceof ApiError) {
+    status = String(error.status);
+    statusText = error.message;
+    stack = import.meta.env.DEV ? error.stack : undefined;
+  } else if (import.meta.env.DEV && error && error instanceof Error) {
+    statusText = error.message;
+    stack = error.stack;
+  }
+
+  return (
+    <Layout>
+      <ErrorPage stack={stack} status={status} statusText={statusText} />
+    </Layout>
+  );
+}

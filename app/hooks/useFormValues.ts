@@ -1,11 +1,14 @@
 import { useState } from "react";
 
-export default function useFormValues<TValues extends Record<string, string>>(
+export default function useFormValues<TValues extends object>(
   initialValues: TValues,
 ) {
   const [formValues, setFormValues] = useState(initialValues);
 
-  function updateField(field: keyof TValues, value: string) {
+  function updateField<TField extends keyof TValues>(
+    field: TField,
+    value: TValues[TField],
+  ) {
     setFormValues((currentValues) => ({
       ...currentValues,
       [field]: value,

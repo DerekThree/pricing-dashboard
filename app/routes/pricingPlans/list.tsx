@@ -2,23 +2,11 @@ import { useLoaderData } from "react-router";
 import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
-import { getApi } from "../../utils/apiUtils";
+import { listPricingPlans } from "../../generated/api/client";
+import type { PricingPlan } from "../../generated/api/models";
+import { routeUrls } from "../../routes";
 
-type PricingPlanRow = {
-  id: number;
-  planCode: string;
-  planName: string;
-  productCode: string;
-  productName: string;
-  regionCode: string;
-  regionName: string;
-  activeFrom: string;
-  activeTo: string;
-  updatedOn: string;
-  updatedBy: string;
-};
-
-const columnDefs: ColDef<PricingPlanRow>[] = [
+const columnDefs: ColDef<PricingPlan>[] = [
   { field: "planCode", headerName: "Plan Code" },
   { field: "planName", headerName: "Plan Name" },
   { field: "productCode", headerName: "Product Code" },
@@ -32,10 +20,12 @@ const columnDefs: ColDef<PricingPlanRow>[] = [
 ];
 
 export async function loader() {
-  return getApi<PricingPlanRow[]>("/pricing-plans");
+  const response = await listPricingPlans();
+
+  return response.data;
 }
 
-export default function PricingPlanList() {
+export default function PricingPlansPage() {
   const rowData = useLoaderData<typeof loader>();
 
   return (
@@ -43,7 +33,7 @@ export default function PricingPlanList() {
       title="Pricing Plans"
       columnDefs={columnDefs}
       rowData={rowData}
-      crudRouteUrl="/pricing-plans"
+      crudRouteUrl={routeUrls.pricingPlans}
     />
   );
 }

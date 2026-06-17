@@ -2,18 +2,11 @@ import { useLoaderData } from "react-router";
 import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
-import { getApi } from "../../utils/apiUtils";
+import { listProducts } from "../../generated/api/client";
+import type { Product } from "../../generated/api/models";
+import { routeUrls } from "../../routes";
 
-type ProductRow = {
-  id: number;
-  productCode: string;
-  productName: string;
-  accountType: string;
-  updatedOn: string;
-  updatedBy: string;
-};
-
-const columnDefs: ColDef<ProductRow>[] = [
+const columnDefs: ColDef<Product>[] = [
   { field: "productCode", headerName: "Product Code" },
   { field: "productName", headerName: "Product Name" },
   { field: "accountType", headerName: "Account Type" },
@@ -22,10 +15,12 @@ const columnDefs: ColDef<ProductRow>[] = [
 ];
 
 export async function loader() {
-  return getApi<ProductRow[]>("/products");
+  const response = await listProducts();
+
+  return response.data;
 }
 
-export default function ProductList() {
+export default function ProductsPage() {
   const rowData = useLoaderData<typeof loader>();
 
   return (
@@ -33,7 +28,7 @@ export default function ProductList() {
       title="Products"
       columnDefs={columnDefs}
       rowData={rowData}
-      crudRouteUrl="/products"
+      crudRouteUrl={routeUrls.products}
     />
   );
 }

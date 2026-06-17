@@ -1,106 +1,145 @@
-import {
-  redirect,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-} from "react-router";
+import { redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
 
-import { ApiError, deleteApi, getApi, postApi, putApi } from "./apiUtils";
+export const crudOps = {
+  create: "create",
+  view: "view",
+  update: "update",
+  delete: "delete",
+} as const;
 
-const validOperations = new Set(["create", "view", "update", "delete"]);
+export type CrudOperation =
+  (typeof crudOps)[keyof typeof crudOps];
 
-export type FormValues<TFields extends readonly string[]> = {
-  [TField in TFields[number]]: string;
-};
+const validOperations = new Set<CrudOperation>(Object.values(crudOps));
 
-type CrudRouteConfig<TFields extends readonly string[]> = {
-  fields: TFields;
-  apiUrl: string;
-  listRouteUrl: string;
-};
+export function isCrudOperation(operation: string): operation is CrudOperation {
+  return validOperations.has(operation as CrudOperation);
+}
 
 function validateRouteParams(params: LoaderFunctionArgs["params"]) {
-  if (!params.operation || !validOperations.has(params.operation)) {
+  if (!params.operation || !isCrudOperation(params.operation)) {
     throw new Response(
       `The requested page could not be found: ${params.operation} is not supported`,
       { status: 404 },
     );
   }
 
-  if (
-    params.operation !== "create" &&
-    (!params.id || !/^\d+$/.test(params.id))
-  ) {
-    throw new Response(
-      "The requested page could not be found. Missing or invalid record id",
-      { status: 404 },
-    );
+  if (params.operation === crudOps.create || (!!params.id && /^\d+$/.test(params.id))) {
+    return {
+      operation: params.operation,
+      id: params.id,
+    };
   }
 
-  return {
-    operation: params.operation,
-    id: params.id,
-  };
+  throw new Response(
+    "The requested page could not be found. Missing or invalid record id",
+    { status: 404 },
+  );
 }
 
-function getSubmittedFormValues<TFields extends readonly string[]>(
-  formData: FormData,
-  fields: TFields,
-): FormValues<TFields> {
-  return Object.fromEntries(
-    fields.map((field) => [field, String(formData.get(field) ?? "")]),
-  ) as FormValues<TFields>;
+function getErrorMessage(data: unknown, status?: number) {
+  if (typeof data === "string" && data) {
+    return data;
+  }
+
+  if (data && typeof data === "object") {
+    const { detail, error, message, title } = data as Record<string, unknown>;
+    const responseMessage = message ?? detail ?? error ?? title;
+
+    if (typeof responseMessage === "string" && responseMessage) {
+      return responseMessage;
+    }
+  }
+
+  return status
+    ? `The backend returned status ${status}.`
+    : "The app cannot reach the backend right now. Please try again later.";
 }
 
-export function createRouteLoader<const TFields extends readonly string[]>({
-  fields,
-  apiUrl,
-}: CrudRouteConfig<TFields>) {
-  const emptyRecord = Object.fromEntries(
-    fields.map((field) => [field, ""]),
-  ) as FormValues<typeof fields>;
+type ApiResponse = {
+  status: number;
+  data: unknown;
+};
 
+type SuccessData<TResponse extends ApiResponse> =
+  Extract<TResponse, { status: 200 }>["data"];
+
+type CrudRouteConfig<TRequest extends object, TResponse extends ApiResponse> = {
+  emptyRecord: TRequest;
+  listRouteUrl: string;
+  getRecord(id: number): Promise<TResponse>;
+  createRecord(record: TRequest): Promise<ApiResponse>;
+  updateRecord(id: number, record: TRequest): Promise<ApiResponse>;
+  deleteRecord(id: number): Promise<ApiResponse>;
+};
+
+export function createLoader<TRequest extends object, TResponse extends ApiResponse>({
+  emptyRecord,
+  getRecord,
+}: CrudRouteConfig<TRequest, TResponse>) {
   return async function loader({ params }: LoaderFunctionArgs) {
     const { operation, id } = validateRouteParams(params);
+    let record: TRequest | SuccessData<TResponse> = emptyRecord;
+    let loaderError: string | null = null;
 
-    if (operation === "create") {
-      return { record: emptyRecord, loaderError: null };
-    }
+    if (operation !== crudOps.create) {
+      try {
+        const response = await getRecord(Number(id));
 
-    try {
-      const record = await getApi<FormValues<TFields>>(`${apiUrl}/${id}`);
-
-      return { record, loaderError: null };
-    } catch (error) {
-      if (error instanceof ApiError) {
-        return { record: emptyRecord, loaderError: error.message };
+        if (response.status === 200) {
+          record = response.data as SuccessData<TResponse>;
+        } else {
+          loaderError = getErrorMessage(response.data, response.status);
+        }
+      } catch (error) {
+        loaderError = getErrorMessage(error);
       }
-
-      throw error;
     }
+
+    return { operation, record, loaderError };
   };
 }
 
-export function createRouteAction<const TFields extends readonly string[]>({
-  fields,
-  apiUrl,
+export function createAction<TRequest extends object, TResponse extends ApiResponse>({
   listRouteUrl,
-}: CrudRouteConfig<TFields>) {
+  createRecord,
+  updateRecord,
+  deleteRecord,
+}: CrudRouteConfig<TRequest, TResponse>) {
   return async function action({ request, params }: ActionFunctionArgs) {
     const { operation, id } = validateRouteParams(params);
 
-    if (operation === "create" || operation === "update") {
-      const formData = await request.formData();
-      const submittedValues = getSubmittedFormValues(formData, fields);
+    try {
+      if (operation === crudOps.create || operation === crudOps.update) {
+        const formData = await request.formData();
+        const record = Object.fromEntries(formData) as TRequest;
+        let response: ApiResponse;
+        let success: boolean;
 
-      if (operation === "create") {
-        await postApi(apiUrl, submittedValues);
-      } else {
-        await putApi(`${apiUrl}/${id}`, submittedValues);
+        if (operation === crudOps.create) {
+          response = await createRecord(record);
+          success = response.status === 201;
+        } else {
+          response = await updateRecord(Number(id), record);
+          success = response.status === 200;
+        }
+
+        return success
+          ? redirect(listRouteUrl)
+          : { actionError: getErrorMessage(response.data, response.status) };
       }
-    } else if (operation === "delete") {
-      await deleteApi(`${apiUrl}/${id}`);
+
+      if (operation === crudOps.delete) {
+        const response = await deleteRecord(Number(id));
+
+        return response.status === 204
+          ? redirect(listRouteUrl)
+          : { actionError: getErrorMessage(response.data, response.status) };
+      }
+    } catch (error) {
+      return { actionError: getErrorMessage(error) };
     }
 
-    return redirect(listRouteUrl);
+    return { actionError: "View pages cannot submit changes." };
   };
 }

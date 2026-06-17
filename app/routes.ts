@@ -5,6 +5,14 @@ import {
   route,
 } from "@react-router/dev/routes";
 
+export const routeUrls = {
+  branches: "/branches",
+  regions: "/regions",
+  products: "/products",
+  pricingPlans: "/pricing-plans",
+  simulator: "/simulator",
+} as const;
+
 export default [
   layout("routes/layout/index.tsx", [
     index("routes/branches/list.tsx", { id: "index" }),
@@ -17,5 +25,6 @@ export default [
     route("pricing-plans", "routes/pricingPlans/list.tsx"),
     route("pricing-plans/:operation/:id?", "routes/pricingPlans/crud.tsx"),
     route("simulator", "routes/simulator/index.tsx"),
+    route("*", "routes/notFound.tsx"),
   ]),
 ] satisfies RouteConfig;

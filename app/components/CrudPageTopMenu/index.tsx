@@ -1,16 +1,17 @@
 import { useNavigate } from "react-router";
 
 import PageTopMenu, { type PageTopMenuAction } from "../PageTopMenu";
+import { crudOps, type CrudOperation } from "../../utils/crudRouteUtils";
 
 type CrudPageTopMenuProps = {
-  operation: string | undefined;
+  operation: CrudOperation;
   entityTitle: string;
   listRouteUrl: string;
   loaderError: string | null;
 };
 
-function formatOperation(op: string | undefined) {
-  return op ? op.charAt(0).toUpperCase() + op.slice(1) : "Unknown";
+function formatOperation(operation: CrudOperation) {
+  return operation.charAt(0).toUpperCase() + operation.slice(1);
 }
 
 export default function CrudPageTopMenu({
@@ -21,7 +22,7 @@ export default function CrudPageTopMenu({
 }: CrudPageTopMenuProps) {
   const navigate = useNavigate();
   const navigateToList = () => navigate(listRouteUrl);
-  const shouldShowDone = !!loaderError || operation === "view";
+  const shouldShowDone = !!loaderError || operation === crudOps.view;
   const done: PageTopMenuAction = {
     label: "Done",
     onClick: navigateToList,

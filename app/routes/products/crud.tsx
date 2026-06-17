@@ -1,38 +1,40 @@
 import "./styles.css";
 
-import { Form, useLoaderData, useParams } from "react-router";
+import { Form, useLoaderData } from "react-router";
+import { useActionData } from "react-router";
 
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
-import {
-  createRouteAction,
-  createRouteLoader,
-  type FormValues,
-} from "../../utils/crudRouteUtils";
+import { createProduct, deleteProduct, getProduct, updateProduct, } from "../../generated/api/client";
+import { AccountType, type ProductRequest } from "../../generated/api/models";
+import { createAction, createLoader, crudOps, } from "../../utils/crudRouteUtils";
+import { routeUrls } from "../../routes";
 
-const productFields = [
-  "productCode",
-  "productName",
-  "accountType",
-] as const;
-
-type ProductFormValues = FormValues<typeof productFields>;
+const emptyProductRequest: ProductRequest = {
+  productCode: "",
+  productName: "",
+  accountType: AccountType.DEPOSIT,
+  updatedBy: "pricing-dashboard",
+};
 
 const routeConfig = {
-  fields: productFields,
-  apiUrl: "/products",
-  listRouteUrl: "/products",
-} as const;
+  emptyRecord: emptyProductRequest,
+  listRouteUrl: routeUrls.products,
+  getRecord: getProduct,
+  createRecord: createProduct,
+  updateRecord: updateProduct,
+  deleteRecord: deleteProduct,
+};
 
-export const action = createRouteAction(routeConfig);
-export const loader = createRouteLoader(routeConfig);
+export const loader = createLoader(routeConfig);
+export const action = createAction(routeConfig);
 
-export default function Crud() {
-  const { operation } = useParams();
-  const { record, loaderError } = useLoaderData<typeof loader>();
+export default function ProductPage() {
+  const { operation, record, loaderError } = useLoaderData<typeof loader>();
+  const { actionError } = useActionData<typeof action>() ?? {};
+  const { formValues, updateField } = useFormValues(record);
   const inputsDisabled =
-    !!loaderError || operation === "view" || operation === "delete";
-  const { formValues, updateField } = useFormValues<ProductFormValues>(record);
+    !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
   return (
     <section className="page">
@@ -40,12 +42,14 @@ export default function Crud() {
         <CrudPageTopMenu
           operation={operation}
           entityTitle="Product"
-          listRouteUrl="/products"
+          listRouteUrl={routeUrls.products}
           loaderError={loaderError}
         />
-        {loaderError && <p className="crud-loader-error">{loaderError}</p>}
-        <div className="crud-form-column">
-          <label className="crud-form-field" htmlFor="product-code">
+        {loaderError && <p className="crud-page-error">{loaderError}</p>}
+        {actionError && <p className="crud-page-error">{actionError}</p>}
+        <input name="updatedBy" type="hidden" value={formValues.updatedBy} />
+        <div className="crud-page-form-column">
+          <label className="crud-page-form-field" htmlFor="product-code">
             <span>Product Code</span>
             <input
               disabled={inputsDisabled}
@@ -59,7 +63,7 @@ export default function Crud() {
               }
             />
           </label>
-          <label className="crud-form-field" htmlFor="product-name">
+          <label className="crud-page-form-field" htmlFor="product-name">
             <span>Product Name</span>
             <input
               disabled={inputsDisabled}
@@ -73,19 +77,21 @@ export default function Crud() {
               }
             />
           </label>
-          <label className="crud-form-field" htmlFor="account-type">
+          <label className="crud-page-form-field" htmlFor="account-type">
             <span>Account Type</span>
-            <input
+            <select
               disabled={inputsDisabled}
               id="account-type"
               name="accountType"
               required
-              type="text"
               value={formValues.accountType}
               onChange={(event) =>
-                updateField("accountType", event.target.value)
+                updateField("accountType", event.target.value as ProductRequest["accountType"])
               }
-            />
+            >
+              <option value={AccountType.DEPOSIT}>Deposit</option>
+              <option value={AccountType.CREDIT}>Credit</option>
+            </select>
           </label>
         </div>
       </Form>

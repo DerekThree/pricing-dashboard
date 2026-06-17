@@ -1,44 +1,45 @@
 import "./styles.css";
 
-import { Form, useLoaderData, useParams } from "react-router";
+import { Form, useLoaderData } from "react-router";
+import { useActionData } from "react-router";
 
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
-import {
-  createRouteAction,
-  createRouteLoader,
-  type FormValues,
-} from "../../utils/crudRouteUtils";
+import { createPricingPlan, deletePricingPlan, getPricingPlan, updatePricingPlan, } from "../../generated/api/client";
+import type { PricingPlanRequest } from "../../generated/api/models";
+import { createAction, createLoader, crudOps, } from "../../utils/crudRouteUtils";
+import { routeUrls } from "../../routes";
 
-const pricingPlanFields = [
-  "planCode",
-  "planName",
-  "productCode",
-  "productName",
-  "regionCode",
-  "regionName",
-  "activeFrom",
-  "activeTo",
-] as const;
-
-type PricingPlanFormValues = FormValues<typeof pricingPlanFields>;
+const emptyPricingPlanRequest: PricingPlanRequest = {
+  planCode: "",
+  planName: "",
+  productCode: "",
+  productName: "",
+  regionCode: "",
+  regionName: "",
+  activeFrom: "",
+  activeTo: "",
+  updatedBy: "pricing-dashboard",
+};
 
 const routeConfig = {
-  fields: pricingPlanFields,
-  apiUrl: "/pricing-plans",
-  listRouteUrl: "/pricing-plans",
-} as const;
+  emptyRecord: emptyPricingPlanRequest,
+  listRouteUrl: routeUrls.pricingPlans,
+  getRecord: getPricingPlan,
+  createRecord: createPricingPlan,
+  updateRecord: updatePricingPlan,
+  deleteRecord: deletePricingPlan,
+};
 
-export const action = createRouteAction(routeConfig);
-export const loader = createRouteLoader(routeConfig);
+export const loader = createLoader(routeConfig);
+export const action = createAction(routeConfig);
 
-export default function Crud() {
-  const { operation } = useParams();
-  const { record, loaderError } = useLoaderData<typeof loader>();
+export default function PricingPlanPage() {
+  const { operation, record, loaderError } = useLoaderData<typeof loader>();
+  const { actionError } = useActionData<typeof action>() ?? {};
+  const { formValues, updateField } = useFormValues(record);
   const inputsDisabled =
-    !!loaderError || operation === "view" || operation === "delete";
-  const { formValues, updateField } =
-    useFormValues<PricingPlanFormValues>(record);
+    !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
   return (
     <section className="page">
@@ -46,12 +47,14 @@ export default function Crud() {
         <CrudPageTopMenu
           operation={operation}
           entityTitle="Pricing Plan"
-          listRouteUrl="/pricing-plans"
+          listRouteUrl={routeUrls.pricingPlans}
           loaderError={loaderError}
         />
-        {loaderError && <p className="crud-loader-error">{loaderError}</p>}
-        <div className="crud-form-column">
-          <label className="crud-form-field" htmlFor="plan-code">
+        {loaderError && <p className="crud-page-error">{loaderError}</p>}
+        {actionError && <p className="crud-page-error">{actionError}</p>}
+        <input name="updatedBy" type="hidden" value={formValues.updatedBy} />
+        <div className="crud-page-form-column">
+          <label className="crud-page-form-field" htmlFor="plan-code">
             <span>Plan Code</span>
             <input
               disabled={inputsDisabled}
@@ -65,7 +68,7 @@ export default function Crud() {
               }
             />
           </label>
-          <label className="crud-form-field" htmlFor="plan-name">
+          <label className="crud-page-form-field" htmlFor="plan-name">
             <span>Plan Name</span>
             <input
               disabled={inputsDisabled}
@@ -79,7 +82,7 @@ export default function Crud() {
               }
             />
           </label>
-          <label className="crud-form-field" htmlFor="product-code">
+          <label className="crud-page-form-field" htmlFor="product-code">
             <span>Product Code</span>
             <input
               disabled={inputsDisabled}
@@ -93,7 +96,7 @@ export default function Crud() {
               }
             />
           </label>
-          <label className="crud-form-field" htmlFor="product-name">
+          <label className="crud-page-form-field" htmlFor="product-name">
             <span>Product Name</span>
             <input
               disabled={inputsDisabled}
@@ -107,7 +110,7 @@ export default function Crud() {
               }
             />
           </label>
-          <label className="crud-form-field" htmlFor="region-code">
+          <label className="crud-page-form-field" htmlFor="region-code">
             <span>Region Code</span>
             <input
               disabled={inputsDisabled}
@@ -121,7 +124,7 @@ export default function Crud() {
               }
             />
           </label>
-          <label className="crud-form-field" htmlFor="region-name">
+          <label className="crud-page-form-field" htmlFor="region-name">
             <span>Region Name</span>
             <input
               disabled={inputsDisabled}
@@ -135,7 +138,7 @@ export default function Crud() {
               }
             />
           </label>
-          <label className="crud-form-field" htmlFor="active-from">
+          <label className="crud-page-form-field" htmlFor="active-from">
             <span>Active From</span>
             <input
               disabled={inputsDisabled}
@@ -149,7 +152,7 @@ export default function Crud() {
               }
             />
           </label>
-          <label className="crud-form-field" htmlFor="active-to">
+          <label className="crud-page-form-field" htmlFor="active-to">
             <span>Active To</span>
             <input
               disabled={inputsDisabled}

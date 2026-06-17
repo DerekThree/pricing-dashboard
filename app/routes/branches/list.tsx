@@ -2,19 +2,11 @@ import { useLoaderData } from "react-router";
 import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
-import { getApi } from "../../utils/apiUtils";
+import { listBranches } from "../../generated/api/client";
+import type { Branch } from "../../generated/api/models";
+import { routeUrls } from "../../routes";
 
-type BranchRow = {
-  id: number;
-  branchCode: string;
-  branchName: string;
-  state: string;
-  zipCode: string;
-  updatedOn: string;
-  updatedBy: string;
-};
-
-const columnDefs: ColDef<BranchRow>[] = [
+const columnDefs: ColDef<Branch>[] = [
   { field: "branchCode", headerName: "Branch Code" },
   { field: "branchName", headerName: "Branch Name" },
   { field: "state", headerName: "State" },
@@ -24,10 +16,12 @@ const columnDefs: ColDef<BranchRow>[] = [
 ];
 
 export async function loader() {
-  return getApi<BranchRow[]>("/branches");
+  const response = await listBranches();
+
+  return response.data;
 }
 
-export default function BranchList() {
+export default function BranchesPage() {
   const rowData = useLoaderData<typeof loader>();
 
   return (
@@ -35,7 +29,7 @@ export default function BranchList() {
       title="Branches"
       columnDefs={columnDefs}
       rowData={rowData}
-      crudRouteUrl="/branches"
+      crudRouteUrl={routeUrls.branches}
     />
   );
 }

@@ -2,20 +2,11 @@ import { useLoaderData } from "react-router";
 import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
-import { getApi } from "../../utils/apiUtils";
+import { listRegions } from "../../generated/api/client";
+import type { Region } from "../../generated/api/models";
+import { routeUrls } from "../../routes";
 
-type RegionRow = {
-  id: number;
-  regionCode: string;
-  regionName: string;
-  states: string;
-  zipCodes: string;
-  branches: string;
-  updatedOn: string;
-  updatedBy: string;
-};
-
-const columnDefs: ColDef<RegionRow>[] = [
+const columnDefs: ColDef<Region>[] = [
   { field: "regionCode", headerName: "Region Code" },
   { field: "regionName", headerName: "Region Name" },
   { field: "states", headerName: "States" },
@@ -26,10 +17,12 @@ const columnDefs: ColDef<RegionRow>[] = [
 ];
 
 export async function loader() {
-  return getApi<RegionRow[]>("/regions");
+  const response = await listRegions();
+
+  return response.data;
 }
 
-export default function RegionList() {
+export default function RegionsPage() {
   const rowData = useLoaderData<typeof loader>();
 
   return (
@@ -37,7 +30,7 @@ export default function RegionList() {
       title="Regions"
       columnDefs={columnDefs}
       rowData={rowData}
-      crudRouteUrl="/regions"
+      crudRouteUrl={routeUrls.regions}
     />
   );
 }
