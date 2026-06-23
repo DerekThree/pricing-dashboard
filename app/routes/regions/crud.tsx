@@ -5,42 +5,41 @@ import { useActionData } from "react-router";
 import type { ClientLoaderFunctionArgs } from "react-router";
 
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
-import MultiChoiceDropdown from "../../components/MultiChoiceDropdown";
+import MultiChoiceDropdown, {
+  type MultiChoiceDropdownOption,
+} from "../../components/MultiChoiceDropdown";
 import useFormValues from "../../hooks/useFormValues";
 import {
   createRegion,
-  deleteRegion,
   getRegion,
   getRegionOptions,
   updateRegion,
+  deleteRegion,
 } from "../../generated/api/client";
 import type { RegionOptions, RegionRequest } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
-import { createClientAction, crudOps, validateCrudRouteParams, } from "../../utils/crudRouteUtils";
+import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventTextInputSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 
-const emptyRegionRequest: RegionRequest = {
-  regionCode: "",
-  regionName: "",
-  states: [],
-  zipCodes: [],
-  branches: [],
-  updatedBy: "pricing-dashboard",
-};
-
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
-
-  const [regionResponse, regionOptionsResponse] = await Promise.all([
+  const [regionResponse, optionsResponse] = await Promise.all([
     operation === crudOps.create ? null : getRegion(Number(id)),
     getRegionOptions(),
   ]);
-  let record: RegionRequest = emptyRegionRequest;
-  let regionOptions = {
-    states: [] as string[],
-    zipCodes: [] as string[],
-    branches: [] as string[],
+  let record: RegionRequest = {
+    regionCode: "",
+    regionName: "",
+    states: [],
+    zipCodes: [],
+    branches: [],
+    updatedBy: "pricing-dashboard",
+  };
+  let regionOptions: RegionOptions = {
+    states: [],
+    zipCodes: [],
+    branches: [],
   };
   let regionError: string | null = null;
   let regionOptionsError: string | null = null;
@@ -53,10 +52,10 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     }
   }
 
-  if (regionOptionsResponse.status === 200) {
-    regionOptions = regionOptionsResponse.data;
+  if (optionsResponse.status === 200) {
+    regionOptions = optionsResponse.data;
   } else {
-    regionOptionsError = getErrorMessage(regionOptionsResponse.data, regionOptionsResponse.status);
+    regionOptionsError = getErrorMessage(optionsResponse.data, optionsResponse.status);
   }
 
   return {
@@ -75,6 +74,14 @@ export const clientAction = createClientAction({
   arrayFields: ["states", "zipCodes", "branches"],
 });
 
+function getBranchOptions(branches: RegionOptions["branches"]): MultiChoiceDropdownOption[] {
+  return branches.map((branch) => ({
+    value: branch.branchCode,
+    label: `${branch.branchCode} - ${branch.branchName}`,
+    tooltip: branch.branchName,
+  }));
+}
+
 function renderHiddenList(name: keyof RegionRequest, values: string[]) {
   return values.map((value) => (
     <input key={value} name={name} type="hidden" value={value} />
@@ -82,7 +89,7 @@ function renderHiddenList(name: keyof RegionRequest, values: string[]) {
 }
 
 export default function RegionPage() {
-  const { operation, record, loaderError, regionOptions } = useLoaderData<typeof clientLoader>();
+  const { operation, record, regionOptions, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(record);
   const inputsDisabled =
@@ -115,9 +122,7 @@ export default function RegionPage() {
                 required
                 type="text"
                 value={formValues.regionCode}
-                onChange={(event) =>
-                  updateField("regionCode", event.target.value.toUpperCase())
-                }
+                onChange={(event) => updateField("regionCode", event.target.value.toUpperCase())}
               />
             </label>
             <label
@@ -134,9 +139,7 @@ export default function RegionPage() {
                 required
                 type="text"
                 value={formValues.regionName}
-                onChange={(event) =>
-                  updateField("regionName", event.target.value)
-                }
+                onChange={(event) => updateField("regionName", event.target.value)}
               />
             </label>
           </div>
@@ -145,7 +148,7 @@ export default function RegionPage() {
               disabled={inputsDisabled}
               label="States"
               name="states"
-              options={regionOptions.states}
+              options={regionOptions.states.map((value) => ({ value }))}
               values={formValues.states}
               onChange={(values) => updateField("states", values)}
             />
@@ -153,7 +156,7 @@ export default function RegionPage() {
               disabled={inputsDisabled}
               label="Zip Codes"
               name="zipCodes"
-              options={regionOptions.zipCodes}
+              options={regionOptions.zipCodes.map((value) => ({ value }))}
               values={formValues.zipCodes}
               onChange={(values) => updateField("zipCodes", values)}
             />
@@ -161,7 +164,7 @@ export default function RegionPage() {
               disabled={inputsDisabled}
               label="Branches"
               name="branches"
-              options={regionOptions.branches}
+              options={getBranchOptions(regionOptions.branches)}
               values={formValues.branches}
               onChange={(values) => updateField("branches", values)}
             />

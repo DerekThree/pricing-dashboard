@@ -20,6 +20,7 @@ export * from './product';
 export * from './productCode';
 export * from './productRequest';
 export * from './region';
+export * from './regionBranchOption';
 export * from './regionCode';
 export * from './regionOptions';
 export * from './regionRequest';
