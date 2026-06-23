@@ -31,6 +31,5 @@ export interface PricingPlanRequest {
   regionName: string;
   activeFrom: string;
   activeTo: string;
-  updatedOn?: string;
   updatedBy: UpdatedBy;
 }

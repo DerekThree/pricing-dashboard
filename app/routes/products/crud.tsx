@@ -7,7 +7,8 @@ import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
 import { createProduct, deleteProduct, getProduct, updateProduct, } from "../../generated/api/client";
 import { AccountType, type ProductRequest } from "../../generated/api/models";
-import { createAction, createLoader, crudOps, } from "../../utils/crudRouteUtils";
+import { createClientAction, createClientLoader, crudOps, } from "../../utils/crudRouteUtils";
+import { preventTextInputSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 
 const emptyProductRequest: ProductRequest = {
@@ -17,36 +18,36 @@ const emptyProductRequest: ProductRequest = {
   updatedBy: "pricing-dashboard",
 };
 
-const routeConfig = {
-  emptyRecord: emptyProductRequest,
-  listRouteUrl: routeUrls.products,
+export const clientLoader = createClientLoader({
   getRecord: getProduct,
+  emptyRequest: emptyProductRequest,
+});
+
+export const clientAction = createClientAction({
   createRecord: createProduct,
   updateRecord: updateProduct,
   deleteRecord: deleteProduct,
-};
-
-export const loader = createLoader(routeConfig);
-export const action = createAction(routeConfig);
+  listRouteUrl: routeUrls.products,
+});
 
 export default function ProductPage() {
-  const { operation, record, loaderError } = useLoaderData<typeof loader>();
-  const { actionError } = useActionData<typeof action>() ?? {};
+  const { operation, record, loaderError } = useLoaderData<typeof clientLoader>();
+  const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(record);
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
   return (
     <section className="page">
-      <Form method="post">
+      <Form method="post" onKeyDown={preventTextInputSubmit}>
         <CrudPageTopMenu
           operation={operation}
           entityTitle="Product"
           listRouteUrl={routeUrls.products}
           loaderError={loaderError}
         />
-        {loaderError && <p className="crud-page-error">{loaderError}</p>}
-        {actionError && <p className="crud-page-error">{actionError}</p>}
+        {loaderError && <p className="page-error">{loaderError}</p>}
+        {actionError && <p className="page-error">{actionError}</p>}
         <input name="updatedBy" type="hidden" value={formValues.updatedBy} />
         <div className="crud-page-form-column">
           <label className="crud-page-form-field" htmlFor="product-code">

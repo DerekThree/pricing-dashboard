@@ -4,7 +4,6 @@ import { isRouteErrorResponse } from "react-router";
 import "./styles.css";
 import ErrorPage from "../../components/ErrorPage";
 import { routeUrls } from "../../routes";
-import { ApiError } from "../../utils/apiUtils";
 import type { Route } from "./+types";
 
 type SidebarLink = {
@@ -97,10 +96,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       (error.status === 404
         ? "The requested page could not be found."
         : error.statusText || statusText);
-  } else if (error instanceof ApiError) {
-    status = String(error.status);
-    statusText = error.message;
-    stack = import.meta.env.DEV ? error.stack : undefined;
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     statusText = error.message;
     stack = error.stack;

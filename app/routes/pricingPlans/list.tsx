@@ -5,6 +5,7 @@ import ListPage from "../../components/ListPage";
 import { listPricingPlans } from "../../generated/api/client";
 import type { PricingPlan } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
+import { getErrorMessage } from "../../utils/apiUtils";
 
 const columnDefs: ColDef<PricingPlan>[] = [
   { field: "planCode", headerName: "Plan Code" },
@@ -19,14 +20,19 @@ const columnDefs: ColDef<PricingPlan>[] = [
   { field: "updatedBy", headerName: "Updated By" },
 ];
 
-export async function loader() {
+export async function clientLoader() {
   const response = await listPricingPlans();
+  const status: number = response.status;
 
-  return response.data;
+  if (status === 200) {
+    return { rowData: response.data, loaderError: null };
+  }
+
+  return { rowData: [] as PricingPlan[], loaderError: getErrorMessage(response.data, status) };
 }
 
 export default function PricingPlansPage() {
-  const rowData = useLoaderData<typeof loader>();
+  const { rowData, loaderError } = useLoaderData<typeof clientLoader>();
 
   return (
     <ListPage
@@ -34,6 +40,7 @@ export default function PricingPlansPage() {
       columnDefs={columnDefs}
       rowData={rowData}
       crudRouteUrl={routeUrls.pricingPlans}
+      loaderError={loaderError}
     />
   );
 }

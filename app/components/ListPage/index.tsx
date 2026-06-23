@@ -10,6 +10,7 @@ type ListPageProps<TRow extends { id: number }> = {
   columnDefs: ColDef<TRow>[];
   rowData: TRow[];
   crudRouteUrl: string;
+  loaderError?: string | null;
 };
 
 export default function ListPage<TRow extends { id: number }>({
@@ -17,6 +18,7 @@ export default function ListPage<TRow extends { id: number }>({
   columnDefs,
   rowData,
   crudRouteUrl,
+  loaderError,
 }: ListPageProps<TRow>) {
   const navigate = useNavigate();
   const [selectedRow, setSelectedRow] = useState<TRow>();
@@ -50,6 +52,7 @@ export default function ListPage<TRow extends { id: number }>({
           },
         ]}
       />
+      {loaderError && <p className="page-error">{loaderError}</p>}
       <DataTable
         columnDefs={columnDefs}
         rowData={rowData}

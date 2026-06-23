@@ -25,12 +25,7 @@ export default function ErrorPage({
           {
             label: "Try again",
             onClick: () => window.location.reload(),
-          },      
-          {
-            label: "Home",
-            onClick: () => navigate("/"),
-            variant: "cancel",
-          },              
+          },                   
           {
             label: "Back",
             onClick: () => navigate(-1),

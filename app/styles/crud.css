@@ -1,18 +1,20 @@
+.form-grid {
+  align-items: start;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 24rem));
+}
+
 .crud-page-form-column {
   align-items: flex-start;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  margin-top: 2rem;
-  width: min(100%, 24rem);
-}
-
-.crud-page-error {
-  color: rgb(185 28 28);
-  font-size: 0.875rem;
-  font-weight: 600;
-  margin-top: 1rem;
-  max-width: 32rem;
+  background-color: rgb(239 246 255);
+  border: 1px solid rgb(210 220 255);
+  border-radius: 0.375rem;
+  padding: 1rem;
+  width: 100%;
 }
 
 .crud-page-form-field {
@@ -25,7 +27,8 @@
   width: 100%;
 }
 
-.crud-page-form-field input {
+.crud-page-form-field input,
+.crud-page-form-field select {
   background-color: rgb(255 255 255);
   border: 1px solid rgb(203 213 225);
   border-radius: 0.375rem;
@@ -37,8 +40,64 @@
   width: 100%;
 }
 
-.crud-page-form-field input:focus {
+.crud-page-form-field input:focus,
+.crud-page-form-field select:focus {
   border-color: rgb(37 99 235);
   box-shadow: 0 0 0 3px rgb(191 219 254);
   outline: none;
+}
+
+.crud-page-form-field input:disabled,
+.crud-page-form-field select:disabled {
+  background: transparent;
+  border-color: rgb(203 213 225);
+  color: rgb(15 23 42);
+  cursor: default;
+}
+
+.crud-page-form-field--tooltip {
+  position: relative;
+}
+
+.crud-page-form-field--tooltip::after {
+  background: white;
+  border: 1px solid rgb(147 197 253);
+  border-radius: 0.25rem;
+  box-shadow: 0 0.25rem 0.625rem rgb(15 23 42 / 0.18);
+  color: rgb(30 64 175);
+  content: attr(data-tooltip);
+  font-size: 0.75rem;
+  font-weight: 500;
+  left: 50%;
+  line-height: 1.3;
+  max-width: min(22rem, 100%);
+  opacity: 0;
+  overflow-wrap: anywhere;
+  padding: 0.25rem 0.5rem;
+  pointer-events: none;
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  transform: translateX(-50%);
+  transition:
+    opacity 0.12s ease,
+    visibility 0s linear 0.12s;
+  visibility: hidden;
+  z-index: 10;
+}
+
+.crud-page-form-field--tooltip:hover::after,
+.crud-page-form-field--tooltip:focus-within::after {
+  opacity: 1;
+  transition-delay: .7s;
+  visibility: visible;
+}
+
+.crud-page-form-field--tooltip[data-tooltip=""]::after {
+  content: none;
+}
+
+@media (max-width: 56rem) {
+  .form-grid {
+    grid-template-columns: minmax(0, 24rem);
+  }
 }

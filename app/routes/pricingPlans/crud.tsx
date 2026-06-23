@@ -7,7 +7,8 @@ import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
 import { createPricingPlan, deletePricingPlan, getPricingPlan, updatePricingPlan, } from "../../generated/api/client";
 import type { PricingPlanRequest } from "../../generated/api/models";
-import { createAction, createLoader, crudOps, } from "../../utils/crudRouteUtils";
+import { createClientAction, createClientLoader, crudOps, } from "../../utils/crudRouteUtils";
+import { preventTextInputSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 
 const emptyPricingPlanRequest: PricingPlanRequest = {
@@ -22,36 +23,36 @@ const emptyPricingPlanRequest: PricingPlanRequest = {
   updatedBy: "pricing-dashboard",
 };
 
-const routeConfig = {
-  emptyRecord: emptyPricingPlanRequest,
-  listRouteUrl: routeUrls.pricingPlans,
+export const clientLoader = createClientLoader({
   getRecord: getPricingPlan,
+  emptyRequest: emptyPricingPlanRequest,
+});
+
+export const clientAction = createClientAction({
   createRecord: createPricingPlan,
   updateRecord: updatePricingPlan,
   deleteRecord: deletePricingPlan,
-};
-
-export const loader = createLoader(routeConfig);
-export const action = createAction(routeConfig);
+  listRouteUrl: routeUrls.pricingPlans,
+});
 
 export default function PricingPlanPage() {
-  const { operation, record, loaderError } = useLoaderData<typeof loader>();
-  const { actionError } = useActionData<typeof action>() ?? {};
+  const { operation, record, loaderError } = useLoaderData<typeof clientLoader>();
+  const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(record);
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
   return (
     <section className="page">
-      <Form method="post">
+      <Form method="post" onKeyDown={preventTextInputSubmit}>
         <CrudPageTopMenu
           operation={operation}
           entityTitle="Pricing Plan"
           listRouteUrl={routeUrls.pricingPlans}
           loaderError={loaderError}
         />
-        {loaderError && <p className="crud-page-error">{loaderError}</p>}
-        {actionError && <p className="crud-page-error">{actionError}</p>}
+        {loaderError && <p className="page-error">{loaderError}</p>}
+        {actionError && <p className="page-error">{actionError}</p>}
         <input name="updatedBy" type="hidden" value={formValues.updatedBy} />
         <div className="crud-page-form-column">
           <label className="crud-page-form-field" htmlFor="plan-code">

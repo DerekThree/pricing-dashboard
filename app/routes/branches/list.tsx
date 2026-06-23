@@ -5,6 +5,7 @@ import ListPage from "../../components/ListPage";
 import { listBranches } from "../../generated/api/client";
 import type { Branch } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
+import { getErrorMessage } from "../../utils/apiUtils";
 
 const columnDefs: ColDef<Branch>[] = [
   { field: "branchCode", headerName: "Branch Code" },
@@ -15,14 +16,19 @@ const columnDefs: ColDef<Branch>[] = [
   { field: "updatedBy", headerName: "Updated By" },
 ];
 
-export async function loader() {
+export async function clientLoader() {
   const response = await listBranches();
+  const status: number = response.status;
 
-  return response.data;
+  if (status === 200) {
+    return { rowData: response.data, loaderError: null };
+  }
+
+  return { rowData: [] as Branch[], loaderError: getErrorMessage(response.data, status) };
 }
 
 export default function BranchesPage() {
-  const rowData = useLoaderData<typeof loader>();
+  const { rowData, loaderError } = useLoaderData<typeof clientLoader>();
 
   return (
     <ListPage
@@ -30,6 +36,7 @@ export default function BranchesPage() {
       columnDefs={columnDefs}
       rowData={rowData}
       crudRouteUrl={routeUrls.branches}
+      loaderError={loaderError}
     />
   );
 }

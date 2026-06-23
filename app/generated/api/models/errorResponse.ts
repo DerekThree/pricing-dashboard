@@ -5,9 +5,8 @@
  * REST API for managing branches, regions, products, and pricing plans.
  * OpenAPI spec version: 1.0.0
  */
-import type { ErrorResponse } from './errorResponse';
 
-/**
- * The request body is malformed or a required field is blank
- */
-export type BadRequestResponse = ErrorResponse;
+export interface ErrorResponse {
+  /** @minLength 1 */
+  message: string;
+}

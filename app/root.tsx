@@ -10,7 +10,6 @@ import {
 import type { Route } from "./+types/root";
 import ErrorPage from "./components/ErrorPage";
 import AppLayout from "./routes/layout";
-import { ApiError } from "./utils/apiUtils";
 import "./app.css";
 
 function getString(value: unknown) {
@@ -64,10 +63,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       (error.status === 404
         ? "The requested page could not be found."
         : error.statusText || statusText);
-  } else if (error instanceof ApiError) {
-    status = String(error.status);
-    statusText = error.message;
-    stack = import.meta.env.DEV ? error.stack : undefined;
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     statusText = error.message;
     stack = error.stack;

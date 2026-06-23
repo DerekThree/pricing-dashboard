@@ -1,3 +1,12 @@
 .page {
   width: 100%;
 }
+
+.page-error {
+  color: rgb(185 28 28);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  max-width: none;
+  white-space: nowrap;
+}

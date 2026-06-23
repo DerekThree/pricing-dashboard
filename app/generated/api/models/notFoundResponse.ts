@@ -5,8 +5,9 @@
  * REST API for managing branches, regions, products, and pricing plans.
  * OpenAPI spec version: 1.0.0
  */
+import type { ErrorResponse } from './errorResponse';
 
 /**
  * No resource exists with the supplied ID
  */
-export type NotFoundResponse = void;
+export type NotFoundResponse = ErrorResponse;

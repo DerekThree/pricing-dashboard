@@ -1,4 +1,10 @@
-import { redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
+import {
+  redirect,
+  type ClientActionFunctionArgs,
+  type ClientLoaderFunctionArgs,
+} from "react-router";
+
+import { getErrorMessage } from "./apiUtils";
 
 export const crudOps = {
   create: "create",
@@ -16,7 +22,7 @@ export function isCrudOperation(operation: string): operation is CrudOperation {
   return validOperations.has(operation as CrudOperation);
 }
 
-function validateRouteParams(params: LoaderFunctionArgs["params"]) {
+export function validateCrudRouteParams(params: ClientLoaderFunctionArgs["params"]) {
   if (!params.operation || !isCrudOperation(params.operation)) {
     throw new Response(
       `The requested page could not be found: ${params.operation} is not supported`,
@@ -37,62 +43,44 @@ function validateRouteParams(params: LoaderFunctionArgs["params"]) {
   );
 }
 
-function getErrorMessage(data: unknown, status?: number) {
-  if (typeof data === "string" && data) {
-    return data;
-  }
-
-  if (data && typeof data === "object") {
-    const { detail, error, message, title } = data as Record<string, unknown>;
-    const responseMessage = message ?? detail ?? error ?? title;
-
-    if (typeof responseMessage === "string" && responseMessage) {
-      return responseMessage;
-    }
-  }
-
-  return status
-    ? `The backend returned status ${status}.`
-    : "The app cannot reach the backend right now. Please try again later.";
-}
-
 type ApiResponse = {
   status: number;
   data: unknown;
+  headers: Headers;
 };
 
 type SuccessData<TResponse extends ApiResponse> =
   Extract<TResponse, { status: 200 }>["data"];
 
-type CrudRouteConfig<TRequest extends object, TResponse extends ApiResponse> = {
-  emptyRecord: TRequest;
-  listRouteUrl: string;
+type CrudLoaderConfig<TRequest, TResponse extends ApiResponse> = {
   getRecord(id: number): Promise<TResponse>;
+  emptyRequest: TRequest;
+};
+
+type CrudActionConfig<TRequest> = {
   createRecord(record: TRequest): Promise<ApiResponse>;
   updateRecord(id: number, record: TRequest): Promise<ApiResponse>;
   deleteRecord(id: number): Promise<ApiResponse>;
+  listRouteUrl: string;
+  arrayFields?: (keyof TRequest)[];
 };
 
-export function createLoader<TRequest extends object, TResponse extends ApiResponse>({
-  emptyRecord,
+export function createClientLoader<TRequest, TResponse extends ApiResponse>({
   getRecord,
-}: CrudRouteConfig<TRequest, TResponse>) {
-  return async function loader({ params }: LoaderFunctionArgs) {
-    const { operation, id } = validateRouteParams(params);
-    let record: TRequest | SuccessData<TResponse> = emptyRecord;
+  emptyRequest,
+}: CrudLoaderConfig<TRequest, TResponse>) {
+  return async function clientLoader({ params }: ClientLoaderFunctionArgs) {
+    const { operation, id } = validateCrudRouteParams(params);
+    let record: TRequest | SuccessData<TResponse> = emptyRequest;
     let loaderError: string | null = null;
 
     if (operation !== crudOps.create) {
-      try {
-        const response = await getRecord(Number(id));
+      const response = await getRecord(Number(id));
 
-        if (response.status === 200) {
-          record = response.data as SuccessData<TResponse>;
-        } else {
-          loaderError = getErrorMessage(response.data, response.status);
-        }
-      } catch (error) {
-        loaderError = getErrorMessage(error);
+      if (response.status === 200) {
+        record = response.data as SuccessData<TResponse>;
+      } else {
+        loaderError = getErrorMessage(response.data, response.status);
       }
     }
 
@@ -100,46 +88,42 @@ export function createLoader<TRequest extends object, TResponse extends ApiRespo
   };
 }
 
-export function createAction<TRequest extends object, TResponse extends ApiResponse>({
-  listRouteUrl,
+export function createClientAction<TRequest>({
   createRecord,
   updateRecord,
   deleteRecord,
-}: CrudRouteConfig<TRequest, TResponse>) {
-  return async function action({ request, params }: ActionFunctionArgs) {
-    const { operation, id } = validateRouteParams(params);
+  listRouteUrl,
+  arrayFields = [],
+}: CrudActionConfig<TRequest>) {
+  return async function clientAction({ request, params }: ClientActionFunctionArgs) {
+    const { operation, id } = validateCrudRouteParams(params);
+    let response: ApiResponse;
+    let success: boolean;
 
-    try {
-      if (operation === crudOps.create || operation === crudOps.update) {
-        const formData = await request.formData();
-        const record = Object.fromEntries(formData) as TRequest;
-        let response: ApiResponse;
-        let success: boolean;
+    if (operation === crudOps.create || operation === crudOps.update) {
+      const formData = await request.formData();
+      const record = Object.fromEntries(formData) as Record<string, unknown>;
 
-        if (operation === crudOps.create) {
-          response = await createRecord(record);
-          success = response.status === 201;
-        } else {
-          response = await updateRecord(Number(id), record);
-          success = response.status === 200;
-        }
-
-        return success
-          ? redirect(listRouteUrl)
-          : { actionError: getErrorMessage(response.data, response.status) };
+      for (const field of arrayFields) {
+        record[String(field)] = formData.getAll(String(field));
       }
 
-      if (operation === crudOps.delete) {
-        const response = await deleteRecord(Number(id));
-
-        return response.status === 204
-          ? redirect(listRouteUrl)
-          : { actionError: getErrorMessage(response.data, response.status) };
+      if (operation === crudOps.create) {
+        response = await createRecord(record as TRequest);
+        success = response.status === 201;
+      } else {
+        response = await updateRecord(Number(id), record as TRequest);
+        success = response.status === 200;
       }
-    } catch (error) {
-      return { actionError: getErrorMessage(error) };
+    } else if (operation === crudOps.delete) {
+      response = await deleteRecord(Number(id));
+      success = response.status === 204;
+    } else {
+      return { actionError: "View pages cannot submit changes." };
     }
 
-    return { actionError: "View pages cannot submit changes." };
+    return success
+      ? redirect(listRouteUrl)
+      : { actionError: getErrorMessage(response.data, response.status) };
   };
 }

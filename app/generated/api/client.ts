@@ -15,9 +15,11 @@ import type {
   Product,
   ProductRequest,
   Region,
+  RegionOptions,
   RegionRequest
 } from './models';
 
+import { apiMutator } from '../../utils/apiMutator';
 /**
  * @summary List all branches
  */
@@ -43,20 +45,14 @@ export const getListBranchesUrl = () => {
 
 export const listBranches = async ( options?: RequestInit): Promise<listBranchesResponse> => {
   
-  const res = await fetch(getListBranchesUrl(),
+  return apiMutator<listBranchesResponse>(getListBranchesUrl(),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: listBranchesResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as listBranchesResponse
-}
+);}
 
 
 
@@ -92,7 +88,7 @@ export const getCreateBranchUrl = () => {
 
 export const createBranch = async (branchRequest: BranchRequest, options?: RequestInit): Promise<createBranchResponse> => {
   
-  const res = await fetch(getCreateBranchUrl(),
+  return apiMutator<createBranchResponse>(getCreateBranchUrl(),
   {      
     ...options,
     method: 'POST',
@@ -100,13 +96,7 @@ export const createBranch = async (branchRequest: BranchRequest, options?: Reque
     body: JSON.stringify(
       branchRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: createBranchResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as createBranchResponse
-}
+);}
 
 
 
@@ -142,20 +132,14 @@ export const getGetBranchUrl = (id: number,) => {
 
 export const getBranch = async (id: number, options?: RequestInit): Promise<getBranchResponse> => {
   
-  const res = await fetch(getGetBranchUrl(id),
+  return apiMutator<getBranchResponse>(getGetBranchUrl(id),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: getBranchResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getBranchResponse
-}
+);}
 
 
 
@@ -197,7 +181,7 @@ export const getUpdateBranchUrl = (id: number,) => {
 export const updateBranch = async (id: number,
     branchRequest: BranchRequest, options?: RequestInit): Promise<updateBranchResponse> => {
   
-  const res = await fetch(getUpdateBranchUrl(id),
+  return apiMutator<updateBranchResponse>(getUpdateBranchUrl(id),
   {      
     ...options,
     method: 'PUT',
@@ -205,13 +189,7 @@ export const updateBranch = async (id: number,
     body: JSON.stringify(
       branchRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: updateBranchResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as updateBranchResponse
-}
+);}
 
 
 
@@ -247,20 +225,14 @@ export const getDeleteBranchUrl = (id: number,) => {
 
 export const deleteBranch = async (id: number, options?: RequestInit): Promise<deleteBranchResponse> => {
   
-  const res = await fetch(getDeleteBranchUrl(id),
+  return apiMutator<deleteBranchResponse>(getDeleteBranchUrl(id),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: deleteBranchResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as deleteBranchResponse
-}
+);}
 
 
 
@@ -289,20 +261,14 @@ export const getListRegionsUrl = () => {
 
 export const listRegions = async ( options?: RequestInit): Promise<listRegionsResponse> => {
   
-  const res = await fetch(getListRegionsUrl(),
+  return apiMutator<listRegionsResponse>(getListRegionsUrl(),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: listRegionsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as listRegionsResponse
-}
+);}
 
 
 
@@ -338,7 +304,7 @@ export const getCreateRegionUrl = () => {
 
 export const createRegion = async (regionRequest: RegionRequest, options?: RequestInit): Promise<createRegionResponse> => {
   
-  const res = await fetch(getCreateRegionUrl(),
+  return apiMutator<createRegionResponse>(getCreateRegionUrl(),
   {      
     ...options,
     method: 'POST',
@@ -346,13 +312,43 @@ export const createRegion = async (regionRequest: RegionRequest, options?: Reque
     body: JSON.stringify(
       regionRequest,)
   }
-)
+);}
 
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: createRegionResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as createRegionResponse
+
+
+/**
+ * @summary List available region options
+ */
+export type getRegionOptionsResponse200 = {
+  data: RegionOptions
+  status: 200
 }
+    
+export type getRegionOptionsResponseSuccess = (getRegionOptionsResponse200) & {
+  headers: Headers;
+};
+;
+
+export type getRegionOptionsResponse = (getRegionOptionsResponseSuccess)
+
+export const getGetRegionOptionsUrl = () => {
+
+
+  
+
+  return `http://localhost:8080/regions/options`
+}
+
+export const getRegionOptions = async ( options?: RequestInit): Promise<getRegionOptionsResponse> => {
+  
+  return apiMutator<getRegionOptionsResponse>(getGetRegionOptionsUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
 
 
 
@@ -388,20 +384,14 @@ export const getGetRegionUrl = (id: number,) => {
 
 export const getRegion = async (id: number, options?: RequestInit): Promise<getRegionResponse> => {
   
-  const res = await fetch(getGetRegionUrl(id),
+  return apiMutator<getRegionResponse>(getGetRegionUrl(id),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: getRegionResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getRegionResponse
-}
+);}
 
 
 
@@ -443,7 +433,7 @@ export const getUpdateRegionUrl = (id: number,) => {
 export const updateRegion = async (id: number,
     regionRequest: RegionRequest, options?: RequestInit): Promise<updateRegionResponse> => {
   
-  const res = await fetch(getUpdateRegionUrl(id),
+  return apiMutator<updateRegionResponse>(getUpdateRegionUrl(id),
   {      
     ...options,
     method: 'PUT',
@@ -451,13 +441,7 @@ export const updateRegion = async (id: number,
     body: JSON.stringify(
       regionRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: updateRegionResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as updateRegionResponse
-}
+);}
 
 
 
@@ -493,20 +477,14 @@ export const getDeleteRegionUrl = (id: number,) => {
 
 export const deleteRegion = async (id: number, options?: RequestInit): Promise<deleteRegionResponse> => {
   
-  const res = await fetch(getDeleteRegionUrl(id),
+  return apiMutator<deleteRegionResponse>(getDeleteRegionUrl(id),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: deleteRegionResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as deleteRegionResponse
-}
+);}
 
 
 
@@ -535,20 +513,14 @@ export const getListProductsUrl = () => {
 
 export const listProducts = async ( options?: RequestInit): Promise<listProductsResponse> => {
   
-  const res = await fetch(getListProductsUrl(),
+  return apiMutator<listProductsResponse>(getListProductsUrl(),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: listProductsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as listProductsResponse
-}
+);}
 
 
 
@@ -584,7 +556,7 @@ export const getCreateProductUrl = () => {
 
 export const createProduct = async (productRequest: ProductRequest, options?: RequestInit): Promise<createProductResponse> => {
   
-  const res = await fetch(getCreateProductUrl(),
+  return apiMutator<createProductResponse>(getCreateProductUrl(),
   {      
     ...options,
     method: 'POST',
@@ -592,13 +564,7 @@ export const createProduct = async (productRequest: ProductRequest, options?: Re
     body: JSON.stringify(
       productRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: createProductResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as createProductResponse
-}
+);}
 
 
 
@@ -634,20 +600,14 @@ export const getGetProductUrl = (id: number,) => {
 
 export const getProduct = async (id: number, options?: RequestInit): Promise<getProductResponse> => {
   
-  const res = await fetch(getGetProductUrl(id),
+  return apiMutator<getProductResponse>(getGetProductUrl(id),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: getProductResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getProductResponse
-}
+);}
 
 
 
@@ -689,7 +649,7 @@ export const getUpdateProductUrl = (id: number,) => {
 export const updateProduct = async (id: number,
     productRequest: ProductRequest, options?: RequestInit): Promise<updateProductResponse> => {
   
-  const res = await fetch(getUpdateProductUrl(id),
+  return apiMutator<updateProductResponse>(getUpdateProductUrl(id),
   {      
     ...options,
     method: 'PUT',
@@ -697,13 +657,7 @@ export const updateProduct = async (id: number,
     body: JSON.stringify(
       productRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: updateProductResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as updateProductResponse
-}
+);}
 
 
 
@@ -739,20 +693,14 @@ export const getDeleteProductUrl = (id: number,) => {
 
 export const deleteProduct = async (id: number, options?: RequestInit): Promise<deleteProductResponse> => {
   
-  const res = await fetch(getDeleteProductUrl(id),
+  return apiMutator<deleteProductResponse>(getDeleteProductUrl(id),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: deleteProductResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as deleteProductResponse
-}
+);}
 
 
 
@@ -781,20 +729,14 @@ export const getListPricingPlansUrl = () => {
 
 export const listPricingPlans = async ( options?: RequestInit): Promise<listPricingPlansResponse> => {
   
-  const res = await fetch(getListPricingPlansUrl(),
+  return apiMutator<listPricingPlansResponse>(getListPricingPlansUrl(),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: listPricingPlansResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as listPricingPlansResponse
-}
+);}
 
 
 
@@ -830,7 +772,7 @@ export const getCreatePricingPlanUrl = () => {
 
 export const createPricingPlan = async (pricingPlanRequest: PricingPlanRequest, options?: RequestInit): Promise<createPricingPlanResponse> => {
   
-  const res = await fetch(getCreatePricingPlanUrl(),
+  return apiMutator<createPricingPlanResponse>(getCreatePricingPlanUrl(),
   {      
     ...options,
     method: 'POST',
@@ -838,13 +780,7 @@ export const createPricingPlan = async (pricingPlanRequest: PricingPlanRequest, 
     body: JSON.stringify(
       pricingPlanRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: createPricingPlanResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as createPricingPlanResponse
-}
+);}
 
 
 
@@ -880,20 +816,14 @@ export const getGetPricingPlanUrl = (id: number,) => {
 
 export const getPricingPlan = async (id: number, options?: RequestInit): Promise<getPricingPlanResponse> => {
   
-  const res = await fetch(getGetPricingPlanUrl(id),
+  return apiMutator<getPricingPlanResponse>(getGetPricingPlanUrl(id),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: getPricingPlanResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getPricingPlanResponse
-}
+);}
 
 
 
@@ -935,7 +865,7 @@ export const getUpdatePricingPlanUrl = (id: number,) => {
 export const updatePricingPlan = async (id: number,
     pricingPlanRequest: PricingPlanRequest, options?: RequestInit): Promise<updatePricingPlanResponse> => {
   
-  const res = await fetch(getUpdatePricingPlanUrl(id),
+  return apiMutator<updatePricingPlanResponse>(getUpdatePricingPlanUrl(id),
   {      
     ...options,
     method: 'PUT',
@@ -943,13 +873,7 @@ export const updatePricingPlan = async (id: number,
     body: JSON.stringify(
       pricingPlanRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: updatePricingPlanResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as updatePricingPlanResponse
-}
+);}
 
 
 
@@ -985,17 +909,11 @@ export const getDeletePricingPlanUrl = (id: number,) => {
 
 export const deletePricingPlan = async (id: number, options?: RequestInit): Promise<deletePricingPlanResponse> => {
   
-  const res = await fetch(getDeletePricingPlanUrl(id),
+  return apiMutator<deletePricingPlanResponse>(getDeletePricingPlanUrl(id),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: deletePricingPlanResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as deletePricingPlanResponse
-}
+);}
