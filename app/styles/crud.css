@@ -55,52 +55,6 @@
   cursor: default;
 }
 
-.crud-page-form-field--tooltip,
-.tooltip-balloon {
-  position: relative;
-}
-
-.crud-page-form-field--tooltip::after,
-.tooltip-balloon::after {
-  background: white;
-  border: 1px solid rgb(147 197 253);
-  border-radius: 0.25rem;
-  box-shadow: 0 0.25rem 0.625rem rgb(15 23 42 / 0.18);
-  color: rgb(30 64 175);
-  content: attr(data-tooltip);
-  font-size: 0.75rem;
-  font-weight: 500;
-  left: 50%;
-  line-height: 1.3;
-  max-width: 22rem;
-  opacity: 0;
-  overflow-wrap: anywhere;
-  padding: 0.25rem 0.5rem;
-  pointer-events: none;
-  position: absolute;
-  top: calc(100% + 0.25rem);
-  transform: translateX(-50%);
-  transition:
-    opacity 0.12s ease,
-    visibility 0s linear 0.12s;
-  visibility: hidden;
-  width: max-content;
-  z-index: 10;
-}
-
-.crud-page-form-field--tooltip:hover::after,
-.crud-page-form-field--tooltip:focus-within::after,
-.tooltip-balloon:hover::after,
-.tooltip-balloon:focus-within::after {
-  opacity: 1;
-  transition-delay: .7s;
-  visibility: visible;
-}
-
-.crud-page-form-field--tooltip[data-tooltip=""]::after {
-  content: none;
-}
-
 @media (max-width: 56rem) {
   .form-grid {
     grid-template-columns: minmax(0, 24rem);

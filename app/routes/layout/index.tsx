@@ -22,8 +22,10 @@ function Sidebar() {
     { id: "simulator", label: "Simulator", path: routeUrls.simulator, hasDividerBefore: true },
   ];
   const navigate = useNavigate();
-  const loc = useLocation();
-  const activePath = loc.pathname === "/" ? routeUrls.branches : loc.pathname;
+  const location = useLocation();
+  const activePath = location.pathname === "/" ? routeUrls.branches : location.pathname;
+  const isActive = (path: string) =>
+    activePath === path || activePath.startsWith(`${path}/`);
 
   return (
     <aside className="layout-sidebar">
@@ -34,7 +36,7 @@ function Sidebar() {
             {it.hasDividerBefore && <div className="layout-nav-divider" />}
             <button
               className={`layout-nav-button ${
-                activePath === it.path ? "layout-nav-button-active" : ""
+                isActive(it.path) ? "layout-nav-button-active" : ""
               }`}
               onClick={() => navigate(it.path)}
               type="button"

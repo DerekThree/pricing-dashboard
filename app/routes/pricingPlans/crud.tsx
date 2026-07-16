@@ -8,7 +8,7 @@ import useFormValues from "../../hooks/useFormValues";
 import { createPricingPlan, deletePricingPlan, getPricingPlan, updatePricingPlan, } from "../../generated/api/client";
 import type { PricingPlanRequest } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps, } from "../../utils/crudRouteUtils";
-import { preventTextInputSubmit } from "../../utils/formUtils";
+import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 
 const emptyPricingPlanRequest: PricingPlanRequest = {
@@ -20,7 +20,7 @@ const emptyPricingPlanRequest: PricingPlanRequest = {
   regionName: "",
   activeFrom: "",
   activeTo: "",
-  updatedBy: "pricing-dashboard",
+  updatedBy: "",
 };
 
 export const clientLoader = createClientLoader({
@@ -44,7 +44,7 @@ export default function PricingPlanPage() {
 
   return (
     <section className="page">
-      <Form method="post" onKeyDown={preventTextInputSubmit}>
+      <Form method="post" onKeyDown={preventEnterSubmit}>
         <CrudPageTopMenu
           operation={operation}
           entityTitle="Pricing Plan"

@@ -103,6 +103,7 @@ export function createClientAction<TRequest>({
     if (operation === crudOps.create || operation === crudOps.update) {
       const formData = await request.formData();
       const record = Object.fromEntries(formData) as Record<string, unknown>;
+      record.updatedBy = "user";
 
       for (const field of arrayFields) {
         record[String(field)] = formData.getAll(String(field));

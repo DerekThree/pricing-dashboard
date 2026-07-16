@@ -6,6 +6,7 @@ import { listPricingPlans } from "../../generated/api/client";
 import type { PricingPlan } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
+import { formatDateTime } from "../../utils/dateTimeUtils";
 
 const columnDefs: ColDef<PricingPlan>[] = [
   { field: "planCode", headerName: "Plan Code" },
@@ -14,21 +15,18 @@ const columnDefs: ColDef<PricingPlan>[] = [
   { field: "productName", headerName: "Product Name" },
   { field: "regionCode", headerName: "Region Code" },
   { field: "regionName", headerName: "Region Name" },
-  { field: "activeFrom", headerName: "Active From" },
-  { field: "activeTo", headerName: "Active To" },
-  { field: "updatedOn", headerName: "Updated On" },
+  { field: "activeFrom", headerName: "Active From", valueFormatter: ({ value }) => formatDateTime(value) },
+  { field: "activeTo", headerName: "Active To", valueFormatter: ({ value }) => formatDateTime(value) },
+  { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
   { field: "updatedBy", headerName: "Updated By" },
 ];
 
 export async function clientLoader() {
-  const response = await listPricingPlans();
-  const status: number = response.status;
+  const { status, data } = await listPricingPlans();
 
-  if (status === 200) {
-    return { rowData: response.data, loaderError: null };
-  }
-
-  return { rowData: [] as PricingPlan[], loaderError: getErrorMessage(response.data, status) };
+  return status === 200
+    ? { rowData: data, loaderError: null }
+    : { rowData: [] as PricingPlan[], loaderError: getErrorMessage(data, status) };
 }
 
 export default function PricingPlansPage() {

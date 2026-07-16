@@ -1,7 +1,7 @@
 import type { KeyboardEvent } from "react";
 
-export function preventTextInputSubmit(event: KeyboardEvent<HTMLFormElement>) {
-  if (event.key === "Enter" && event.target instanceof HTMLInputElement) {
+export function preventEnterSubmit(event: KeyboardEvent<HTMLFormElement>) {
+  if (event.key === "Enter") {
     event.preventDefault();
   }
 }

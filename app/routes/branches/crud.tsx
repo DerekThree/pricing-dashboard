@@ -8,7 +8,7 @@ import useFormValues from "../../hooks/useFormValues";
 import { createBranch, deleteBranch, getBranch, updateBranch } from "../../generated/api/client";
 import type { BranchRequest } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
-import { preventTextInputSubmit } from "../../utils/formUtils";
+import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 
 const emptyBranchRequest: BranchRequest = {
@@ -40,7 +40,7 @@ export default function BranchPage() {
 
   return (
     <section className="page">
-      <Form method="post" onKeyDown={preventTextInputSubmit}>
+      <Form method="post" onKeyDown={preventEnterSubmit}>
         <CrudPageTopMenu
           operation={operation}
           entityTitle="Branch"
@@ -66,11 +66,7 @@ export default function BranchPage() {
                 onChange={(event) => updateField("branchCode", event.target.value.toUpperCase())}
               />
             </label>
-            <label
-              className="crud-page-form-field crud-page-form-field--tooltip"
-              data-tooltip={formValues.branchName}
-              htmlFor="branch-name"
-            >
+            <label className="crud-page-form-field" htmlFor="branch-name">
               <span>Branch Name</span>
               <input
                 disabled={inputsDisabled}
@@ -78,6 +74,7 @@ export default function BranchPage() {
                 maxLength={100}
                 name="branchName"
                 required
+                title={formValues.branchName}
                 type="text"
                 value={formValues.branchName}
                 onChange={(event) => updateField("branchName", event.target.value)}

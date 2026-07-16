@@ -13,7 +13,6 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 const defaultColDef = {
   filter: true,
-  floatingFilter: true,
   resizable: true,
   sortable: true,
   flex: 1,
@@ -47,7 +46,12 @@ export default function DataTable<TRow extends object>(props: {
           props.setSelectedRow?.(event.api.getSelectedRows()[0])
         }
         rowData={props.rowData}
-        rowSelection={{ mode: "singleRow", enableClickSelection: true }}
+        rowSelection={{
+          mode: "singleRow",
+          enableClickSelection: true,
+          checkboxes: false,
+        }}
+        suppressCellFocus
         theme={themeQuartz}
       />
     </div>

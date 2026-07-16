@@ -1,4 +1,4 @@
-export function getErrorMessage(data: unknown, status?: number) {
+export function getErrorMessage(data: unknown, status?: number): string {
   if (typeof data === "string" && data) {
     return data;
   }

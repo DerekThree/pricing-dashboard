@@ -4,10 +4,9 @@ import { Form, useLoaderData } from "react-router";
 import { useActionData } from "react-router";
 import type { ClientLoaderFunctionArgs } from "react-router";
 
+import Dropdown from "../../components/Dropdown";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
-import MultiChoiceDropdown, {
-  type MultiChoiceDropdownOption,
-} from "../../components/MultiChoiceDropdown";
+import type { DropdownOption } from "../../components/Dropdown";
 import useFormValues from "../../hooks/useFormValues";
 import {
   createRegion,
@@ -19,7 +18,7 @@ import {
 import type { RegionOptions, RegionRequest } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
-import { preventTextInputSubmit } from "../../utils/formUtils";
+import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
@@ -34,7 +33,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     states: [],
     zipCodes: [],
     branches: [],
-    updatedBy: "pricing-dashboard",
+    updatedBy: "",
   };
   let regionOptions: RegionOptions = {
     states: [],
@@ -74,18 +73,12 @@ export const clientAction = createClientAction({
   arrayFields: ["states", "zipCodes", "branches"],
 });
 
-function getBranchOptions(branches: RegionOptions["branches"]): MultiChoiceDropdownOption[] {
+function getBranchOptions(branches: RegionOptions["branches"]): DropdownOption[] {
   return branches.map((branch) => ({
     value: branch.branchCode,
     label: `${branch.branchCode} - ${branch.branchName}`,
     tooltip: branch.branchName,
   }));
-}
-
-function renderHiddenList(name: keyof RegionRequest, values: string[]) {
-  return values.map((value) => (
-    <input key={value} name={name} type="hidden" value={value} />
-  ));
 }
 
 export default function RegionPage() {
@@ -97,7 +90,7 @@ export default function RegionPage() {
 
   return (
     <section className="page">
-      <Form method="post" onKeyDown={preventTextInputSubmit}>
+      <Form method="post" onKeyDown={preventEnterSubmit}>
         <CrudPageTopMenu
           operation={operation}
           entityTitle="Region"
@@ -107,9 +100,6 @@ export default function RegionPage() {
         {loaderError && <p className="page-error">{loaderError}</p>}
         {actionError && <p className="page-error">{actionError}</p>}
         <input name="updatedBy" type="hidden" value={formValues.updatedBy} />
-        {renderHiddenList("states", formValues.states)}
-        {renderHiddenList("zipCodes", formValues.zipCodes)}
-        {renderHiddenList("branches", formValues.branches)}
         <div className="form-grid region-form-grid">
           <div className="crud-page-form-column">
             <label className="crud-page-form-field region-form-field--code" htmlFor="region-code">
@@ -125,11 +115,7 @@ export default function RegionPage() {
                 onChange={(event) => updateField("regionCode", event.target.value.toUpperCase())}
               />
             </label>
-            <label
-              className="crud-page-form-field crud-page-form-field--tooltip"
-              data-tooltip={formValues.regionName}
-              htmlFor="region-name"
-            >
+            <label className="crud-page-form-field" htmlFor="region-name">
               <span>Region Name</span>
               <input
                 disabled={inputsDisabled}
@@ -137,6 +123,7 @@ export default function RegionPage() {
                 maxLength={100}
                 name="regionName"
                 required
+                title={formValues.regionName}
                 type="text"
                 value={formValues.regionName}
                 onChange={(event) => updateField("regionName", event.target.value)}
@@ -144,24 +131,27 @@ export default function RegionPage() {
             </label>
           </div>
           <div className="crud-page-form-column">
-            <MultiChoiceDropdown
+            <Dropdown
               disabled={inputsDisabled}
+              isMulti
               label="States"
               name="states"
               options={regionOptions.states.map((value) => ({ value }))}
               values={formValues.states}
               onChange={(values) => updateField("states", values)}
             />
-            <MultiChoiceDropdown
+            <Dropdown
               disabled={inputsDisabled}
+              isMulti
               label="Zip Codes"
               name="zipCodes"
               options={regionOptions.zipCodes.map((value) => ({ value }))}
               values={formValues.zipCodes}
               onChange={(values) => updateField("zipCodes", values)}
             />
-            <MultiChoiceDropdown
+            <Dropdown
               disabled={inputsDisabled}
+              isMulti
               label="Branches"
               name="branches"
               options={getBranchOptions(regionOptions.branches)}

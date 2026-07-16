@@ -6,10 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
-  BadRequestResponse,
   Branch,
   BranchRequest,
-  NotFoundResponse,
+  ErrorResponse,
   PricingPlan,
   PricingPlanRequest,
   Product,
@@ -27,13 +26,25 @@ export type listBranchesResponse200 = {
   data: Branch[]
   status: 200
 }
+
+export type listBranchesResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type listBranchesResponse503 = {
+  data: ErrorResponse
+  status: 503
+}
     
 export type listBranchesResponseSuccess = (listBranchesResponse200) & {
   headers: Headers;
 };
-;
+export type listBranchesResponseError = (listBranchesResponse500 | listBranchesResponse503) & {
+  headers: Headers;
+};
 
-export type listBranchesResponse = (listBranchesResponseSuccess)
+export type listBranchesResponse = (listBranchesResponseSuccess | listBranchesResponseError)
 
 export const getListBranchesUrl = () => {
 
@@ -65,14 +76,24 @@ export type createBranchResponse201 = {
 }
 
 export type createBranchResponse400 = {
-  data: BadRequestResponse
+  data: ErrorResponse
   status: 400
+}
+
+export type createBranchResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type createBranchResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type createBranchResponseSuccess = (createBranchResponse201) & {
   headers: Headers;
 };
-export type createBranchResponseError = (createBranchResponse400) & {
+export type createBranchResponseError = (createBranchResponse400 | createBranchResponse500 | createBranchResponse503) & {
   headers: Headers;
 };
 
@@ -109,14 +130,24 @@ export type getBranchResponse200 = {
 }
 
 export type getBranchResponse404 = {
-  data: NotFoundResponse
+  data: ErrorResponse
   status: 404
+}
+
+export type getBranchResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type getBranchResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type getBranchResponseSuccess = (getBranchResponse200) & {
   headers: Headers;
 };
-export type getBranchResponseError = (getBranchResponse404) & {
+export type getBranchResponseError = (getBranchResponse404 | getBranchResponse500 | getBranchResponse503) & {
   headers: Headers;
 };
 
@@ -152,19 +183,29 @@ export type updateBranchResponse200 = {
 }
 
 export type updateBranchResponse400 = {
-  data: BadRequestResponse
+  data: ErrorResponse
   status: 400
 }
 
 export type updateBranchResponse404 = {
-  data: NotFoundResponse
+  data: ErrorResponse
   status: 404
+}
+
+export type updateBranchResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type updateBranchResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type updateBranchResponseSuccess = (updateBranchResponse200) & {
   headers: Headers;
 };
-export type updateBranchResponseError = (updateBranchResponse400 | updateBranchResponse404) & {
+export type updateBranchResponseError = (updateBranchResponse400 | updateBranchResponse404 | updateBranchResponse500 | updateBranchResponse503) & {
   headers: Headers;
 };
 
@@ -202,14 +243,24 @@ export type deleteBranchResponse204 = {
 }
 
 export type deleteBranchResponse404 = {
-  data: NotFoundResponse
+  data: ErrorResponse
   status: 404
+}
+
+export type deleteBranchResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type deleteBranchResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type deleteBranchResponseSuccess = (deleteBranchResponse204) & {
   headers: Headers;
 };
-export type deleteBranchResponseError = (deleteBranchResponse404) & {
+export type deleteBranchResponseError = (deleteBranchResponse404 | deleteBranchResponse500 | deleteBranchResponse503) & {
   headers: Headers;
 };
 
@@ -243,13 +294,25 @@ export type listRegionsResponse200 = {
   data: Region[]
   status: 200
 }
+
+export type listRegionsResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type listRegionsResponse503 = {
+  data: ErrorResponse
+  status: 503
+}
     
 export type listRegionsResponseSuccess = (listRegionsResponse200) & {
   headers: Headers;
 };
-;
+export type listRegionsResponseError = (listRegionsResponse500 | listRegionsResponse503) & {
+  headers: Headers;
+};
 
-export type listRegionsResponse = (listRegionsResponseSuccess)
+export type listRegionsResponse = (listRegionsResponseSuccess | listRegionsResponseError)
 
 export const getListRegionsUrl = () => {
 
@@ -281,14 +344,24 @@ export type createRegionResponse201 = {
 }
 
 export type createRegionResponse400 = {
-  data: BadRequestResponse
+  data: ErrorResponse
   status: 400
+}
+
+export type createRegionResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type createRegionResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type createRegionResponseSuccess = (createRegionResponse201) & {
   headers: Headers;
 };
-export type createRegionResponseError = (createRegionResponse400) & {
+export type createRegionResponseError = (createRegionResponse400 | createRegionResponse500 | createRegionResponse503) & {
   headers: Headers;
 };
 
@@ -323,13 +396,25 @@ export type getRegionOptionsResponse200 = {
   data: RegionOptions
   status: 200
 }
+
+export type getRegionOptionsResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type getRegionOptionsResponse503 = {
+  data: ErrorResponse
+  status: 503
+}
     
 export type getRegionOptionsResponseSuccess = (getRegionOptionsResponse200) & {
   headers: Headers;
 };
-;
+export type getRegionOptionsResponseError = (getRegionOptionsResponse500 | getRegionOptionsResponse503) & {
+  headers: Headers;
+};
 
-export type getRegionOptionsResponse = (getRegionOptionsResponseSuccess)
+export type getRegionOptionsResponse = (getRegionOptionsResponseSuccess | getRegionOptionsResponseError)
 
 export const getGetRegionOptionsUrl = () => {
 
@@ -361,14 +446,24 @@ export type getRegionResponse200 = {
 }
 
 export type getRegionResponse404 = {
-  data: NotFoundResponse
+  data: ErrorResponse
   status: 404
+}
+
+export type getRegionResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type getRegionResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type getRegionResponseSuccess = (getRegionResponse200) & {
   headers: Headers;
 };
-export type getRegionResponseError = (getRegionResponse404) & {
+export type getRegionResponseError = (getRegionResponse404 | getRegionResponse500 | getRegionResponse503) & {
   headers: Headers;
 };
 
@@ -404,19 +499,29 @@ export type updateRegionResponse200 = {
 }
 
 export type updateRegionResponse400 = {
-  data: BadRequestResponse
+  data: ErrorResponse
   status: 400
 }
 
 export type updateRegionResponse404 = {
-  data: NotFoundResponse
+  data: ErrorResponse
   status: 404
+}
+
+export type updateRegionResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type updateRegionResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type updateRegionResponseSuccess = (updateRegionResponse200) & {
   headers: Headers;
 };
-export type updateRegionResponseError = (updateRegionResponse400 | updateRegionResponse404) & {
+export type updateRegionResponseError = (updateRegionResponse400 | updateRegionResponse404 | updateRegionResponse500 | updateRegionResponse503) & {
   headers: Headers;
 };
 
@@ -454,14 +559,24 @@ export type deleteRegionResponse204 = {
 }
 
 export type deleteRegionResponse404 = {
-  data: NotFoundResponse
+  data: ErrorResponse
   status: 404
+}
+
+export type deleteRegionResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type deleteRegionResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type deleteRegionResponseSuccess = (deleteRegionResponse204) & {
   headers: Headers;
 };
-export type deleteRegionResponseError = (deleteRegionResponse404) & {
+export type deleteRegionResponseError = (deleteRegionResponse404 | deleteRegionResponse500 | deleteRegionResponse503) & {
   headers: Headers;
 };
 
@@ -495,13 +610,25 @@ export type listProductsResponse200 = {
   data: Product[]
   status: 200
 }
+
+export type listProductsResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type listProductsResponse503 = {
+  data: ErrorResponse
+  status: 503
+}
     
 export type listProductsResponseSuccess = (listProductsResponse200) & {
   headers: Headers;
 };
-;
+export type listProductsResponseError = (listProductsResponse500 | listProductsResponse503) & {
+  headers: Headers;
+};
 
-export type listProductsResponse = (listProductsResponseSuccess)
+export type listProductsResponse = (listProductsResponseSuccess | listProductsResponseError)
 
 export const getListProductsUrl = () => {
 
@@ -533,14 +660,24 @@ export type createProductResponse201 = {
 }
 
 export type createProductResponse400 = {
-  data: BadRequestResponse
+  data: ErrorResponse
   status: 400
+}
+
+export type createProductResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type createProductResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type createProductResponseSuccess = (createProductResponse201) & {
   headers: Headers;
 };
-export type createProductResponseError = (createProductResponse400) & {
+export type createProductResponseError = (createProductResponse400 | createProductResponse500 | createProductResponse503) & {
   headers: Headers;
 };
 
@@ -577,14 +714,24 @@ export type getProductResponse200 = {
 }
 
 export type getProductResponse404 = {
-  data: NotFoundResponse
+  data: ErrorResponse
   status: 404
+}
+
+export type getProductResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type getProductResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type getProductResponseSuccess = (getProductResponse200) & {
   headers: Headers;
 };
-export type getProductResponseError = (getProductResponse404) & {
+export type getProductResponseError = (getProductResponse404 | getProductResponse500 | getProductResponse503) & {
   headers: Headers;
 };
 
@@ -620,19 +767,29 @@ export type updateProductResponse200 = {
 }
 
 export type updateProductResponse400 = {
-  data: BadRequestResponse
+  data: ErrorResponse
   status: 400
 }
 
 export type updateProductResponse404 = {
-  data: NotFoundResponse
+  data: ErrorResponse
   status: 404
+}
+
+export type updateProductResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type updateProductResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type updateProductResponseSuccess = (updateProductResponse200) & {
   headers: Headers;
 };
-export type updateProductResponseError = (updateProductResponse400 | updateProductResponse404) & {
+export type updateProductResponseError = (updateProductResponse400 | updateProductResponse404 | updateProductResponse500 | updateProductResponse503) & {
   headers: Headers;
 };
 
@@ -670,14 +827,24 @@ export type deleteProductResponse204 = {
 }
 
 export type deleteProductResponse404 = {
-  data: NotFoundResponse
+  data: ErrorResponse
   status: 404
+}
+
+export type deleteProductResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type deleteProductResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type deleteProductResponseSuccess = (deleteProductResponse204) & {
   headers: Headers;
 };
-export type deleteProductResponseError = (deleteProductResponse404) & {
+export type deleteProductResponseError = (deleteProductResponse404 | deleteProductResponse500 | deleteProductResponse503) & {
   headers: Headers;
 };
 
@@ -711,13 +878,25 @@ export type listPricingPlansResponse200 = {
   data: PricingPlan[]
   status: 200
 }
+
+export type listPricingPlansResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type listPricingPlansResponse503 = {
+  data: ErrorResponse
+  status: 503
+}
     
 export type listPricingPlansResponseSuccess = (listPricingPlansResponse200) & {
   headers: Headers;
 };
-;
+export type listPricingPlansResponseError = (listPricingPlansResponse500 | listPricingPlansResponse503) & {
+  headers: Headers;
+};
 
-export type listPricingPlansResponse = (listPricingPlansResponseSuccess)
+export type listPricingPlansResponse = (listPricingPlansResponseSuccess | listPricingPlansResponseError)
 
 export const getListPricingPlansUrl = () => {
 
@@ -749,14 +928,24 @@ export type createPricingPlanResponse201 = {
 }
 
 export type createPricingPlanResponse400 = {
-  data: BadRequestResponse
+  data: ErrorResponse
   status: 400
+}
+
+export type createPricingPlanResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type createPricingPlanResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type createPricingPlanResponseSuccess = (createPricingPlanResponse201) & {
   headers: Headers;
 };
-export type createPricingPlanResponseError = (createPricingPlanResponse400) & {
+export type createPricingPlanResponseError = (createPricingPlanResponse400 | createPricingPlanResponse500 | createPricingPlanResponse503) & {
   headers: Headers;
 };
 
@@ -793,14 +982,24 @@ export type getPricingPlanResponse200 = {
 }
 
 export type getPricingPlanResponse404 = {
-  data: NotFoundResponse
+  data: ErrorResponse
   status: 404
+}
+
+export type getPricingPlanResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type getPricingPlanResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type getPricingPlanResponseSuccess = (getPricingPlanResponse200) & {
   headers: Headers;
 };
-export type getPricingPlanResponseError = (getPricingPlanResponse404) & {
+export type getPricingPlanResponseError = (getPricingPlanResponse404 | getPricingPlanResponse500 | getPricingPlanResponse503) & {
   headers: Headers;
 };
 
@@ -836,19 +1035,29 @@ export type updatePricingPlanResponse200 = {
 }
 
 export type updatePricingPlanResponse400 = {
-  data: BadRequestResponse
+  data: ErrorResponse
   status: 400
 }
 
 export type updatePricingPlanResponse404 = {
-  data: NotFoundResponse
+  data: ErrorResponse
   status: 404
+}
+
+export type updatePricingPlanResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type updatePricingPlanResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type updatePricingPlanResponseSuccess = (updatePricingPlanResponse200) & {
   headers: Headers;
 };
-export type updatePricingPlanResponseError = (updatePricingPlanResponse400 | updatePricingPlanResponse404) & {
+export type updatePricingPlanResponseError = (updatePricingPlanResponse400 | updatePricingPlanResponse404 | updatePricingPlanResponse500 | updatePricingPlanResponse503) & {
   headers: Headers;
 };
 
@@ -886,14 +1095,24 @@ export type deletePricingPlanResponse204 = {
 }
 
 export type deletePricingPlanResponse404 = {
-  data: NotFoundResponse
+  data: ErrorResponse
   status: 404
+}
+
+export type deletePricingPlanResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type deletePricingPlanResponse503 = {
+  data: ErrorResponse
+  status: 503
 }
     
 export type deletePricingPlanResponseSuccess = (deletePricingPlanResponse204) & {
   headers: Headers;
 };
-export type deletePricingPlanResponseError = (deletePricingPlanResponse404) & {
+export type deletePricingPlanResponseError = (deletePricingPlanResponse404 | deletePricingPlanResponse500 | deletePricingPlanResponse503) & {
   headers: Headers;
 };
 

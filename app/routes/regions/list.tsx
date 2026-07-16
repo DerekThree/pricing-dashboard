@@ -6,6 +6,7 @@ import { listRegions } from "../../generated/api/client";
 import type { Region } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
+import { formatDateTime } from "../../utils/dateTimeUtils";
 
 const columnDefs: ColDef<Region>[] = [
   { field: "regionCode", headerName: "Region Code" },
@@ -13,19 +14,16 @@ const columnDefs: ColDef<Region>[] = [
   { field: "states", headerName: "States" },
   { field: "zipCodes", headerName: "Zip Codes" },
   { field: "branches", headerName: "Branches" },
-  { field: "updatedOn", headerName: "Updated On" },
+  { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
   { field: "updatedBy", headerName: "Updated By" },
 ];
 
 export async function clientLoader() {
-  const response = await listRegions();
-  const status: number = response.status;
+  const { status, data } = await listRegions();
 
-  if (status === 200) {
-    return { rowData: response.data, loaderError: null };
-  }
-
-  return { rowData: [] as Region[], loaderError: getErrorMessage(response.data, status) };
+  return status === 200
+    ? { rowData: data, loaderError: null }
+    : { rowData: [] as Region[], loaderError: getErrorMessage(data, status) };
 }
 
 export default function RegionsPage() {

@@ -12,6 +12,7 @@ export * from './branch';
 export * from './branchCode';
 export * from './branchRequest';
 export * from './errorResponse';
+export * from './errorResponseResponse';
 export * from './notFoundResponse';
 export * from './planCode';
 export * from './pricingPlan';
