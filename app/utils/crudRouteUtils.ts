@@ -55,6 +55,7 @@ type SuccessData<TResponse extends ApiResponse> =
 type CrudLoaderConfig<TRequest, TResponse extends ApiResponse> = {
   getRecord(id: number): Promise<TResponse>;
   emptyRequest: TRequest;
+  transformRecord?: (record: SuccessData<TResponse>) => TRequest;
 };
 
 type CrudActionConfig<TRequest> = {
@@ -63,11 +64,13 @@ type CrudActionConfig<TRequest> = {
   deleteRecord(id: number): Promise<ApiResponse>;
   listRouteUrl: string;
   arrayFields?: (keyof TRequest)[];
+  transformRecord?: (record: Record<string, unknown>) => TRequest;
 };
 
 export function createClientLoader<TRequest, TResponse extends ApiResponse>({
   getRecord,
   emptyRequest,
+  transformRecord,
 }: CrudLoaderConfig<TRequest, TResponse>) {
   return async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     const { operation, id } = validateCrudRouteParams(params);
@@ -78,7 +81,8 @@ export function createClientLoader<TRequest, TResponse extends ApiResponse>({
       const response = await getRecord(Number(id));
 
       if (response.status === 200) {
-        record = response.data as SuccessData<TResponse>;
+        const loadedRecord = response.data as SuccessData<TResponse>;
+        record = transformRecord ? transformRecord(loadedRecord) : loadedRecord;
       } else {
         loaderError = getErrorMessage(response.data, response.status);
       }
@@ -94,6 +98,7 @@ export function createClientAction<TRequest>({
   deleteRecord,
   listRouteUrl,
   arrayFields = [],
+  transformRecord,
 }: CrudActionConfig<TRequest>) {
   return async function clientAction({ request, params }: ClientActionFunctionArgs) {
     const { operation, id } = validateCrudRouteParams(params);
@@ -109,11 +114,13 @@ export function createClientAction<TRequest>({
         record[String(field)] = formData.getAll(String(field));
       }
 
+      const transformedRecord = transformRecord ? transformRecord(record) : (record as TRequest);
+
       if (operation === crudOps.create) {
-        response = await createRecord(record as TRequest);
+        response = await createRecord(transformedRecord);
         success = response.status === 201;
       } else {
-        response = await updateRecord(Number(id), record as TRequest);
+        response = await updateRecord(Number(id), transformedRecord);
         success = response.status === 200;
       }
     } else if (operation === crudOps.delete) {

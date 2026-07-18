@@ -60,6 +60,7 @@ export default function BranchPage() {
                 maxLength={8}
                 name="branchCode"
                 pattern="[0-9]{8}"
+                title="Branch code must be exactly 8 digits."
                 required
                 type="text"
                 value={formValues.branchCode}
@@ -80,6 +81,8 @@ export default function BranchPage() {
                 onChange={(event) => updateField("branchName", event.target.value)}
               />
             </label>
+          </div>
+          <div className="crud-page-form-column">
             <label className="crud-page-form-field branch-form-field--state" htmlFor="state">
               <span>State</span>
               <input

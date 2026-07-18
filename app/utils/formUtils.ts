@@ -1,7 +1,14 @@
-import type { KeyboardEvent } from "react";
+export function preventEnterSubmit(event: React.KeyboardEvent<HTMLFormElement>) {
+  if (event.key !== "Enter") {
+    return;
+  }
 
-export function preventEnterSubmit(event: KeyboardEvent<HTMLFormElement>) {
-  if (event.key === "Enter") {
-    event.preventDefault();
+  const target = event.target;
+  if (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLSelectElement ||
+    target instanceof HTMLTextAreaElement
+  ) {
+    target.blur();
   }
 }

@@ -46,6 +46,8 @@ export default function DataTable<TRow extends object>(props: {
           props.setSelectedRow?.(event.api.getSelectedRows()[0])
         }
         rowData={props.rowData}
+        headerHeight={28}
+        rowHeight={20}
         rowSelection={{
           mode: "singleRow",
           enableClickSelection: true,

@@ -23,9 +23,22 @@ const emptyPricingPlanRequest: PricingPlanRequest = {
   updatedBy: "",
 };
 
+function toOffsetDateTime(value: unknown) {
+  return typeof value === "string" && value.length > 0 ? `${value}T00:00:00+08:00` : "";
+}
+
+function toDateInputValue(value: unknown) {
+  return typeof value === "string" && value.length >= 10 ? value.slice(0, 10) : "";
+}
+
 export const clientLoader = createClientLoader({
   getRecord: getPricingPlan,
   emptyRequest: emptyPricingPlanRequest,
+  transformRecord: (record) => ({
+    ...record,
+    activeFrom: toDateInputValue(record.activeFrom),
+    activeTo: toDateInputValue(record.activeTo),
+  }),
 });
 
 export const clientAction = createClientAction({
@@ -33,6 +46,12 @@ export const clientAction = createClientAction({
   updateRecord: updatePricingPlan,
   deleteRecord: deletePricingPlan,
   listRouteUrl: routeUrls.pricingPlans,
+  transformRecord: (record) =>
+    ({
+      ...record,
+      activeFrom: toOffsetDateTime(record.activeFrom),
+      activeTo: toOffsetDateTime(record.activeTo),
+    }) as PricingPlanRequest,
 });
 
 export default function PricingPlanPage() {
@@ -54,119 +73,99 @@ export default function PricingPlanPage() {
         {loaderError && <p className="page-error">{loaderError}</p>}
         {actionError && <p className="page-error">{actionError}</p>}
         <input name="updatedBy" type="hidden" value={formValues.updatedBy} />
-        <div className="crud-page-form-column">
-          <label className="crud-page-form-field" htmlFor="plan-code">
-            <span>Plan Code</span>
-            <input
-              disabled={inputsDisabled}
-              id="plan-code"
-              name="planCode"
-              required
-              type="text"
-              value={formValues.planCode}
-              onChange={(event) =>
-                updateField("planCode", event.target.value.toUpperCase())
-              }
-            />
-          </label>
-          <label className="crud-page-form-field" htmlFor="plan-name">
-            <span>Plan Name</span>
-            <input
-              disabled={inputsDisabled}
-              id="plan-name"
-              name="planName"
-              required
-              type="text"
-              value={formValues.planName}
-              onChange={(event) =>
-                updateField("planName", event.target.value)
-              }
-            />
-          </label>
-          <label className="crud-page-form-field" htmlFor="product-code">
-            <span>Product Code</span>
-            <input
-              disabled={inputsDisabled}
-              id="product-code"
-              name="productCode"
-              required
-              type="text"
-              value={formValues.productCode}
-              onChange={(event) =>
-                updateField("productCode", event.target.value.toUpperCase())
-              }
-            />
-          </label>
-          <label className="crud-page-form-field" htmlFor="product-name">
-            <span>Product Name</span>
-            <input
-              disabled={inputsDisabled}
-              id="product-name"
-              name="productName"
-              required
-              type="text"
-              value={formValues.productName}
-              onChange={(event) =>
-                updateField("productName", event.target.value)
-              }
-            />
-          </label>
-          <label className="crud-page-form-field" htmlFor="region-code">
-            <span>Region Code</span>
-            <input
-              disabled={inputsDisabled}
-              id="region-code"
-              name="regionCode"
-              required
-              type="text"
-              value={formValues.regionCode}
-              onChange={(event) =>
-                updateField("regionCode", event.target.value.toUpperCase())
-              }
-            />
-          </label>
-          <label className="crud-page-form-field" htmlFor="region-name">
-            <span>Region Name</span>
-            <input
-              disabled={inputsDisabled}
-              id="region-name"
-              name="regionName"
-              required
-              type="text"
-              value={formValues.regionName}
-              onChange={(event) =>
-                updateField("regionName", event.target.value)
-              }
-            />
-          </label>
-          <label className="crud-page-form-field" htmlFor="active-from">
-            <span>Active From</span>
-            <input
-              disabled={inputsDisabled}
-              id="active-from"
-              name="activeFrom"
-              required
-              type="date"
-              value={formValues.activeFrom}
-              onChange={(event) =>
-                updateField("activeFrom", event.target.value)
-              }
-            />
-          </label>
-          <label className="crud-page-form-field" htmlFor="active-to">
-            <span>Active To</span>
-            <input
-              disabled={inputsDisabled}
-              id="active-to"
-              name="activeTo"
-              required
-              type="date"
-              value={formValues.activeTo}
-              onChange={(event) =>
-                updateField("activeTo", event.target.value)
-              }
-            />
-          </label>
+        <input name="productName" type="hidden" value={formValues.productName} />
+        <input name="regionName" type="hidden" value={formValues.regionName} />
+        <div className="form-grid">
+          <div className="crud-page-form-column">
+            <label className="crud-page-form-field" htmlFor="plan-code">
+              <span>Plan Code</span>
+              <input
+                disabled={inputsDisabled}
+                id="plan-code"
+                name="planCode"
+                pattern="[0-9]{8}"
+                title="Branch code must be exactly 8 digits."                
+                required
+                type="text"
+                value={formValues.planCode}
+                onChange={(event) =>
+                  updateField("planCode", event.target.value.toUpperCase())
+                }
+              />
+            </label>
+            <label className="crud-page-form-field" htmlFor="plan-name">
+              <span>Plan Name</span>
+              <input
+                disabled={inputsDisabled}
+                id="plan-name"
+                name="planName"
+                required
+                type="text"
+                value={formValues.planName}
+                onChange={(event) =>
+                  updateField("planName", event.target.value)
+                }
+              />
+            </label>
+          </div>
+          <div className="crud-page-form-column">
+            <label className="crud-page-form-field" htmlFor="product-code">
+              <span>Product Code</span>
+              <input
+                disabled={inputsDisabled}
+                id="product-code"
+                name="productCode"
+                required
+                type="text"
+                value={formValues.productCode}
+                onChange={(event) =>
+                  updateField("productCode", event.target.value.toUpperCase())
+                }
+              />
+            </label>
+            <label className="crud-page-form-field" htmlFor="region-code">
+              <span>Region Code</span>
+              <input
+                disabled={inputsDisabled}
+                id="region-code"
+                name="regionCode"
+                required
+                type="text"
+                value={formValues.regionCode}
+                onChange={(event) =>
+                  updateField("regionCode", event.target.value.toUpperCase())
+                }
+              />
+            </label>
+            <label className="crud-page-form-field" htmlFor="active-from">
+              <span>Active From</span>
+              <input
+                disabled={inputsDisabled}
+                id="active-from"
+                name="activeFrom"
+                required
+                type="date"
+                value={formValues.activeFrom}
+                onChange={(event) =>
+                  updateField("activeFrom", event.target.value)
+                }
+              />
+            </label>
+            <label className="crud-page-form-field" htmlFor="active-to">
+              <span>Active To</span>
+              <input
+                disabled={inputsDisabled}
+                id="active-to"
+                name="activeTo"
+                required
+                type="date"
+                value={formValues.activeTo}
+                onChange={(event) =>
+                  updateField("activeTo", event.target.value)
+                }
+              />
+            </label>
+          </div>
         </div>
       </Form>
     </section>

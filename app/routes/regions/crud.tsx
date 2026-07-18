@@ -109,6 +109,8 @@ export default function RegionPage() {
                 id="region-code"
                 maxLength={8}
                 name="regionCode"
+                pattern="[0-9]{8}"
+                title="Branch code must be exactly 8 digits."                
                 required
                 type="text"
                 value={formValues.regionCode}

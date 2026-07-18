@@ -58,6 +58,8 @@ export default function ProductPage() {
                 disabled={inputsDisabled}
                 id="product-code"
                 name="productCode"
+                pattern="[0-9]{8}"
+                title="Branch code must be exactly 8 digits."                
                 required
                 type="text"
                 value={formValues.productCode}
@@ -81,6 +83,8 @@ export default function ProductPage() {
                 }
               />
             </label>
+          </div>
+          <div className="crud-page-form-column">
             <div className="product-form-field--account-type">
               <Dropdown
                 disabled={inputsDisabled}
