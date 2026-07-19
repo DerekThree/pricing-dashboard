@@ -23,15 +23,14 @@ import { routeUrls } from "../../routes";
 
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
-  let record: RegionRequest = {
+  let initialFormValues: any = {
     regionCode: "",
     regionName: "",
     states: [],
     zipCodes: [],
     branches: [],
-    updatedBy: "",
   };
-  let options: CoverageOptions = {
+  let dropdownOptions: CoverageOptions = {
     states: [],
     zipCodes: [],
     branches: [],
@@ -42,7 +41,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     const response = await getCoverageOptions();
 
     if (response.status === 200) {
-      options = response.data;
+      dropdownOptions = response.data;
     } else {
       loaderError = getErrorMessage(response.data, response.status);
     }
@@ -54,7 +53,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
 
     if (regionResponse.status === 200) {
       const region = regionResponse.data as RegionDetail;
-      record = {
+      initialFormValues = {
         ...region,
         branches: region.branches.map((branch) => branch.id),
       };
@@ -63,7 +62,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     }
 
     if (optionsResponse.status === 200) {
-      options = optionsResponse.data;
+      dropdownOptions = optionsResponse.data;
     } else if (!loaderError) {
       loaderError = getErrorMessage(optionsResponse.data, optionsResponse.status);
     }
@@ -72,11 +71,11 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
 
     if (response.status === 200) {
       const region = response.data as RegionDetail;
-      record = {
+      initialFormValues = {
         ...region,
         branches: region.branches.map((branch) => branch.id),
       };
-      options = {
+      dropdownOptions = {
         states: region.states,
         zipCodes: region.zipCodes,
         branches: region.branches,
@@ -88,8 +87,8 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
 
   return {
     operation,
-    record,
-    options,
+    initialFormValues,
+    dropdownOptions,
     loaderError,
   };
 }
@@ -100,10 +99,10 @@ export const clientAction = createClientAction({
   deleteRecord: deleteRegion,
   listRouteUrl: routeUrls.regions,
   arrayFields: ["states", "zipCodes", "branches"],
-  transformRecord: (record) =>
+  transformFormValues: (fomrValues) =>
     ({
-      ...record,
-      branches: (record.branches as string[]).map((branchId) => Number(branchId)),
+      ...fomrValues,
+      branches: (fomrValues.branches as string[]).map((branchId) => Number(branchId)),
     }) as RegionRequest,
 });
 
@@ -116,9 +115,9 @@ function getBranchOptions(branches: CoverageOptions["branches"]): DropdownOption
 }
 
 export default function RegionPage() {
-  const { operation, record, options, loaderError } = useLoaderData<typeof clientLoader>();
+  const { operation, initialFormValues, dropdownOptions, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
-  const { formValues, updateField } = useFormValues(record);
+  const { formValues, updateField } = useFormValues(initialFormValues);
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
@@ -133,7 +132,6 @@ export default function RegionPage() {
         />
         {loaderError && <p className="page-error">{loaderError}</p>}
         {actionError && <p className="page-error">{actionError}</p>}
-        <input name="updatedBy" type="hidden" value={formValues.updatedBy} />
         <div className="form-grid region-form-grid">
           <div className="crud-page-form-column">
             <label className="crud-page-form-field region-form-field--code" htmlFor="region-code">
@@ -172,27 +170,27 @@ export default function RegionPage() {
               isMulti
               label="States"
               name="states"
-              options={options.states.map((value) => ({ value, label: value }))}
+              options={dropdownOptions.states.map((value) => ({ value, label: value }))}
               values={formValues.states}
-              onChange={(values) => updateField("states", values as RegionRequest["states"])}
+              onChange={(values) => updateField("states", values)}
             />
             <Dropdown
               disabled={inputsDisabled}
               isMulti
               label="Zip Codes"
               name="zipCodes"
-              options={options.zipCodes.map((value) => ({ value, label: value }))}
+              options={dropdownOptions.zipCodes.map((value) => ({ value, label: value }))}
               values={formValues.zipCodes}
-              onChange={(values) => updateField("zipCodes", values as RegionRequest["zipCodes"])}
+              onChange={(values) => updateField("zipCodes", values)}
             />
             <Dropdown
               disabled={inputsDisabled}
               isMulti
               label="Branches"
               name="branches"
-              options={getBranchOptions(options.branches)}
+              options={getBranchOptions(dropdownOptions.branches)}
               values={formValues.branches}
-              onChange={(values) => updateField("branches", values as RegionRequest["branches"])}
+              onChange={(values) => updateField("branches", values)}
             />
           </div>
         </div>

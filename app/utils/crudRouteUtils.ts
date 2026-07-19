@@ -54,8 +54,8 @@ type SuccessData<TResponse extends ApiResponse> =
 
 type CrudLoaderConfig<TRequest, TResponse extends ApiResponse> = {
   getRecord(id: number): Promise<TResponse>;
-  emptyRequest: TRequest;
-  transformRecord?: (record: SuccessData<TResponse>) => TRequest;
+  emptyFormValues: TRequest;
+  transformFormValues?: (formValues: SuccessData<TResponse>) => TRequest;
 };
 
 type CrudActionConfig<TRequest> = {
@@ -64,17 +64,17 @@ type CrudActionConfig<TRequest> = {
   deleteRecord(id: number): Promise<ApiResponse>;
   listRouteUrl: string;
   arrayFields?: (keyof TRequest)[];
-  transformRecord?: (record: Record<string, unknown>) => TRequest;
+  transformFormValues?: (formValues: Record<string, unknown>) => TRequest;
 };
 
 export function createClientLoader<TRequest, TResponse extends ApiResponse>({
   getRecord,
-  emptyRequest,
-  transformRecord,
+  emptyFormValues,
+  transformFormValues,
 }: CrudLoaderConfig<TRequest, TResponse>) {
   return async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     const { operation, id } = validateCrudRouteParams(params);
-    let record: TRequest | SuccessData<TResponse> = emptyRequest;
+    let initialFormValues: TRequest | SuccessData<TResponse> = emptyFormValues;
     let loaderError: string | null = null;
 
     if (operation !== crudOps.create) {
@@ -82,13 +82,13 @@ export function createClientLoader<TRequest, TResponse extends ApiResponse>({
 
       if (response.status === 200) {
         const loadedRecord = response.data as SuccessData<TResponse>;
-        record = transformRecord ? transformRecord(loadedRecord) : loadedRecord;
+        initialFormValues = transformFormValues ? transformFormValues(loadedRecord) : loadedRecord;
       } else {
         loaderError = getErrorMessage(response.data, response.status);
       }
     }
 
-    return { operation, record, loaderError };
+    return { operation, initialFormValues, loaderError };
   };
 }
 
@@ -98,7 +98,7 @@ export function createClientAction<TRequest>({
   deleteRecord,
   listRouteUrl,
   arrayFields = [],
-  transformRecord,
+  transformFormValues,
 }: CrudActionConfig<TRequest>) {
   return async function clientAction({ request, params }: ClientActionFunctionArgs) {
     const { operation, id } = validateCrudRouteParams(params);
@@ -114,7 +114,7 @@ export function createClientAction<TRequest>({
         record[String(field)] = formData.getAll(String(field));
       }
 
-      const transformedRecord = transformRecord ? transformRecord(record) : (record as TRequest);
+      const transformedRecord = transformFormValues ? transformFormValues(record) : (record as TRequest);
 
       if (operation === crudOps.create) {
         response = await createRecord(transformedRecord);

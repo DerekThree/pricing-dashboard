@@ -6,22 +6,20 @@ import { useActionData } from "react-router";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
 import { createBranch, deleteBranch, getBranch, updateBranch } from "../../generated/api/client";
-import type { BranchRequest } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 
-const emptyBranchRequest: BranchRequest = {
+const emptyFormValues = {
   branchCode: "",
   branchName: "",
   state: "",
   zipCode: "",
-  updatedBy: "",
 };
 
 export const clientLoader = createClientLoader({
   getRecord: getBranch,
-  emptyRequest: emptyBranchRequest,
+  emptyFormValues,
 });
 
 export const clientAction = createClientAction({
@@ -32,9 +30,9 @@ export const clientAction = createClientAction({
 });
 
 export default function BranchPage() {
-  const { operation, record, loaderError } = useLoaderData<typeof clientLoader>();
+  const { operation, initialFormValues, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
-  const { formValues, updateField } = useFormValues(record);
+  const { formValues, updateField } = useFormValues(initialFormValues);
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
@@ -49,7 +47,6 @@ export default function BranchPage() {
         />
         {loaderError && <p className="page-error">{loaderError}</p>}
         {actionError && <p className="page-error">{actionError}</p>}
-        <input name="updatedBy" type="hidden" value={formValues.updatedBy} />
         <div className="form-grid">
           <div className="crud-page-form-column">
             <label className="crud-page-form-field branch-form-field--code" htmlFor="branch-code">

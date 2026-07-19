@@ -12,20 +12,15 @@ import { createClientAction, createClientLoader, crudOps, } from "../../utils/cr
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 
-type ProductFormValues = Omit<ProductRequest, "accountType"> & {
-  accountType: ProductRequest["accountType"] | "";
-};
-
-const emptyProductRequest: ProductFormValues = {
+const emptyFormValues = {
   productCode: "",
   productName: "",
   accountType: "",
-  updatedBy: "",
 };
 
 export const clientLoader = createClientLoader({
   getRecord: getProduct,
-  emptyRequest: emptyProductRequest,
+  emptyFormValues,
 });
 
 export const clientAction = createClientAction({
@@ -33,19 +28,19 @@ export const clientAction = createClientAction({
   updateRecord: updateProduct,
   deleteRecord: deleteProduct,
   listRouteUrl: routeUrls.products,
-  transformRecord: (record) =>
+  transformFormValues: (formValues) =>
     ({
-      productCode: String(record.productCode),
-      productName: String(record.productName),
-      accountType: record.accountType as ProductRequest["accountType"],
-      updatedBy: String(record.updatedBy),
+      productCode: String(formValues.productCode),
+      productName: String(formValues.productName),
+      accountType: formValues.accountType as ProductRequest["accountType"],
+      updatedBy: String(formValues.updatedBy),
     }) satisfies ProductRequest,
 });
 
 export default function ProductPage() {
-  const { operation, record, loaderError } = useLoaderData<typeof clientLoader>();
+  const { operation, initialFormValues, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
-  const { formValues, updateField } = useFormValues(record);
+  const { formValues, updateField } = useFormValues(initialFormValues);
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
@@ -60,7 +55,6 @@ export default function ProductPage() {
         />
         {loaderError && <p className="page-error">{loaderError}</p>}
         {actionError && <p className="page-error">{actionError}</p>}
-        <input name="updatedBy" type="hidden" value={formValues.updatedBy} />
         <div className="form-grid">
           <div className="crud-page-form-column">
             <label className="crud-page-form-field product-form-field--code" htmlFor="product-code">
@@ -109,7 +103,7 @@ export default function ProductPage() {
                   { value: AccountType.CREDIT, label: "Credit" },
                 ]}
                 value={formValues.accountType}
-                onChange={(value) => updateField("accountType", value as ProductFormValues["accountType"])}
+                onChange={(value) => updateField("accountType", value)}
               />
             </div>
           </div>

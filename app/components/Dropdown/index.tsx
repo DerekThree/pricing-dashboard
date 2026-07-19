@@ -1,6 +1,11 @@
 import "./styles.css";
 
-import Select, { components, type MultiValue, type MultiValueGenericProps, type SingleValueProps } from "react-select";
+import Select, {
+  components,
+  type MultiValue,
+  type MultiValueGenericProps,
+  type SingleValueProps,
+} from "react-select";
 
 type DropdownValue = string | number;
 
@@ -21,13 +26,13 @@ type BaseDropdownProps = {
 type MultiDropdownProps = BaseDropdownProps & {
   isMulti: true;
   values: DropdownValue[];
-  onChange(values: DropdownValue[]): void;
+  onChange(values: any): void;
 };
 
 type SingleDropdownProps = BaseDropdownProps & {
   isMulti?: false;
   value: DropdownValue;
-  onChange(value: DropdownValue): void;
+  onChange(value: any): void;
 };
 
 type DropdownProps = MultiDropdownProps | SingleDropdownProps;
