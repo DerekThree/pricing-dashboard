@@ -9,4 +9,4 @@
 /**
  * @pattern ^[A-Z0-9]{8}$
  */
-export type BranchCode = string;
+export type PricingPlanCode = string;

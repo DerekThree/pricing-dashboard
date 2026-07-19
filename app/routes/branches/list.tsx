@@ -3,14 +3,13 @@ import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
 import { listBranches } from "../../generated/api/client";
-import type { Branch } from "../../generated/api/models";
+import type { BranchListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { formatDateTime } from "../../utils/dateTimeUtils";
 
-const columnDefs: ColDef<Branch>[] = [
-  { field: "branchCode", headerName: "Branch Code" },
-  { field: "branchName", headerName: "Branch Name" },
+const columnDefs: ColDef<BranchListItem>[] = [
+  { field: "branch", headerName: "Branch" },
   { field: "state", headerName: "State" },
   { field: "zipCode", headerName: "Zip Code" },
   { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
@@ -22,7 +21,7 @@ export async function clientLoader() {
 
   return status === 200
     ? { rowData: data, loaderError: null }
-    : { rowData: [] as Branch[], loaderError: getErrorMessage(data, status) };
+    : { rowData: [] as BranchListItem[], loaderError: getErrorMessage(data, status) };
 }
 
 export default function BranchesPage() {

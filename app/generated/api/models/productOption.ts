@@ -5,14 +5,12 @@
  * REST API for managing branches, regions, products, and pricing plans.
  * OpenAPI spec version: 1.0.0
  */
+import type { Id } from './id';
 import type { ProductCode } from './productCode';
 import type { ProductName } from './productName';
-import type { AccountType } from './accountType';
-import type { UpdatedBy } from './updatedBy';
 
-export interface ProductRequest {
-  productCode: ProductCode;
-  productName: ProductName;
-  accountType: AccountType;
-  updatedBy: UpdatedBy;
+export interface ProductOption {
+  id: Id;
+  code: ProductCode;
+  name: ProductName;
 }

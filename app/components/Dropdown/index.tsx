@@ -1,11 +1,13 @@
 import "./styles.css";
 
-import Select, { components, type MultiValue, type MultiValueGenericProps } from "react-select";
+import Select, { components, type MultiValue, type MultiValueGenericProps, type SingleValueProps } from "react-select";
+
+type DropdownValue = string | number;
 
 export type DropdownOption = {
-  label?: string;
-  tooltip?: string;
-  value: string;
+  value: DropdownValue;
+  label: string;
+  description?: string;
 };
 
 type BaseDropdownProps = {
@@ -13,18 +15,19 @@ type BaseDropdownProps = {
   label: string;
   name: string;
   options: DropdownOption[];
+  required?: boolean;
 };
 
 type MultiDropdownProps = BaseDropdownProps & {
   isMulti: true;
-  values: string[];
-  onChange(values: string[]): void;
+  values: DropdownValue[];
+  onChange(values: DropdownValue[]): void;
 };
 
 type SingleDropdownProps = BaseDropdownProps & {
   isMulti?: false;
-  value: string;
-  onChange(value: string): void;
+  value: DropdownValue;
+  onChange(value: DropdownValue): void;
 };
 
 type DropdownProps = MultiDropdownProps | SingleDropdownProps;
@@ -32,30 +35,37 @@ type DropdownProps = MultiDropdownProps | SingleDropdownProps;
 function MultiValueContainer(props: MultiValueGenericProps<DropdownOption>) {
   const { data, innerProps } = props;
 
-  if (!data.tooltip) {
-    return <components.MultiValueContainer {...props} />;
-  }
-
   const tooltipInnerProps = {
     ...innerProps,
-    title: data.tooltip,
+    title: data.description ?? data.label,
   } as MultiValueGenericProps<DropdownOption>["innerProps"];
 
   return <components.MultiValueContainer {...props} innerProps={tooltipInnerProps} />;
 }
 
-function formatOptionLabel(option: DropdownOption, context: "menu" | "value", isMulti: boolean) {
-  const isMultiValueDisplay = isMulti && context === "value";
-  return isMultiValueDisplay || !option.label ? option.value : option.label;
+function SingleValue(props: SingleValueProps<DropdownOption>) {
+  const { data, innerProps } = props;
+
+  const tooltipInnerProps = {
+    ...innerProps,
+    title: data.description ?? data.label,
+  } as SingleValueProps<DropdownOption>["innerProps"];
+
+  return <components.SingleValue {...props} innerProps={tooltipInnerProps} />;
 }
 
-function renderHiddenInputs(name: string, selectedValues: string[]) {
-  return selectedValues.map((value) => <input key={value} name={name} type="hidden" value={value} />);
+function formatOptionLabel(option: DropdownOption, context: "menu" | "value", isMulti: boolean) {
+  return context === "value" || !option.description ? option.label : `${option.label} - ${option.description}`;
+}
+
+function renderHiddenInputs(name: string, selectedValues: DropdownValue[]) {
+  return selectedValues.map((value) => <input key={String(value)} name={name} type="hidden" value={value} />);
 }
 
 export default function Dropdown(props: DropdownProps) {
   const { disabled, label, name, options } = props;
   const isMulti = props.isMulti === true;
+  const required = props.required === true;
   const selectedValues = isMulti ? props.values : [props.value];
   const selectedOption = isMulti
     ? options.filter((option) => props.values.includes(option.value))
@@ -64,15 +74,17 @@ export default function Dropdown(props: DropdownProps) {
   return (
     <label className="crud-page-form-field" htmlFor={name}>
       <span>{label}</span>
-      {renderHiddenInputs(name, selectedValues)}
       <Select
         className="dropdown"
         classNamePrefix="dropdown"
         inputId={name}
         isDisabled={disabled}
         isMulti={isMulti}
-        components={isMulti ? { MultiValueContainer } : undefined}
+        required={required}
+        components={isMulti ? { MultiValueContainer } : { SingleValue }}
         formatOptionLabel={(option, { context }) => formatOptionLabel(option, context, isMulti)}
+        getOptionLabel={(option) => option.label}
+        getOptionValue={(option) => String(option.value)}
         options={options}
         placeholder={`${isMulti ? "Add" : "Select"} ${label.toLowerCase()}`}
         value={selectedOption}
@@ -84,6 +96,7 @@ export default function Dropdown(props: DropdownProps) {
           }
         }}
       />
+      {renderHiddenInputs(name, selectedValues)}
     </label>
   );
 }

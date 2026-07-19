@@ -7,6 +7,7 @@
  */
 
 /**
- * @pattern ^[A-Z0-9]{8}$
+ * @minLength 1
+ * @maxLength 100
  */
-export type BranchCode = string;
+export type ProductName = string;

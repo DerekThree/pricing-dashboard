@@ -59,8 +59,8 @@ export default function BranchPage() {
                 id="branch-code"
                 maxLength={8}
                 name="branchCode"
-                pattern="[0-9]{8}"
-                title="Branch code must be exactly 8 digits."
+                pattern="[A-Z0-9]{8}"
+                title="Branch code must be exactly 8 uppercase letters or digits."
                 required
                 type="text"
                 value={formValues.branchCode}

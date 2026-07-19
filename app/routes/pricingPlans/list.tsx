@@ -3,18 +3,15 @@ import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
 import { listPricingPlans } from "../../generated/api/client";
-import type { PricingPlan } from "../../generated/api/models";
+import type { PricingPlanListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { formatDateTime } from "../../utils/dateTimeUtils";
 
-const columnDefs: ColDef<PricingPlan>[] = [
-  { field: "planCode", headerName: "Plan Code" },
-  { field: "planName", headerName: "Plan Name" },
-  { field: "productCode", headerName: "Product Code" },
-  { field: "productName", headerName: "Product Name" },
-  { field: "regionCode", headerName: "Region Code" },
-  { field: "regionName", headerName: "Region Name" },
+const columnDefs: ColDef<PricingPlanListItem>[] = [
+  { field: "pricingPlan", headerName: "Pricing Plan" },
+  { field: "product", headerName: "Product" },
+  { field: "region", headerName: "Region" },
   { field: "activeFrom", headerName: "Active From", valueFormatter: ({ value }) => formatDateTime(value) },
   { field: "activeTo", headerName: "Active To", valueFormatter: ({ value }) => formatDateTime(value) },
   { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
@@ -26,7 +23,7 @@ export async function clientLoader() {
 
   return status === 200
     ? { rowData: data, loaderError: null }
-    : { rowData: [] as PricingPlan[], loaderError: getErrorMessage(data, status) };
+    : { rowData: [] as PricingPlanListItem[], loaderError: getErrorMessage(data, status) };
 }
 
 export default function PricingPlansPage() {

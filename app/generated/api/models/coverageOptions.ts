@@ -5,18 +5,12 @@
  * REST API for managing branches, regions, products, and pricing plans.
  * OpenAPI spec version: 1.0.0
  */
-import type { RegionCode } from './regionCode';
-import type { RegionName } from './regionName';
 import type { State } from './state';
 import type { ZipCode } from './zipCode';
-import type { Id } from './id';
-import type { UpdatedBy } from './updatedBy';
+import type { BranchOption } from './branchOption';
 
-export interface RegionRequest {
-  regionCode: RegionCode;
-  regionName: RegionName;
+export interface CoverageOptions {
   states: State[];
   zipCodes: ZipCode[];
-  branches: Id[];
-  updatedBy: UpdatedBy;
+  branches: BranchOption[];
 }

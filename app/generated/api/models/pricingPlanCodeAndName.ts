@@ -7,6 +7,6 @@
  */
 
 /**
- * @pattern ^[A-Z0-9]{8}$
+ * @pattern ^[0-9]{8} - .{1,100}$
  */
-export type BranchCode = string;
+export type PricingPlanCodeAndName = string;

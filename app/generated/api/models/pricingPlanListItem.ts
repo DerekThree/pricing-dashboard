@@ -5,18 +5,20 @@
  * REST API for managing branches, regions, products, and pricing plans.
  * OpenAPI spec version: 1.0.0
  */
-import type { PricingPlanCode } from './pricingPlanCode';
-import type { PricingPlanName } from './pricingPlanName';
 import type { Id } from './id';
+import type { PricingPlanCodeAndName } from './pricingPlanCodeAndName';
+import type { ProductCodeAndName } from './productCodeAndName';
+import type { RegionCodeAndName } from './regionCodeAndName';
 import type { DateTime } from './dateTime';
 import type { UpdatedBy } from './updatedBy';
 
-export interface PricingPlanRequest {
-  planCode: PricingPlanCode;
-  planName: PricingPlanName;
-  productId: Id;
-  regionId: Id;
+export interface PricingPlanListItem {
+  id: Id;
+  pricingPlan: PricingPlanCodeAndName;
+  product: ProductCodeAndName;
+  region: RegionCodeAndName;
   activeFrom: DateTime;
   activeTo: DateTime;
+  updatedOn: DateTime;
   updatedBy: UpdatedBy;
 }

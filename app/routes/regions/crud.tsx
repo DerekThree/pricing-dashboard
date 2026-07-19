@@ -11,11 +11,11 @@ import useFormValues from "../../hooks/useFormValues";
 import {
   createRegion,
   getRegion,
-  getRegionOptions,
+  getCoverageOptions,
   updateRegion,
   deleteRegion,
 } from "../../generated/api/client";
-import type { RegionOptions, RegionRequest } from "../../generated/api/models";
+import type { CoverageOptions, RegionDetail, RegionRequest } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
@@ -23,10 +23,6 @@ import { routeUrls } from "../../routes";
 
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
-  const [regionResponse, optionsResponse] = await Promise.all([
-    operation === crudOps.create ? null : getRegion(Number(id)),
-    getRegionOptions(),
-  ]);
   let record: RegionRequest = {
     regionCode: "",
     regionName: "",
@@ -35,33 +31,66 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     branches: [],
     updatedBy: "",
   };
-  let regionOptions: RegionOptions = {
+  let options: CoverageOptions = {
     states: [],
     zipCodes: [],
     branches: [],
   };
-  let regionError: string | null = null;
-  let regionOptionsError: string | null = null;
+  let loaderError: string | null = null;
 
-  if (regionResponse) {
-    if (regionResponse.status === 200) {
-      record = regionResponse.data;
+  if (operation === crudOps.create) {
+    const response = await getCoverageOptions();
+
+    if (response.status === 200) {
+      options = response.data;
     } else {
-      regionError = getErrorMessage(regionResponse.data, regionResponse.status);
+      loaderError = getErrorMessage(response.data, response.status);
     }
-  }
+  } else if (operation === crudOps.update) {
+    const [regionResponse, optionsResponse] = await Promise.all([
+      getRegion(Number(id)),
+      getCoverageOptions(),
+    ]);
 
-  if (optionsResponse.status === 200) {
-    regionOptions = optionsResponse.data;
+    if (regionResponse.status === 200) {
+      const region = regionResponse.data as RegionDetail;
+      record = {
+        ...region,
+        branches: region.branches.map((branch) => branch.id),
+      };
+    } else {
+      loaderError = getErrorMessage(regionResponse.data, regionResponse.status);
+    }
+
+    if (optionsResponse.status === 200) {
+      options = optionsResponse.data;
+    } else if (!loaderError) {
+      loaderError = getErrorMessage(optionsResponse.data, optionsResponse.status);
+    }
   } else {
-    regionOptionsError = getErrorMessage(optionsResponse.data, optionsResponse.status);
+    const response = await getRegion(Number(id));
+
+    if (response.status === 200) {
+      const region = response.data as RegionDetail;
+      record = {
+        ...region,
+        branches: region.branches.map((branch) => branch.id),
+      };
+      options = {
+        states: region.states,
+        zipCodes: region.zipCodes,
+        branches: region.branches,
+      };
+    } else {
+      loaderError = getErrorMessage(response.data, response.status);
+    }
   }
 
   return {
     operation,
     record,
-    regionOptions,
-    loaderError: regionError ?? regionOptionsError,
+    options,
+    loaderError,
   };
 }
 
@@ -71,18 +100,23 @@ export const clientAction = createClientAction({
   deleteRecord: deleteRegion,
   listRouteUrl: routeUrls.regions,
   arrayFields: ["states", "zipCodes", "branches"],
+  transformRecord: (record) =>
+    ({
+      ...record,
+      branches: (record.branches as string[]).map((branchId) => Number(branchId)),
+    }) as RegionRequest,
 });
 
-function getBranchOptions(branches: RegionOptions["branches"]): DropdownOption[] {
+function getBranchOptions(branches: CoverageOptions["branches"]): DropdownOption[] {
   return branches.map((branch) => ({
-    value: branch.branchCode,
-    label: `${branch.branchCode} - ${branch.branchName}`,
-    tooltip: branch.branchName,
+    value: branch.id,
+    label: branch.code,
+    description: branch.name,
   }));
 }
 
 export default function RegionPage() {
-  const { operation, record, regionOptions, loaderError } = useLoaderData<typeof clientLoader>();
+  const { operation, record, options, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(record);
   const inputsDisabled =
@@ -109,8 +143,8 @@ export default function RegionPage() {
                 id="region-code"
                 maxLength={8}
                 name="regionCode"
-                pattern="[0-9]{8}"
-                title="Branch code must be exactly 8 digits."                
+                pattern="[A-Z0-9]{8}"
+                title="Region code must be exactly 8 uppercase letters or digits."
                 required
                 type="text"
                 value={formValues.regionCode}
@@ -138,27 +172,27 @@ export default function RegionPage() {
               isMulti
               label="States"
               name="states"
-              options={regionOptions.states.map((value) => ({ value }))}
+              options={options.states.map((value) => ({ value, label: value }))}
               values={formValues.states}
-              onChange={(values) => updateField("states", values)}
+              onChange={(values) => updateField("states", values as RegionRequest["states"])}
             />
             <Dropdown
               disabled={inputsDisabled}
               isMulti
               label="Zip Codes"
               name="zipCodes"
-              options={regionOptions.zipCodes.map((value) => ({ value }))}
+              options={options.zipCodes.map((value) => ({ value, label: value }))}
               values={formValues.zipCodes}
-              onChange={(values) => updateField("zipCodes", values)}
+              onChange={(values) => updateField("zipCodes", values as RegionRequest["zipCodes"])}
             />
             <Dropdown
               disabled={inputsDisabled}
               isMulti
               label="Branches"
               name="branches"
-              options={getBranchOptions(regionOptions.branches)}
+              options={getBranchOptions(options.branches)}
               values={formValues.branches}
-              onChange={(values) => updateField("branches", values)}
+              onChange={(values) => updateField("branches", values as RegionRequest["branches"])}
             />
           </div>
         </div>

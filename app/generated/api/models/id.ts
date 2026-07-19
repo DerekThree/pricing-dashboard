@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * @pattern ^[A-Z0-9]{8}$
- */
-export type BranchCode = string;
+export type Id = number;

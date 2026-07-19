@@ -12,10 +12,14 @@ import { createClientAction, createClientLoader, crudOps, } from "../../utils/cr
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 
-const emptyProductRequest: ProductRequest = {
+type ProductFormValues = Omit<ProductRequest, "accountType"> & {
+  accountType: ProductRequest["accountType"] | "";
+};
+
+const emptyProductRequest: ProductFormValues = {
   productCode: "",
   productName: "",
-  accountType: AccountType.DEPOSIT,
+  accountType: "",
   updatedBy: "",
 };
 
@@ -29,6 +33,13 @@ export const clientAction = createClientAction({
   updateRecord: updateProduct,
   deleteRecord: deleteProduct,
   listRouteUrl: routeUrls.products,
+  transformRecord: (record) =>
+    ({
+      productCode: String(record.productCode),
+      productName: String(record.productName),
+      accountType: record.accountType as ProductRequest["accountType"],
+      updatedBy: String(record.updatedBy),
+    }) satisfies ProductRequest,
 });
 
 export default function ProductPage() {
@@ -57,9 +68,10 @@ export default function ProductPage() {
               <input
                 disabled={inputsDisabled}
                 id="product-code"
+                maxLength={8}
                 name="productCode"
-                pattern="[0-9]{8}"
-                title="Branch code must be exactly 8 digits."                
+                pattern="[A-Z0-9]{8}"
+                title="Product code must be exactly 8 uppercase letters or digits."
                 required
                 type="text"
                 value={formValues.productCode}
@@ -73,6 +85,7 @@ export default function ProductPage() {
               <input
                 disabled={inputsDisabled}
                 id="product-name"
+                maxLength={100}
                 name="productName"
                 required
                 title={formValues.productName}
@@ -90,12 +103,13 @@ export default function ProductPage() {
                 disabled={inputsDisabled}
                 label="Account Type"
                 name="accountType"
+                required
                 options={[
                   { value: AccountType.DEPOSIT, label: "Deposit" },
                   { value: AccountType.CREDIT, label: "Credit" },
                 ]}
                 value={formValues.accountType}
-                onChange={(value) => updateField("accountType", value as ProductRequest["accountType"])}
+                onChange={(value) => updateField("accountType", value as ProductFormValues["accountType"])}
               />
             </div>
           </div>

@@ -5,8 +5,10 @@
  * REST API for managing branches, regions, products, and pricing plans.
  * OpenAPI spec version: 1.0.0
  */
+import type { Id } from './id';
+import type { DateTime } from './dateTime';
 
-/**
- * @pattern ^[A-Z0-9]{8}$
- */
-export type BranchCode = string;
+export type ProductDetailAllOf = {
+  id: Id;
+  updatedOn: DateTime;
+};

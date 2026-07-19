@@ -3,14 +3,13 @@ import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
 import { listRegions } from "../../generated/api/client";
-import type { Region } from "../../generated/api/models";
+import type { RegionListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { formatDateTime } from "../../utils/dateTimeUtils";
 
-const columnDefs: ColDef<Region>[] = [
-  { field: "regionCode", headerName: "Region Code" },
-  { field: "regionName", headerName: "Region Name" },
+const columnDefs: ColDef<RegionListItem>[] = [
+  { field: "region", headerName: "Region" },
   { field: "states", headerName: "States" },
   { field: "zipCodes", headerName: "Zip Codes" },
   { field: "branches", headerName: "Branches" },
@@ -23,7 +22,7 @@ export async function clientLoader() {
 
   return status === 200
     ? { rowData: data, loaderError: null }
-    : { rowData: [] as Region[], loaderError: getErrorMessage(data, status) };
+    : { rowData: [] as RegionListItem[], loaderError: getErrorMessage(data, status) };
 }
 
 export default function RegionsPage() {

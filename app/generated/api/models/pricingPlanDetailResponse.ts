@@ -5,8 +5,9 @@
  * REST API for managing branches, regions, products, and pricing plans.
  * OpenAPI spec version: 1.0.0
  */
+import type { PricingPlanDetail } from './pricingPlanDetail';
 
 /**
- * @pattern ^[A-Z0-9]{8}$
+ * Pricing plan response
  */
-export type BranchCode = string;
+export type PricingPlanDetailResponse = PricingPlanDetail;

@@ -2,25 +2,27 @@ import "./styles.css";
 
 import { Form, useLoaderData } from "react-router";
 import { useActionData } from "react-router";
+import type { ClientLoaderFunctionArgs } from "react-router";
 
+import Dropdown from "../../components/Dropdown";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
-import { createPricingPlan, deletePricingPlan, getPricingPlan, updatePricingPlan, } from "../../generated/api/client";
-import type { PricingPlanRequest } from "../../generated/api/models";
-import { createClientAction, createClientLoader, crudOps, } from "../../utils/crudRouteUtils";
+import {
+  createPricingPlan,
+  deletePricingPlan,
+  getPricingPlan,
+  getProductRegionOptions,
+  updatePricingPlan,
+} from "../../generated/api/client";
+import type { PricingPlanDetail, PricingPlanRequest, ProductRegionOptions } from "../../generated/api/models";
+import { getErrorMessage } from "../../utils/apiUtils";
+import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 
-const emptyPricingPlanRequest: PricingPlanRequest = {
-  planCode: "",
-  planName: "",
-  productCode: "",
-  productName: "",
-  regionCode: "",
-  regionName: "",
-  activeFrom: "",
-  activeTo: "",
-  updatedBy: "",
+type PricingPlanFormValues = Omit<PricingPlanRequest, "productId" | "regionId"> & {
+  productId: number | "";
+  regionId: number | "";
 };
 
 function toOffsetDateTime(value: unknown) {
@@ -31,15 +33,78 @@ function toDateInputValue(value: unknown) {
   return typeof value === "string" && value.length >= 10 ? value.slice(0, 10) : "";
 }
 
-export const clientLoader = createClientLoader({
-  getRecord: getPricingPlan,
-  emptyRequest: emptyPricingPlanRequest,
-  transformRecord: (record) => ({
-    ...record,
-    activeFrom: toDateInputValue(record.activeFrom),
-    activeTo: toDateInputValue(record.activeTo),
-  }),
-});
+export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
+  const { operation, id } = validateCrudRouteParams(params);
+  let record: PricingPlanFormValues = {
+    planCode: "",
+    planName: "",
+    productId: "",
+    regionId: "",
+    activeFrom: "",
+    activeTo: "",
+    updatedBy: "",
+  };
+  let pricingPlanOptions: ProductRegionOptions = {
+    products: [],
+    regions: [],
+  };
+  let loaderError: string | null = null;
+
+  if (operation === crudOps.create) {
+    const response = await getProductRegionOptions();
+
+    if (response.status === 200) {
+      pricingPlanOptions = response.data;
+    } else {
+      loaderError = getErrorMessage(response.data, response.status);
+    }
+  } else if (operation === crudOps.update) {
+    const [pricingPlanResponse, optionsResponse] = await Promise.all([
+      getPricingPlan(Number(id)),
+      getProductRegionOptions(),
+    ]);
+
+    if (pricingPlanResponse.status === 200) {
+      const pricingPlan = pricingPlanResponse.data as PricingPlanDetail;
+      record = {
+        ...pricingPlan,
+        productId: pricingPlan.product.id,
+        regionId: pricingPlan.region.id,
+        activeFrom: toDateInputValue(pricingPlan.activeFrom),
+        activeTo: toDateInputValue(pricingPlan.activeTo),
+      };
+    } else {
+      loaderError = getErrorMessage(pricingPlanResponse.data, pricingPlanResponse.status);
+    }
+
+    if (optionsResponse.status === 200) {
+      pricingPlanOptions = optionsResponse.data;
+    } else if (!loaderError) {
+      loaderError = getErrorMessage(optionsResponse.data, optionsResponse.status);
+    }
+  } else {
+    const response = await getPricingPlan(Number(id));
+
+    if (response.status === 200) {
+      const pricingPlan = response.data as PricingPlanDetail;
+      record = {
+        ...pricingPlan,
+        productId: pricingPlan.product.id,
+        regionId: pricingPlan.region.id,
+        activeFrom: toDateInputValue(pricingPlan.activeFrom),
+        activeTo: toDateInputValue(pricingPlan.activeTo),
+      };
+      pricingPlanOptions = {
+        products: [pricingPlan.product],
+        regions: [pricingPlan.region],
+      };
+    } else {
+      loaderError = getErrorMessage(response.data, response.status);
+    }
+  }
+
+  return { operation, record, pricingPlanOptions, loaderError };
+}
 
 export const clientAction = createClientAction({
   createRecord: createPricingPlan,
@@ -49,13 +114,15 @@ export const clientAction = createClientAction({
   transformRecord: (record) =>
     ({
       ...record,
+      productId: Number(record.productId),
+      regionId: Number(record.regionId),
       activeFrom: toOffsetDateTime(record.activeFrom),
       activeTo: toOffsetDateTime(record.activeTo),
     }) as PricingPlanRequest,
 });
 
 export default function PricingPlanPage() {
-  const { operation, record, loaderError } = useLoaderData<typeof clientLoader>();
+  const { operation, record, pricingPlanOptions, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(record);
   const inputsDisabled =
@@ -73,8 +140,6 @@ export default function PricingPlanPage() {
         {loaderError && <p className="page-error">{loaderError}</p>}
         {actionError && <p className="page-error">{actionError}</p>}
         <input name="updatedBy" type="hidden" value={formValues.updatedBy} />
-        <input name="productName" type="hidden" value={formValues.productName} />
-        <input name="regionName" type="hidden" value={formValues.regionName} />
         <div className="form-grid">
           <div className="crud-page-form-column">
             <label className="crud-page-form-field" htmlFor="plan-code">
@@ -82,9 +147,10 @@ export default function PricingPlanPage() {
               <input
                 disabled={inputsDisabled}
                 id="plan-code"
+                maxLength={8}
                 name="planCode"
-                pattern="[0-9]{8}"
-                title="Branch code must be exactly 8 digits."                
+                pattern="[A-Z0-9]{8}"
+                title="Plan code must be exactly 8 uppercase letters or digits."
                 required
                 type="text"
                 value={formValues.planCode}
@@ -98,6 +164,7 @@ export default function PricingPlanPage() {
               <input
                 disabled={inputsDisabled}
                 id="plan-name"
+                maxLength={100}
                 name="planName"
                 required
                 type="text"
@@ -109,34 +176,32 @@ export default function PricingPlanPage() {
             </label>
           </div>
           <div className="crud-page-form-column">
-            <label className="crud-page-form-field" htmlFor="product-code">
-              <span>Product Code</span>
-              <input
-                disabled={inputsDisabled}
-                id="product-code"
-                name="productCode"
-                required
-                type="text"
-                value={formValues.productCode}
-                onChange={(event) =>
-                  updateField("productCode", event.target.value.toUpperCase())
-                }
-              />
-            </label>
-            <label className="crud-page-form-field" htmlFor="region-code">
-              <span>Region Code</span>
-              <input
-                disabled={inputsDisabled}
-                id="region-code"
-                name="regionCode"
-                required
-                type="text"
-                value={formValues.regionCode}
-                onChange={(event) =>
-                  updateField("regionCode", event.target.value.toUpperCase())
-                }
-              />
-            </label>
+            <Dropdown
+              disabled={inputsDisabled}
+              label="Product Code"
+              name="productId"
+              required
+              options={pricingPlanOptions.products.map((product) => ({
+                value: product.id,
+                label: product.code,
+                description: product.name,
+              }))}
+              value={formValues.productId}
+              onChange={(value) => updateField("productId", value as PricingPlanFormValues["productId"])}
+            />
+            <Dropdown
+              disabled={inputsDisabled}
+              label="Region Code"
+              name="regionId"
+              required
+              options={pricingPlanOptions.regions.map((region) => ({
+                value: region.id,
+                label: region.code,
+                description: region.name,
+              }))}
+              value={formValues.regionId}
+              onChange={(value) => updateField("regionId", value as PricingPlanFormValues["regionId"])}
+            />
             <label className="crud-page-form-field" htmlFor="active-from">
               <span>Active From</span>
               <input

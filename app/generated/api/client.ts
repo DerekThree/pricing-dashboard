@@ -6,16 +6,22 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
-  Branch,
+  BranchDetailResponse,
+  BranchListItem,
   BranchRequest,
+  CoverageOptions,
   ErrorResponse,
-  PricingPlan,
+  PricingPlanDetailResponse,
+  PricingPlanListItem,
   PricingPlanRequest,
-  Product,
+  ProductDetailResponse,
+  ProductListItem,
+  ProductRegionOptions,
   ProductRequest,
-  Region,
-  RegionOptions,
-  RegionRequest
+  RegionDetailResponse,
+  RegionListItem,
+  RegionRequest,
+  SyntheticServiceUnavailableResponse
 } from './models';
 
 import { apiMutator } from '../../utils/apiMutator';
@@ -23,7 +29,7 @@ import { apiMutator } from '../../utils/apiMutator';
  * @summary List all branches
  */
 export type listBranchesResponse200 = {
-  data: Branch[]
+  data: BranchListItem[]
   status: 200
 }
 
@@ -33,7 +39,7 @@ export type listBranchesResponse500 = {
 }
 
 export type listBranchesResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -71,7 +77,7 @@ export const listBranches = async ( options?: RequestInit): Promise<listBranches
  * @summary Create a branch
  */
 export type createBranchResponse201 = {
-  data: Branch
+  data: BranchDetailResponse
   status: 201
 }
 
@@ -86,7 +92,7 @@ export type createBranchResponse500 = {
 }
 
 export type createBranchResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -125,7 +131,7 @@ export const createBranch = async (branchRequest: BranchRequest, options?: Reque
  * @summary Get a branch by ID
  */
 export type getBranchResponse200 = {
-  data: Branch
+  data: BranchDetailResponse
   status: 200
 }
 
@@ -140,7 +146,7 @@ export type getBranchResponse500 = {
 }
 
 export type getBranchResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -178,7 +184,7 @@ export const getBranch = async (id: number, options?: RequestInit): Promise<getB
  * @summary Replace a branch
  */
 export type updateBranchResponse200 = {
-  data: Branch
+  data: BranchDetailResponse
   status: 200
 }
 
@@ -198,7 +204,7 @@ export type updateBranchResponse500 = {
 }
 
 export type updateBranchResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -253,7 +259,7 @@ export type deleteBranchResponse500 = {
 }
 
 export type deleteBranchResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -291,7 +297,7 @@ export const deleteBranch = async (id: number, options?: RequestInit): Promise<d
  * @summary List all regions
  */
 export type listRegionsResponse200 = {
-  data: Region[]
+  data: RegionListItem[]
   status: 200
 }
 
@@ -301,7 +307,7 @@ export type listRegionsResponse500 = {
 }
 
 export type listRegionsResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -339,7 +345,7 @@ export const listRegions = async ( options?: RequestInit): Promise<listRegionsRe
  * @summary Create a region
  */
 export type createRegionResponse201 = {
-  data: Region
+  data: RegionDetailResponse
   status: 201
 }
 
@@ -354,7 +360,7 @@ export type createRegionResponse500 = {
 }
 
 export type createRegionResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -390,33 +396,33 @@ export const createRegion = async (regionRequest: RegionRequest, options?: Reque
 
 
 /**
- * @summary List available region options
+ * @summary Get available region options
  */
-export type getRegionOptionsResponse200 = {
-  data: RegionOptions
+export type getCoverageOptionsResponse200 = {
+  data: CoverageOptions
   status: 200
 }
 
-export type getRegionOptionsResponse500 = {
+export type getCoverageOptionsResponse500 = {
   data: ErrorResponse
   status: 500
 }
 
-export type getRegionOptionsResponse503 = {
-  data: ErrorResponse
+export type getCoverageOptionsResponse503 = {
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
-export type getRegionOptionsResponseSuccess = (getRegionOptionsResponse200) & {
+export type getCoverageOptionsResponseSuccess = (getCoverageOptionsResponse200) & {
   headers: Headers;
 };
-export type getRegionOptionsResponseError = (getRegionOptionsResponse500 | getRegionOptionsResponse503) & {
+export type getCoverageOptionsResponseError = (getCoverageOptionsResponse500 | getCoverageOptionsResponse503) & {
   headers: Headers;
 };
 
-export type getRegionOptionsResponse = (getRegionOptionsResponseSuccess | getRegionOptionsResponseError)
+export type getCoverageOptionsResponse = (getCoverageOptionsResponseSuccess | getCoverageOptionsResponseError)
 
-export const getGetRegionOptionsUrl = () => {
+export const getGetCoverageOptionsUrl = () => {
 
 
   
@@ -424,9 +430,9 @@ export const getGetRegionOptionsUrl = () => {
   return `http://localhost:8080/regions/options`
 }
 
-export const getRegionOptions = async ( options?: RequestInit): Promise<getRegionOptionsResponse> => {
+export const getCoverageOptions = async ( options?: RequestInit): Promise<getCoverageOptionsResponse> => {
   
-  return apiMutator<getRegionOptionsResponse>(getGetRegionOptionsUrl(),
+  return apiMutator<getCoverageOptionsResponse>(getGetCoverageOptionsUrl(),
   {      
     ...options,
     method: 'GET'
@@ -441,7 +447,7 @@ export const getRegionOptions = async ( options?: RequestInit): Promise<getRegio
  * @summary Get a region by ID
  */
 export type getRegionResponse200 = {
-  data: Region
+  data: RegionDetailResponse
   status: 200
 }
 
@@ -456,7 +462,7 @@ export type getRegionResponse500 = {
 }
 
 export type getRegionResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -494,7 +500,7 @@ export const getRegion = async (id: number, options?: RequestInit): Promise<getR
  * @summary Replace a region
  */
 export type updateRegionResponse200 = {
-  data: Region
+  data: RegionDetailResponse
   status: 200
 }
 
@@ -514,7 +520,7 @@ export type updateRegionResponse500 = {
 }
 
 export type updateRegionResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -569,7 +575,7 @@ export type deleteRegionResponse500 = {
 }
 
 export type deleteRegionResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -607,7 +613,7 @@ export const deleteRegion = async (id: number, options?: RequestInit): Promise<d
  * @summary List all products
  */
 export type listProductsResponse200 = {
-  data: Product[]
+  data: ProductListItem[]
   status: 200
 }
 
@@ -617,7 +623,7 @@ export type listProductsResponse500 = {
 }
 
 export type listProductsResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -655,7 +661,7 @@ export const listProducts = async ( options?: RequestInit): Promise<listProducts
  * @summary Create a product
  */
 export type createProductResponse201 = {
-  data: Product
+  data: ProductDetailResponse
   status: 201
 }
 
@@ -670,7 +676,7 @@ export type createProductResponse500 = {
 }
 
 export type createProductResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -709,7 +715,7 @@ export const createProduct = async (productRequest: ProductRequest, options?: Re
  * @summary Get a product by ID
  */
 export type getProductResponse200 = {
-  data: Product
+  data: ProductDetailResponse
   status: 200
 }
 
@@ -724,7 +730,7 @@ export type getProductResponse500 = {
 }
 
 export type getProductResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -762,7 +768,7 @@ export const getProduct = async (id: number, options?: RequestInit): Promise<get
  * @summary Replace a product
  */
 export type updateProductResponse200 = {
-  data: Product
+  data: ProductDetailResponse
   status: 200
 }
 
@@ -782,7 +788,7 @@ export type updateProductResponse500 = {
 }
 
 export type updateProductResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -837,7 +843,7 @@ export type deleteProductResponse500 = {
 }
 
 export type deleteProductResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -875,7 +881,7 @@ export const deleteProduct = async (id: number, options?: RequestInit): Promise<
  * @summary List all pricing plans
  */
 export type listPricingPlansResponse200 = {
-  data: PricingPlan[]
+  data: PricingPlanListItem[]
   status: 200
 }
 
@@ -885,7 +891,7 @@ export type listPricingPlansResponse500 = {
 }
 
 export type listPricingPlansResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -923,7 +929,7 @@ export const listPricingPlans = async ( options?: RequestInit): Promise<listPric
  * @summary Create a pricing plan
  */
 export type createPricingPlanResponse201 = {
-  data: PricingPlan
+  data: PricingPlanDetailResponse
   status: 201
 }
 
@@ -938,7 +944,7 @@ export type createPricingPlanResponse500 = {
 }
 
 export type createPricingPlanResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -974,10 +980,58 @@ export const createPricingPlan = async (pricingPlanRequest: PricingPlanRequest, 
 
 
 /**
+ * @summary Get available pricing plan options
+ */
+export type getProductRegionOptionsResponse200 = {
+  data: ProductRegionOptions
+  status: 200
+}
+
+export type getProductRegionOptionsResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type getProductRegionOptionsResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type getProductRegionOptionsResponseSuccess = (getProductRegionOptionsResponse200) & {
+  headers: Headers;
+};
+export type getProductRegionOptionsResponseError = (getProductRegionOptionsResponse500 | getProductRegionOptionsResponse503) & {
+  headers: Headers;
+};
+
+export type getProductRegionOptionsResponse = (getProductRegionOptionsResponseSuccess | getProductRegionOptionsResponseError)
+
+export const getGetProductRegionOptionsUrl = () => {
+
+
+  
+
+  return `http://localhost:8080/pricing-plans/options`
+}
+
+export const getProductRegionOptions = async ( options?: RequestInit): Promise<getProductRegionOptionsResponse> => {
+  
+  return apiMutator<getProductRegionOptionsResponse>(getGetProductRegionOptionsUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+/**
  * @summary Get a pricing plan by ID
  */
 export type getPricingPlanResponse200 = {
-  data: PricingPlan
+  data: PricingPlanDetailResponse
   status: 200
 }
 
@@ -992,7 +1046,7 @@ export type getPricingPlanResponse500 = {
 }
 
 export type getPricingPlanResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
@@ -1030,7 +1084,7 @@ export const getPricingPlan = async (id: number, options?: RequestInit): Promise
  * @summary Replace a pricing plan
  */
 export type updatePricingPlanResponse200 = {
-  data: PricingPlan
+  data: PricingPlanDetailResponse
   status: 200
 }
 
@@ -1050,7 +1104,7 @@ export type updatePricingPlanResponse500 = {
 }
 
 export type updatePricingPlanResponse503 = {
-  data: ErrorResponse
+  data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
