@@ -105,14 +105,14 @@ export const clientAction = createClientAction({
   updateRecord: updatePricingPlan,
   deleteRecord: deletePricingPlan,
   listRouteUrl: routeUrls.pricingPlans,
-  transformFormValues: (formValues) =>
+  mapFormValuesToRequest: (formValues) =>
     ({
       ...formValues,
       productId: Number(formValues.productId),
       regionId: Number(formValues.regionId),
       activeFrom: toOffsetDateTime(formValues.activeFrom),
       activeTo: toOffsetDateTime(formValues.activeTo),
-    }) as PricingPlanRequest,
+    }),
 });
 
 export default function PricingPlanPage() {

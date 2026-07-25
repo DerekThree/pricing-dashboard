@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate, useNavigation } from "react-router";
 import { isRouteErrorResponse } from "react-router";
 import "./styles.css";
@@ -50,10 +50,42 @@ function Sidebar() {
   );
 }
 
+export const toastSearchParam = "toast";
+
 export function Layout({ children }: { children?: React.ReactNode }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const navigation = useNavigation();
   const isLoading = navigation.state === "loading";
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const nextToastMessage = searchParams.get(toastSearchParam);
+
+    if (!nextToastMessage) {
+      return;
+    }
+
+    setToastMessage(nextToastMessage);
+    searchParams.delete(toastSearchParam);
+    navigate(
+      {
+        pathname: location.pathname,
+        search: searchParams.toString() ? `?${searchParams.toString()}` : "",
+      },
+      { replace: true },
+    );
+  }, [location.pathname, location.search, navigate]);
+
+  useEffect(() => {
+    if (!toastMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => setToastMessage(null), 3000);
+    return () => window.clearTimeout(timeoutId);
+  }, [toastMessage]);
 
   function handleHome() {
     navigate("/");
@@ -64,6 +96,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
       <Sidebar />
       <main className="layout-main">
         {isLoading && <div className="layout-loading-bar" />}
+        {toastMessage && <div className="layout-toast">{toastMessage}</div>}
         <div className="layout-content">
           <div className="layout-header">
             <h1 className="layout-title">Pricing Dashboard</h1>

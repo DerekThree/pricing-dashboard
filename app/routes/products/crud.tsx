@@ -28,13 +28,11 @@ export const clientAction = createClientAction({
   updateRecord: updateProduct,
   deleteRecord: deleteProduct,
   listRouteUrl: routeUrls.products,
-  transformFormValues: (formValues) =>
+  mapFormValuesToRequest: (formValues) =>
     ({
-      productCode: String(formValues.productCode),
-      productName: String(formValues.productName),
-      accountType: formValues.accountType as ProductRequest["accountType"],
-      updatedBy: String(formValues.updatedBy),
-    }) satisfies ProductRequest,
+      ...formValues,
+      accountType: formValues.accountType as AccountType,
+    }),
 });
 
 export default function ProductPage() {

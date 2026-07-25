@@ -62,7 +62,12 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     }
 
     if (optionsResponse.status === 200) {
-      dropdownOptions = optionsResponse.data;
+      const region = regionResponse.data as RegionDetail;
+      dropdownOptions = {
+        states: [...optionsResponse.data.states, ...region.states],
+        zipCodes: [...optionsResponse.data.zipCodes, ...region.zipCodes],
+        branches: [...optionsResponse.data.branches, ...region.branches],
+      };
     } else if (!loaderError) {
       loaderError = getErrorMessage(optionsResponse.data, optionsResponse.status);
     }
@@ -99,11 +104,13 @@ export const clientAction = createClientAction({
   deleteRecord: deleteRegion,
   listRouteUrl: routeUrls.regions,
   arrayFields: ["states", "zipCodes", "branches"],
-  transformFormValues: (fomrValues) =>
+  mapFormValuesToRequest: (formValues) =>
     ({
-      ...fomrValues,
-      branches: (fomrValues.branches as string[]).map((branchId) => Number(branchId)),
-    }) as RegionRequest,
+      ...formValues,
+      states:  formValues.states as string[],
+      zipCodes: formValues.zipCodes as string[],
+      branches: (formValues.branches as string[]).map((branchId) => Number(branchId)),
+    }),
 });
 
 function getBranchOptions(branches: CoverageOptions["branches"]): DropdownOption[] {

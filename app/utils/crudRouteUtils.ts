@@ -5,6 +5,7 @@ import {
 } from "react-router";
 
 import { getErrorMessage } from "./apiUtils";
+import { toastSearchParam } from "../routes/layout/index";
 
 export const crudOps = {
   create: "create",
@@ -52,10 +53,9 @@ type ApiResponse = {
 type SuccessData<TResponse extends ApiResponse> =
   Extract<TResponse, { status: 200 }>["data"];
 
-type CrudLoaderConfig<TRequest, TResponse extends ApiResponse> = {
+type CrudLoaderConfig<TFormValues, TResponse extends ApiResponse> = {
   getRecord(id: number): Promise<TResponse>;
-  emptyFormValues: TRequest;
-  transformFormValues?: (formValues: SuccessData<TResponse>) => TRequest;
+  emptyFormValues: TFormValues;
 };
 
 type CrudActionConfig<TRequest> = {
@@ -64,25 +64,23 @@ type CrudActionConfig<TRequest> = {
   deleteRecord(id: number): Promise<ApiResponse>;
   listRouteUrl: string;
   arrayFields?: (keyof TRequest)[];
-  transformFormValues?: (formValues: Record<string, unknown>) => TRequest;
+  mapFormValuesToRequest?: (formValues: Record<string, unknown>) => TRequest;
 };
 
-export function createClientLoader<TRequest, TResponse extends ApiResponse>({
+export function createClientLoader<TFormValues, TResponse extends ApiResponse>({
   getRecord,
   emptyFormValues,
-  transformFormValues,
-}: CrudLoaderConfig<TRequest, TResponse>) {
+}: CrudLoaderConfig<TFormValues, TResponse>) {
   return async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     const { operation, id } = validateCrudRouteParams(params);
-    let initialFormValues: TRequest | SuccessData<TResponse> = emptyFormValues;
+    let initialFormValues: TFormValues | SuccessData<TResponse> = emptyFormValues;
     let loaderError: string | null = null;
 
     if (operation !== crudOps.create) {
       const response = await getRecord(Number(id));
 
       if (response.status === 200) {
-        const loadedRecord = response.data as SuccessData<TResponse>;
-        initialFormValues = transformFormValues ? transformFormValues(loadedRecord) : loadedRecord;
+        initialFormValues = response.data as SuccessData<TResponse>;
       } else {
         loaderError = getErrorMessage(response.data, response.status);
       }
@@ -98,7 +96,7 @@ export function createClientAction<TRequest>({
   deleteRecord,
   listRouteUrl,
   arrayFields = [],
-  transformFormValues,
+  mapFormValuesToRequest,
 }: CrudActionConfig<TRequest>) {
   return async function clientAction({ request, params }: ClientActionFunctionArgs) {
     const { operation, id } = validateCrudRouteParams(params);
@@ -107,20 +105,20 @@ export function createClientAction<TRequest>({
 
     if (operation === crudOps.create || operation === crudOps.update) {
       const formData = await request.formData();
-      const record = Object.fromEntries(formData) as Record<string, unknown>;
-      record.updatedBy = "user";
+      const formValues = Object.fromEntries(formData) as Record<string, unknown>;
+      formValues.updatedBy = "user";
 
       for (const field of arrayFields) {
-        record[String(field)] = formData.getAll(String(field));
+        formValues[String(field)] = formData.getAll(String(field));
       }
 
-      const transformedRecord = transformFormValues ? transformFormValues(record) : (record as TRequest);
+      const apiRequest = mapFormValuesToRequest ? mapFormValuesToRequest(formValues) : (formValues as TRequest);
 
       if (operation === crudOps.create) {
-        response = await createRecord(transformedRecord);
+        response = await createRecord(apiRequest);
         success = response.status === 201;
       } else {
-        response = await updateRecord(Number(id), transformedRecord);
+        response = await updateRecord(Number(id), apiRequest);
         success = response.status === 200;
       }
     } else if (operation === crudOps.delete) {
@@ -131,7 +129,7 @@ export function createClientAction<TRequest>({
     }
 
     return success
-      ? redirect(listRouteUrl)
+      ? redirect(`${listRouteUrl}?${toastSearchParam}=Success`)
       : { actionError: getErrorMessage(response.data, response.status) };
   };
 }
