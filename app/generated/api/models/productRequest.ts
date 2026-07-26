@@ -7,12 +7,12 @@
  */
 import type { ProductCode } from './productCode';
 import type { ProductName } from './productName';
-import type { AccountType } from './accountType';
+import type { ProductType } from './productType';
 import type { UpdatedBy } from './updatedBy';
 
 export interface ProductRequest {
   productCode: ProductCode;
   productName: ProductName;
-  accountType: AccountType;
+  productType: ProductType;
   updatedBy: UpdatedBy;
 }

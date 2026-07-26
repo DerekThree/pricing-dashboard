@@ -7,14 +7,14 @@
  */
 import type { Id } from './id';
 import type { ProductCodeAndName } from './productCodeAndName';
-import type { AccountType } from './accountType';
+import type { ProductType } from './productType';
 import type { DateTime } from './dateTime';
 import type { UpdatedBy } from './updatedBy';
 
 export interface ProductListItem {
   id: Id;
   product: ProductCodeAndName;
-  accountType: AccountType;
+  productType: ProductType;
   updatedOn: DateTime;
   updatedBy: UpdatedBy;
 }

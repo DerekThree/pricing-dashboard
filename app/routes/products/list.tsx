@@ -3,22 +3,22 @@ import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
 import { listProducts } from "../../generated/api/client";
-import { AccountType, type ProductListItem } from "../../generated/api/models";
+import { ProductType, type ProductListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { formatDateTime } from "../../utils/dateTimeUtils";
 
-const accountTypeLabels: Record<ProductListItem["accountType"], string> = {
-  [AccountType.DEPOSIT]: "Deposit",
-  [AccountType.CREDIT]: "Credit",
+const productTypeLabels: Record<ProductListItem["productType"], string> = {
+  [ProductType.DEPOSIT]: "Deposit",
+  [ProductType.CREDIT]: "Credit",
 };
 
 const columnDefs: ColDef<ProductListItem>[] = [
   { field: "product", headerName: "Product" },
   {
-    field: "accountType",
-    headerName: "Account Type",
-    valueFormatter: ({ value }) => accountTypeLabels[value as ProductListItem["accountType"]] ?? value,
+    field: "productType",
+    headerName: "Product Type",
+    valueFormatter: ({ value }) => productTypeLabels[value as ProductListItem["productType"]] ?? value,
   },
   { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
   { field: "updatedBy", headerName: "Updated By" },

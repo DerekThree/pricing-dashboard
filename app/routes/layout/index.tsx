@@ -16,15 +16,15 @@ type SidebarLink = {
 function Sidebar() {
   const items: SidebarLink[] = [
     { id: "branches", label: "Branches", path: routeUrls.branches, hasDividerBefore: true },
-    { id: "account-attributes", label: "Account Attributes", path: routeUrls.accountAttributes },
     { id: "regions", label: "Regions", path: routeUrls.regions },
     { id: "products", label: "Products", path: routeUrls.products },
+    { id: "account-attributes", label: "Account Attributes", path: routeUrls.accountAttributes },
     { id: "pricing-plans", label: "Pricing Plans", path: routeUrls.pricingPlans },
     { id: "simulator", label: "Simulator", path: routeUrls.simulator, hasDividerBefore: true },
   ];
   const navigate = useNavigate();
   const location = useLocation();
-  const activePath = location.pathname === "/" ? routeUrls.branches : location.pathname;
+  const activePath = location.pathname === "/" ? routeUrls.pricingPlans : location.pathname;
   const isActive = (path: string) =>
     activePath === path || activePath.startsWith(`${path}/`);
 
@@ -88,10 +88,6 @@ export function Layout({ children }: { children?: React.ReactNode }) {
     return () => window.clearTimeout(timeoutId);
   }, [toastMessage]);
 
-  function handleHome() {
-    navigate("/");
-  }
-
   return (
     <div className="layout">
       <Sidebar />
@@ -99,14 +95,6 @@ export function Layout({ children }: { children?: React.ReactNode }) {
         {isLoading && <div className="layout-loading-bar" />}
         {toastMessage && <div className="layout-toast">{toastMessage}</div>}
         <div className="layout-content">
-          <div className="layout-header">
-            <h1 className="layout-title">Pricing Dashboard</h1>
-            <div className="ml-auto">
-              <button className="layout-home-button" onClick={handleHome} type="button">
-                Home
-              </button>
-            </div>
-          </div>
           {children ?? <Outlet />}
         </div>
       </main>

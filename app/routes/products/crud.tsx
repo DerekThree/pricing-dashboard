@@ -7,7 +7,7 @@ import Dropdown from "../../components/Dropdown";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
 import { createProduct, deleteProduct, getProduct, updateProduct, } from "../../generated/api/client";
-import { AccountType, type ProductRequest } from "../../generated/api/models";
+import { ProductType } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps, } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
@@ -15,7 +15,7 @@ import { routeUrls } from "../../routes";
 const emptyFormValues = {
   productCode: "",
   productName: "",
-  accountType: "",
+  productType: "",
 };
 
 export const clientLoader = createClientLoader({
@@ -31,7 +31,7 @@ export const clientAction = createClientAction({
   mapFormValuesToRequest: (formValues) =>
     ({
       ...formValues,
-      accountType: formValues.accountType as AccountType,
+      productType: formValues.productType as ProductType,
     }),
 });
 
@@ -90,18 +90,18 @@ export default function ProductPage() {
             </label>
           </div>
           <div className="crud-page-form-column">
-            <div className="product-form-field--account-type">
+            <div className="product-form-field--product-type">
               <Dropdown
                 disabled={inputsDisabled}
-                label="Account Type"
-                name="accountType"
+                label="Product Type"
+                name="productType"
                 required
                 options={[
-                  { value: AccountType.DEPOSIT, label: "Deposit" },
-                  { value: AccountType.CREDIT, label: "Credit" },
+                  { value: ProductType.DEPOSIT, label: "Deposit" },
+                  { value: ProductType.CREDIT, label: "Credit" },
                 ]}
-                value={formValues.accountType}
-                onChange={(value) => updateField("accountType", value)}
+                value={formValues.productType}
+                onChange={(value) => updateField("productType", value)}
               />
             </div>
           </div>

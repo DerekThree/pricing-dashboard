@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ProductCode } from './productCode';
-import type { AccountType } from './accountType';
+import type { ProductType } from './productType';
 import type { UpdatedBy } from './updatedBy';
 
 export interface Product {
@@ -17,7 +17,7 @@ export interface Product {
    * @maxLength 100
    */
   productName: string;
-  accountType: AccountType;
+  productType: ProductType;
   updatedOn: string;
   updatedBy: UpdatedBy;
 }
