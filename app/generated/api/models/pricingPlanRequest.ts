@@ -8,7 +8,7 @@
 import type { PricingPlanCode } from './pricingPlanCode';
 import type { PricingPlanName } from './pricingPlanName';
 import type { Id } from './id';
-import type { DateTime } from './dateTime';
+import type { Date } from './date';
 import type { UpdatedBy } from './updatedBy';
 
 export interface PricingPlanRequest {
@@ -16,7 +16,7 @@ export interface PricingPlanRequest {
   planName: PricingPlanName;
   productId: Id;
   regionId: Id;
-  activeFrom: DateTime;
-  activeTo: DateTime;
+  activeFrom: Date;
+  activeThrough: Date;
   updatedBy: UpdatedBy;
 }

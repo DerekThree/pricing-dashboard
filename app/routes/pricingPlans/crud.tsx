@@ -20,14 +20,6 @@ import { createClientAction, crudOps, validateCrudRouteParams } from "../../util
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 
-function toOffsetDateTime(value: unknown) {
-  return typeof value === "string" && value.length > 0 ? `${value}T00:00:00+08:00` : "";
-}
-
-function toDateInputValue(value: unknown) {
-  return typeof value === "string" && value.length >= 10 ? value.slice(0, 10) : "";
-}
-
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
   let initialFormValues: any = {
@@ -36,7 +28,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     productId: "",
     regionId: "",
     activeFrom: "",
-    activeTo: "",
+    activeThrough: "",
   };
   let dropdownOptions: ProductRegionOptions = {
     products: [],
@@ -54,7 +46,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     }
   } else if (operation === crudOps.update) {
     const [pricingPlanResponse, optionsResponse] = await Promise.all([
-      getPricingPlan(Number(id)),
+      getPricingPlan(id),
       getProductRegionOptions(),
     ]);
 
@@ -64,8 +56,6 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
         ...pricingPlan,
         productId: pricingPlan.product.id,
         regionId: pricingPlan.region.id,
-        activeFrom: toDateInputValue(pricingPlan.activeFrom),
-        activeTo: toDateInputValue(pricingPlan.activeTo),
       };
     } else {
       loaderError = getErrorMessage(pricingPlanResponse.data, pricingPlanResponse.status);
@@ -77,7 +67,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
       loaderError = getErrorMessage(optionsResponse.data, optionsResponse.status);
     }
   } else {
-    const response = await getPricingPlan(Number(id));
+    const response = await getPricingPlan(id);
 
     if (response.status === 200) {
       const pricingPlan = response.data as PricingPlanDetail;
@@ -85,8 +75,6 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
         ...pricingPlan,
         productId: pricingPlan.product.id,
         regionId: pricingPlan.region.id,
-        activeFrom: toDateInputValue(pricingPlan.activeFrom),
-        activeTo: toDateInputValue(pricingPlan.activeTo),
       };
       dropdownOptions = {
         products: [pricingPlan.product],
@@ -110,8 +98,8 @@ export const clientAction = createClientAction({
       ...formValues,
       productId: Number(formValues.productId),
       regionId: Number(formValues.regionId),
-      activeFrom: toOffsetDateTime(formValues.activeFrom),
-      activeTo: toOffsetDateTime(formValues.activeTo),
+      activeFrom: formValues.activeFrom,
+      activeThrough: formValues.activeThrough,
     }),
 });
 
@@ -210,17 +198,17 @@ export default function PricingPlanPage() {
                 }
               />
             </label>
-            <label className="crud-page-form-field" htmlFor="active-to">
-              <span>Active To</span>
+            <label className="crud-page-form-field" htmlFor="active-through">
+              <span>Active Through</span>
               <input
                 disabled={inputsDisabled}
-                id="active-to"
-                name="activeTo"
+                id="active-through"
+                name="activeThrough"
                 required
                 type="date"
-                value={formValues.activeTo}
+                value={formValues.activeThrough}
                 onChange={(event) =>
-                  updateField("activeTo", event.target.value)
+                  updateField("activeThrough", event.target.value)
                 }
               />
             </label>

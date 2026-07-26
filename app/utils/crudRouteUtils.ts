@@ -34,7 +34,7 @@ export function validateCrudRouteParams(params: ClientLoaderFunctionArgs["params
   if (params.operation === crudOps.create || (!!params.id && /^\d+$/.test(params.id))) {
     return {
       operation: params.operation,
-      id: params.id,
+      id: Number(params.id),
     };
   }
 
@@ -77,7 +77,7 @@ export function createClientLoader<TFormValues, TResponse extends ApiResponse>({
     let loaderError: string | null = null;
 
     if (operation !== crudOps.create) {
-      const response = await getRecord(Number(id));
+      const response = await getRecord(id);
 
       if (response.status === 200) {
         initialFormValues = response.data as SuccessData<TResponse>;
@@ -118,11 +118,11 @@ export function createClientAction<TRequest>({
         response = await createRecord(apiRequest);
         success = response.status === 201;
       } else {
-        response = await updateRecord(Number(id), apiRequest);
+        response = await updateRecord(id, apiRequest);
         success = response.status === 200;
       }
     } else if (operation === crudOps.delete) {
-      response = await deleteRecord(Number(id));
+      response = await deleteRecord(id);
       success = response.status === 204;
     } else {
       return { actionError: "View pages cannot submit changes." };

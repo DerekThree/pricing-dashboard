@@ -15,7 +15,7 @@ import {
   updateRegion,
   deleteRegion,
 } from "../../generated/api/client";
-import type { CoverageOptions, RegionDetail, RegionRequest } from "../../generated/api/models";
+import type { CoverageOptions, RegionDetail } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
@@ -47,7 +47,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     }
   } else if (operation === crudOps.update) {
     const [regionResponse, optionsResponse] = await Promise.all([
-      getRegion(Number(id)),
+      getRegion(id),
       getCoverageOptions(),
     ]);
 
@@ -72,7 +72,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
       loaderError = getErrorMessage(optionsResponse.data, optionsResponse.status);
     }
   } else {
-    const response = await getRegion(Number(id));
+    const response = await getRegion(id);
 
     if (response.status === 200) {
       const region = response.data as RegionDetail;
@@ -107,8 +107,8 @@ export const clientAction = createClientAction({
   mapFormValuesToRequest: (formValues) =>
     ({
       ...formValues,
-      states:  formValues.states as string[],
-      zipCodes: formValues.zipCodes as string[],
+      states:  formValues.states,
+      zipCodes: formValues.zipCodes,
       branches: (formValues.branches as string[]).map((branchId) => Number(branchId)),
     }),
 });

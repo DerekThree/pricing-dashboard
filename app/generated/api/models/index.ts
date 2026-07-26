@@ -19,6 +19,7 @@ export * from './branchName';
 export * from './branchOption';
 export * from './branchRequest';
 export * from './coverageOptions';
+export * from './date';
 export * from './dateTime';
 export * from './errorResponse';
 export * from './errorResponseResponse';

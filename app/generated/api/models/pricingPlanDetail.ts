@@ -10,6 +10,7 @@ import type { PricingPlanCode } from './pricingPlanCode';
 import type { PricingPlanName } from './pricingPlanName';
 import type { ProductOption } from './productOption';
 import type { RegionOption } from './regionOption';
+import type { Date } from './date';
 import type { DateTime } from './dateTime';
 import type { UpdatedBy } from './updatedBy';
 
@@ -19,8 +20,8 @@ export interface PricingPlanDetail {
   planName: PricingPlanName;
   product: ProductOption;
   region: RegionOption;
-  activeFrom: DateTime;
-  activeTo: DateTime;
+  activeFrom: Date;
+  activeThrough: Date;
   updatedOn: DateTime;
   updatedBy: UpdatedBy;
 }

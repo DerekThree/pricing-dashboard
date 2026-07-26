@@ -9,6 +9,7 @@ import type { Id } from './id';
 import type { PricingPlanCodeAndName } from './pricingPlanCodeAndName';
 import type { ProductCodeAndName } from './productCodeAndName';
 import type { RegionCodeAndName } from './regionCodeAndName';
+import type { Date } from './date';
 import type { DateTime } from './dateTime';
 import type { UpdatedBy } from './updatedBy';
 
@@ -17,8 +18,8 @@ export interface PricingPlanListItem {
   pricingPlan: PricingPlanCodeAndName;
   product: ProductCodeAndName;
   region: RegionCodeAndName;
-  activeFrom: DateTime;
-  activeTo: DateTime;
+  activeFrom: Date;
+  activeThrough: Date;
   updatedOn: DateTime;
   updatedBy: UpdatedBy;
 }
