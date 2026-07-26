@@ -6,6 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  AccountAttributeDetailResponse,
+  AccountAttributeListItem,
+  AccountAttributeRequest,
   BranchDetailResponse,
   BranchListItem,
   BranchRequest,
@@ -1183,6 +1186,274 @@ export const getDeletePricingPlanUrl = (id: number,) => {
 export const deletePricingPlan = async (id: number, options?: RequestInit): Promise<deletePricingPlanResponse> => {
   
   return apiMutator<deletePricingPlanResponse>(getDeletePricingPlanUrl(id),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+
+
+
+/**
+ * @summary List all account attributes
+ */
+export type listAccountAttributesResponse200 = {
+  data: AccountAttributeListItem[]
+  status: 200
+}
+
+export type listAccountAttributesResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type listAccountAttributesResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type listAccountAttributesResponseSuccess = (listAccountAttributesResponse200) & {
+  headers: Headers;
+};
+export type listAccountAttributesResponseError = (listAccountAttributesResponse500 | listAccountAttributesResponse503) & {
+  headers: Headers;
+};
+
+export type listAccountAttributesResponse = (listAccountAttributesResponseSuccess | listAccountAttributesResponseError)
+
+export const getListAccountAttributesUrl = () => {
+
+
+  
+
+  return `http://localhost:8080/account-attributes`
+}
+
+export const listAccountAttributes = async ( options?: RequestInit): Promise<listAccountAttributesResponse> => {
+  
+  return apiMutator<listAccountAttributesResponse>(getListAccountAttributesUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+/**
+ * @summary Create an account attribute
+ */
+export type createAccountAttributeResponse201 = {
+  data: AccountAttributeDetailResponse
+  status: 201
+}
+
+export type createAccountAttributeResponse400 = {
+  data: ErrorResponse
+  status: 400
+}
+
+export type createAccountAttributeResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type createAccountAttributeResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type createAccountAttributeResponseSuccess = (createAccountAttributeResponse201) & {
+  headers: Headers;
+};
+export type createAccountAttributeResponseError = (createAccountAttributeResponse400 | createAccountAttributeResponse500 | createAccountAttributeResponse503) & {
+  headers: Headers;
+};
+
+export type createAccountAttributeResponse = (createAccountAttributeResponseSuccess | createAccountAttributeResponseError)
+
+export const getCreateAccountAttributeUrl = () => {
+
+
+  
+
+  return `http://localhost:8080/account-attributes`
+}
+
+export const createAccountAttribute = async (accountAttributeRequest: AccountAttributeRequest, options?: RequestInit): Promise<createAccountAttributeResponse> => {
+  
+  return apiMutator<createAccountAttributeResponse>(getCreateAccountAttributeUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      accountAttributeRequest,)
+  }
+);}
+
+
+
+/**
+ * @summary Get an account attribute by ID
+ */
+export type getAccountAttributeResponse200 = {
+  data: AccountAttributeDetailResponse
+  status: 200
+}
+
+export type getAccountAttributeResponse404 = {
+  data: ErrorResponse
+  status: 404
+}
+
+export type getAccountAttributeResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type getAccountAttributeResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type getAccountAttributeResponseSuccess = (getAccountAttributeResponse200) & {
+  headers: Headers;
+};
+export type getAccountAttributeResponseError = (getAccountAttributeResponse404 | getAccountAttributeResponse500 | getAccountAttributeResponse503) & {
+  headers: Headers;
+};
+
+export type getAccountAttributeResponse = (getAccountAttributeResponseSuccess | getAccountAttributeResponseError)
+
+export const getGetAccountAttributeUrl = (id: number,) => {
+
+
+  
+
+  return `http://localhost:8080/account-attributes/${id}`
+}
+
+export const getAccountAttribute = async (id: number, options?: RequestInit): Promise<getAccountAttributeResponse> => {
+  
+  return apiMutator<getAccountAttributeResponse>(getGetAccountAttributeUrl(id),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+/**
+ * @summary Replace an account attribute
+ */
+export type updateAccountAttributeResponse200 = {
+  data: AccountAttributeDetailResponse
+  status: 200
+}
+
+export type updateAccountAttributeResponse400 = {
+  data: ErrorResponse
+  status: 400
+}
+
+export type updateAccountAttributeResponse404 = {
+  data: ErrorResponse
+  status: 404
+}
+
+export type updateAccountAttributeResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type updateAccountAttributeResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type updateAccountAttributeResponseSuccess = (updateAccountAttributeResponse200) & {
+  headers: Headers;
+};
+export type updateAccountAttributeResponseError = (updateAccountAttributeResponse400 | updateAccountAttributeResponse404 | updateAccountAttributeResponse500 | updateAccountAttributeResponse503) & {
+  headers: Headers;
+};
+
+export type updateAccountAttributeResponse = (updateAccountAttributeResponseSuccess | updateAccountAttributeResponseError)
+
+export const getUpdateAccountAttributeUrl = (id: number,) => {
+
+
+  
+
+  return `http://localhost:8080/account-attributes/${id}`
+}
+
+export const updateAccountAttribute = async (id: number,
+    accountAttributeRequest: AccountAttributeRequest, options?: RequestInit): Promise<updateAccountAttributeResponse> => {
+  
+  return apiMutator<updateAccountAttributeResponse>(getUpdateAccountAttributeUrl(id),
+  {      
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      accountAttributeRequest,)
+  }
+);}
+
+
+
+/**
+ * @summary Delete an account attribute
+ */
+export type deleteAccountAttributeResponse204 = {
+  data: void
+  status: 204
+}
+
+export type deleteAccountAttributeResponse404 = {
+  data: ErrorResponse
+  status: 404
+}
+
+export type deleteAccountAttributeResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type deleteAccountAttributeResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type deleteAccountAttributeResponseSuccess = (deleteAccountAttributeResponse204) & {
+  headers: Headers;
+};
+export type deleteAccountAttributeResponseError = (deleteAccountAttributeResponse404 | deleteAccountAttributeResponse500 | deleteAccountAttributeResponse503) & {
+  headers: Headers;
+};
+
+export type deleteAccountAttributeResponse = (deleteAccountAttributeResponseSuccess | deleteAccountAttributeResponseError)
+
+export const getDeleteAccountAttributeUrl = (id: number,) => {
+
+
+  
+
+  return `http://localhost:8080/account-attributes/${id}`
+}
+
+export const deleteAccountAttribute = async (id: number, options?: RequestInit): Promise<deleteAccountAttributeResponse> => {
+  
+  return apiMutator<deleteAccountAttributeResponse>(getDeleteAccountAttributeUrl(id),
   {      
     ...options,
     method: 'DELETE'

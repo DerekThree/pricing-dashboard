@@ -6,6 +6,7 @@ import {
 } from "@react-router/dev/routes";
 
 export const routeUrls = {
+  accountAttributes: "/account-attributes",
   branches: "/branches",
   regions: "/regions",
   products: "/products",
@@ -16,6 +17,8 @@ export const routeUrls = {
 export default [
   layout("routes/layout/index.tsx", [
     index("routes/branches/list.tsx", { id: "index" }),
+    route("account-attributes", "routes/accountAttributes/list.tsx"),
+    route("account-attributes/:operation/:id?", "routes/accountAttributes/crud.tsx"),
     route("branches", "routes/branches/list.tsx"),
     route("branches/:operation/:id?", "routes/branches/crud.tsx"),
     route("regions", "routes/regions/list.tsx"),

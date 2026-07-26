@@ -16,6 +16,7 @@ type SidebarLink = {
 function Sidebar() {
   const items: SidebarLink[] = [
     { id: "branches", label: "Branches", path: routeUrls.branches, hasDividerBefore: true },
+    { id: "account-attributes", label: "Account Attributes", path: routeUrls.accountAttributes },
     { id: "regions", label: "Regions", path: routeUrls.regions },
     { id: "products", label: "Products", path: routeUrls.products },
     { id: "pricing-plans", label: "Pricing Plans", path: routeUrls.pricingPlans },
