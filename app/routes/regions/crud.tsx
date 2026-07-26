@@ -15,7 +15,7 @@ import {
   updateRegion,
   deleteRegion,
 } from "../../generated/api/client";
-import type { CoverageOptions, RegionDetail } from "../../generated/api/models";
+import type { CoverageOptions } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
@@ -23,61 +23,54 @@ import { routeUrls } from "../../routes";
 
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
-  let initialFormValues: any = {};
-  let dropdownOptions: CoverageOptions = {
+  const emptyFormValues = {
+    regionCode: "",
+    regionName: "",
     states: [],
     zipCodes: [],
     branches: [],
   };
-  let loaderError: string | null = null;
+  const emptyDropdownOptions: CoverageOptions = {
+    states: [],
+    zipCodes: [],
+    branches: [],
+  };
 
-  if (operation === crudOps.create) {
-    const response = await getCoverageOptions();
+  const needsRecord = operation !== crudOps.create;
+  const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
+  const [recordResponse, optionsResponse] = await Promise.all([
+    needsRecord ? getRegion(id) : null,
+    needsOptionsEndpoint ? getCoverageOptions() : null,
+  ]);
 
-    if (response.status === 200) {
-      dropdownOptions = response.data;
-    } else {
-      loaderError = getErrorMessage(response.data, response.status);
-    }
-  } else if (operation === crudOps.update) {
-    const [regionResponse, optionsResponse] = await Promise.all([
-      getRegion(id),
-      getCoverageOptions(),
-    ]);
-
-    if (regionResponse.status === 200) {
-      initialFormValues = regionResponse.data;
-    } else {
-      loaderError = getErrorMessage(regionResponse.data, regionResponse.status);
-    }
-
-    if (regionResponse.status === 200 && optionsResponse.status === 200) {
-      const region = regionResponse.data;
-      dropdownOptions = {
-        states: [...optionsResponse.data.states, ...region.options.states],
-        zipCodes: [...optionsResponse.data.zipCodes, ...region.options.zipCodes],
-        branches: [...optionsResponse.data.branches, ...region.options.branches],
-      };
-    } else if (!loaderError) {
-      loaderError = getErrorMessage(optionsResponse.data, optionsResponse.status);
-    }
-  } else {
-    const response = await getRegion(id);
-
-    if (response.status === 200) {
-      initialFormValues = response.data;
-      dropdownOptions = response.data.options;
-    } else {
-      loaderError = getErrorMessage(response.data, response.status);
-    }
+  if (recordResponse && recordResponse.status !== 200) {
+    return {
+      operation,
+      initialFormValues: emptyFormValues,
+      dropdownOptions: emptyDropdownOptions,
+      loaderError: getErrorMessage(recordResponse.data, recordResponse.status),
+    };
   }
 
-  return {
-    operation,
-    initialFormValues,
-    dropdownOptions,
-    loaderError,
-  };
+  if (optionsResponse && optionsResponse.status !== 200) {
+    return {
+      operation,
+      initialFormValues: emptyFormValues,
+      dropdownOptions: emptyDropdownOptions,
+      loaderError: getErrorMessage(optionsResponse.data, optionsResponse.status),
+    };
+  }
+
+  const initialFormValues = recordResponse?.data ?? emptyFormValues;
+  const dropdownOptions = recordResponse && optionsResponse
+    ? {
+        states: [...optionsResponse.data.states, ...recordResponse.data.options.states],
+        zipCodes: [...optionsResponse.data.zipCodes, ...recordResponse.data.options.zipCodes],
+        branches: [...optionsResponse.data.branches, ...recordResponse.data.options.branches],
+      }
+    : optionsResponse?.data ?? recordResponse?.data.options ?? emptyDropdownOptions;
+
+  return { operation, initialFormValues, dropdownOptions, loaderError: null };
 }
 
 export const clientAction = createClientAction({

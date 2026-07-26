@@ -14,7 +14,7 @@ import {
   getProductRegionOptions,
   updatePricingPlan,
 } from "../../generated/api/client";
-import type { PricingPlanDetail, PricingPlanRequest, ProductRegionOptions } from "../../generated/api/models";
+import type { ProductRegionOptions } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
@@ -22,7 +22,7 @@ import { routeUrls } from "../../routes";
 
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
-  let initialFormValues = {
+  const emptyFormValues = {
     planCode: "",
     planName: "",
     productId: NaN,
@@ -30,49 +30,40 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     activeFrom: "",
     activeThrough: "",
   };
-  let dropdownOptions: ProductRegionOptions = {
+  const emptyDropdownOptions: ProductRegionOptions = {
     products: [],
     regions: [],
   };
-  let loaderError: string | null = null;
 
-  if (operation === crudOps.create) {
-    const response = await getProductRegionOptions();
+  const needsRecord = operation !== crudOps.create;
+  const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
+  const [recordResponse, optionsResponse] = await Promise.all([
+    needsRecord ? getPricingPlan(id) : null,
+    needsOptionsEndpoint ? getProductRegionOptions() : null,
+  ]);
 
-    if (response.status === 200) {
-      dropdownOptions = response.data;
-    } else {
-      loaderError = getErrorMessage(response.data, response.status);
-    }
-  } else if (operation === crudOps.update) {
-    const [pricingPlanResponse, optionsResponse] = await Promise.all([
-      getPricingPlan(id),
-      getProductRegionOptions(),
-    ]);
-
-    if (pricingPlanResponse.status === 200) {
-      initialFormValues = pricingPlanResponse.data;
-    } else {
-      loaderError = getErrorMessage(pricingPlanResponse.data, pricingPlanResponse.status);
-    }
-
-    if (optionsResponse.status === 200) {
-      dropdownOptions = optionsResponse.data;
-    } else if (!loaderError) {
-      loaderError = getErrorMessage(optionsResponse.data, optionsResponse.status);
-    }
-  } else {
-    const response = await getPricingPlan(id);
-
-    if (response.status === 200) {
-      initialFormValues = response.data;
-      dropdownOptions = response.data.options;
-    } else {
-      loaderError = getErrorMessage(response.data, response.status);
-    }
+  if (recordResponse && recordResponse.status !== 200) {
+    return {
+      operation,
+      initialFormValues: emptyFormValues,
+      dropdownOptions: emptyDropdownOptions,
+      loaderError: getErrorMessage(recordResponse.data, recordResponse.status),
+    };
   }
 
-  return { operation, initialFormValues, dropdownOptions, loaderError };
+  if (optionsResponse && optionsResponse.status !== 200) {
+    return {
+      operation,
+      initialFormValues: emptyFormValues,
+      dropdownOptions: emptyDropdownOptions,
+      loaderError: getErrorMessage(optionsResponse.data, optionsResponse.status),
+    };
+  }
+
+  const initialFormValues = recordResponse?.data ?? emptyFormValues;
+  const dropdownOptions = optionsResponse?.data ?? recordResponse?.data.options ?? emptyDropdownOptions;
+
+  return { operation, initialFormValues, dropdownOptions, loaderError: null };
 }
 
 export const clientAction = createClientAction({
