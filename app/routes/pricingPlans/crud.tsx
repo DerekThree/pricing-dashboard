@@ -22,11 +22,11 @@ import { routeUrls } from "../../routes";
 
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
-  let initialFormValues: any = {
+  let initialFormValues = {
     planCode: "",
     planName: "",
-    productId: "",
-    regionId: "",
+    productId: NaN,
+    regionId: NaN,
     activeFrom: "",
     activeThrough: "",
   };
@@ -51,12 +51,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     ]);
 
     if (pricingPlanResponse.status === 200) {
-      const pricingPlan = pricingPlanResponse.data as PricingPlanDetail;
-      initialFormValues = {
-        ...pricingPlan,
-        productId: pricingPlan.product.id,
-        regionId: pricingPlan.region.id,
-      };
+      initialFormValues = pricingPlanResponse.data;
     } else {
       loaderError = getErrorMessage(pricingPlanResponse.data, pricingPlanResponse.status);
     }
@@ -70,16 +65,8 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     const response = await getPricingPlan(id);
 
     if (response.status === 200) {
-      const pricingPlan = response.data as PricingPlanDetail;
-      initialFormValues = {
-        ...pricingPlan,
-        productId: pricingPlan.product.id,
-        regionId: pricingPlan.region.id,
-      };
-      dropdownOptions = {
-        products: [pricingPlan.product],
-        regions: [pricingPlan.region],
-      };
+      initialFormValues = response.data;
+      dropdownOptions = response.data.options;
     } else {
       loaderError = getErrorMessage(response.data, response.status);
     }
@@ -93,14 +80,6 @@ export const clientAction = createClientAction({
   updateRecord: updatePricingPlan,
   deleteRecord: deletePricingPlan,
   listRouteUrl: routeUrls.pricingPlans,
-  mapFormValuesToRequest: (formValues) =>
-    ({
-      ...formValues,
-      productId: Number(formValues.productId),
-      regionId: Number(formValues.regionId),
-      activeFrom: formValues.activeFrom,
-      activeThrough: formValues.activeThrough,
-    }),
 });
 
 export default function PricingPlanPage() {

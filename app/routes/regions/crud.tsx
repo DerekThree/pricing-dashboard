@@ -23,13 +23,7 @@ import { routeUrls } from "../../routes";
 
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
-  let initialFormValues: any = {
-    regionCode: "",
-    regionName: "",
-    states: [],
-    zipCodes: [],
-    branches: [],
-  };
+  let initialFormValues: any = {};
   let dropdownOptions: CoverageOptions = {
     states: [],
     zipCodes: [],
@@ -52,21 +46,17 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     ]);
 
     if (regionResponse.status === 200) {
-      const region = regionResponse.data as RegionDetail;
-      initialFormValues = {
-        ...region,
-        branches: region.branches.map((branch) => branch.id),
-      };
+      initialFormValues = regionResponse.data;
     } else {
       loaderError = getErrorMessage(regionResponse.data, regionResponse.status);
     }
 
-    if (optionsResponse.status === 200) {
-      const region = regionResponse.data as RegionDetail;
+    if (regionResponse.status === 200 && optionsResponse.status === 200) {
+      const region = regionResponse.data;
       dropdownOptions = {
-        states: [...optionsResponse.data.states, ...region.states],
-        zipCodes: [...optionsResponse.data.zipCodes, ...region.zipCodes],
-        branches: [...optionsResponse.data.branches, ...region.branches],
+        states: [...optionsResponse.data.states, ...region.options.states],
+        zipCodes: [...optionsResponse.data.zipCodes, ...region.options.zipCodes],
+        branches: [...optionsResponse.data.branches, ...region.options.branches],
       };
     } else if (!loaderError) {
       loaderError = getErrorMessage(optionsResponse.data, optionsResponse.status);
@@ -75,16 +65,8 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     const response = await getRegion(id);
 
     if (response.status === 200) {
-      const region = response.data as RegionDetail;
-      initialFormValues = {
-        ...region,
-        branches: region.branches.map((branch) => branch.id),
-      };
-      dropdownOptions = {
-        states: region.states,
-        zipCodes: region.zipCodes,
-        branches: region.branches,
-      };
+      initialFormValues = response.data;
+      dropdownOptions = response.data.options;
     } else {
       loaderError = getErrorMessage(response.data, response.status);
     }

@@ -8,8 +8,7 @@
 import type { Id } from './id';
 import type { PricingPlanCode } from './pricingPlanCode';
 import type { PricingPlanName } from './pricingPlanName';
-import type { ProductOption } from './productOption';
-import type { RegionOption } from './regionOption';
+import type { ProductRegionOptions } from './productRegionOptions';
 import type { Date } from './date';
 import type { DateTime } from './dateTime';
 import type { UpdatedBy } from './updatedBy';
@@ -18,8 +17,9 @@ export interface PricingPlanDetail {
   id: Id;
   planCode: PricingPlanCode;
   planName: PricingPlanName;
-  product: ProductOption;
-  region: RegionOption;
+  productId: Id;
+  regionId: Id;
+  options: ProductRegionOptions;
   activeFrom: Date;
   activeThrough: Date;
   updatedOn: DateTime;

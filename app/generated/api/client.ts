@@ -86,11 +86,6 @@ export type createBranchResponse400 = {
   status: 400
 }
 
-export type createBranchResponse409 = {
-  data: ErrorResponse
-  status: 409
-}
-
 export type createBranchResponse500 = {
   data: ErrorResponse
   status: 500
@@ -104,7 +99,7 @@ export type createBranchResponse503 = {
 export type createBranchResponseSuccess = (createBranchResponse201) & {
   headers: Headers;
 };
-export type createBranchResponseError = (createBranchResponse400 | createBranchResponse409 | createBranchResponse500 | createBranchResponse503) & {
+export type createBranchResponseError = (createBranchResponse400 | createBranchResponse500 | createBranchResponse503) & {
   headers: Headers;
 };
 
@@ -203,11 +198,6 @@ export type updateBranchResponse404 = {
   status: 404
 }
 
-export type updateBranchResponse409 = {
-  data: ErrorResponse
-  status: 409
-}
-
 export type updateBranchResponse500 = {
   data: ErrorResponse
   status: 500
@@ -221,7 +211,7 @@ export type updateBranchResponse503 = {
 export type updateBranchResponseSuccess = (updateBranchResponse200) & {
   headers: Headers;
 };
-export type updateBranchResponseError = (updateBranchResponse400 | updateBranchResponse404 | updateBranchResponse409 | updateBranchResponse500 | updateBranchResponse503) & {
+export type updateBranchResponseError = (updateBranchResponse400 | updateBranchResponse404 | updateBranchResponse500 | updateBranchResponse503) & {
   headers: Headers;
 };
 
@@ -364,11 +354,6 @@ export type createRegionResponse400 = {
   status: 400
 }
 
-export type createRegionResponse409 = {
-  data: ErrorResponse
-  status: 409
-}
-
 export type createRegionResponse500 = {
   data: ErrorResponse
   status: 500
@@ -382,7 +367,7 @@ export type createRegionResponse503 = {
 export type createRegionResponseSuccess = (createRegionResponse201) & {
   headers: Headers;
 };
-export type createRegionResponseError = (createRegionResponse400 | createRegionResponse409 | createRegionResponse500 | createRegionResponse503) & {
+export type createRegionResponseError = (createRegionResponse400 | createRegionResponse500 | createRegionResponse503) & {
   headers: Headers;
 };
 
@@ -529,11 +514,6 @@ export type updateRegionResponse404 = {
   status: 404
 }
 
-export type updateRegionResponse409 = {
-  data: ErrorResponse
-  status: 409
-}
-
 export type updateRegionResponse500 = {
   data: ErrorResponse
   status: 500
@@ -547,7 +527,7 @@ export type updateRegionResponse503 = {
 export type updateRegionResponseSuccess = (updateRegionResponse200) & {
   headers: Headers;
 };
-export type updateRegionResponseError = (updateRegionResponse400 | updateRegionResponse404 | updateRegionResponse409 | updateRegionResponse500 | updateRegionResponse503) & {
+export type updateRegionResponseError = (updateRegionResponse400 | updateRegionResponse404 | updateRegionResponse500 | updateRegionResponse503) & {
   headers: Headers;
 };
 
@@ -690,11 +670,6 @@ export type createProductResponse400 = {
   status: 400
 }
 
-export type createProductResponse409 = {
-  data: ErrorResponse
-  status: 409
-}
-
 export type createProductResponse500 = {
   data: ErrorResponse
   status: 500
@@ -708,7 +683,7 @@ export type createProductResponse503 = {
 export type createProductResponseSuccess = (createProductResponse201) & {
   headers: Headers;
 };
-export type createProductResponseError = (createProductResponse400 | createProductResponse409 | createProductResponse500 | createProductResponse503) & {
+export type createProductResponseError = (createProductResponse400 | createProductResponse500 | createProductResponse503) & {
   headers: Headers;
 };
 
@@ -807,11 +782,6 @@ export type updateProductResponse404 = {
   status: 404
 }
 
-export type updateProductResponse409 = {
-  data: ErrorResponse
-  status: 409
-}
-
 export type updateProductResponse500 = {
   data: ErrorResponse
   status: 500
@@ -825,7 +795,7 @@ export type updateProductResponse503 = {
 export type updateProductResponseSuccess = (updateProductResponse200) & {
   headers: Headers;
 };
-export type updateProductResponseError = (updateProductResponse400 | updateProductResponse404 | updateProductResponse409 | updateProductResponse500 | updateProductResponse503) & {
+export type updateProductResponseError = (updateProductResponse400 | updateProductResponse404 | updateProductResponse500 | updateProductResponse503) & {
   headers: Headers;
 };
 
@@ -968,11 +938,6 @@ export type createPricingPlanResponse400 = {
   status: 400
 }
 
-export type createPricingPlanResponse409 = {
-  data: ErrorResponse
-  status: 409
-}
-
 export type createPricingPlanResponse500 = {
   data: ErrorResponse
   status: 500
@@ -986,7 +951,7 @@ export type createPricingPlanResponse503 = {
 export type createPricingPlanResponseSuccess = (createPricingPlanResponse201) & {
   headers: Headers;
 };
-export type createPricingPlanResponseError = (createPricingPlanResponse400 | createPricingPlanResponse409 | createPricingPlanResponse500 | createPricingPlanResponse503) & {
+export type createPricingPlanResponseError = (createPricingPlanResponse400 | createPricingPlanResponse500 | createPricingPlanResponse503) & {
   headers: Headers;
 };
 
@@ -1133,11 +1098,6 @@ export type updatePricingPlanResponse404 = {
   status: 404
 }
 
-export type updatePricingPlanResponse409 = {
-  data: ErrorResponse
-  status: 409
-}
-
 export type updatePricingPlanResponse500 = {
   data: ErrorResponse
   status: 500
@@ -1151,7 +1111,7 @@ export type updatePricingPlanResponse503 = {
 export type updatePricingPlanResponseSuccess = (updatePricingPlanResponse200) & {
   headers: Headers;
 };
-export type updatePricingPlanResponseError = (updatePricingPlanResponse400 | updatePricingPlanResponse404 | updatePricingPlanResponse409 | updatePricingPlanResponse500 | updatePricingPlanResponse503) & {
+export type updatePricingPlanResponseError = (updatePricingPlanResponse400 | updatePricingPlanResponse404 | updatePricingPlanResponse500 | updatePricingPlanResponse503) & {
   headers: Headers;
 };
 
