@@ -37,6 +37,10 @@
   font-weight: 700;
 }
 
+.ag-body .ag-layout-normal {
+  background-color: rgb(236 240 255);
+}
+
 @keyframes data-table-spin {
   to {
     transform: rotate(360deg);

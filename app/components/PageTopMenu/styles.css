@@ -8,7 +8,7 @@
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
   display: flex;
   gap: 1rem;
-  margin: 0 -1.5rem 1rem;
+  margin: 0 -1.5rem 1.5rem;
   min-height: 5rem;
   padding: 1rem 1.5rem;
   width: calc(100% + 3rem);
