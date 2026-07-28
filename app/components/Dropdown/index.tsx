@@ -19,6 +19,7 @@ type BaseDropdownProps = {
   disabled: boolean;
   label: string;
   name: string;
+  noOptionsMessage?: string;
   options: DropdownOption[];
   placeholder?: string;
   required?: boolean;
@@ -71,6 +72,7 @@ function renderHiddenInputs(name: string, selectedValues: DropdownValue[]) {
 export default function Dropdown(props: DropdownProps) {
   const { disabled, label, name, options } = props;
   const isMulti = props.isMulti === true;
+  const noOptionsMessage = props.noOptionsMessage ?? "No options";
   const placeholder = props.placeholder ?? `${isMulti ? "Add" : "Select"} ${label.toLowerCase()}`;
   const required = props.required === true;
   const selectedValues = isMulti ? props.values : [props.value];
@@ -93,6 +95,7 @@ export default function Dropdown(props: DropdownProps) {
         getOptionLabel={(option) => option.label}
         getOptionValue={(option) => String(option.value)}
         options={options}
+        noOptionsMessage={() => noOptionsMessage}
         placeholder={placeholder}
         value={selectedOption}
         onChange={(selected) => {

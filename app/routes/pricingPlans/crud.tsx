@@ -130,7 +130,7 @@ export default function PricingPlanPage() {
           <div className="crud-page-form-column">
             <Dropdown
               disabled={inputsDisabled}
-              label="Product Code"
+              label="Product"
               name="productId"
               required
               options={dropdownOptions.products.map((product) => ({
@@ -143,7 +143,7 @@ export default function PricingPlanPage() {
             />
             <Dropdown
               disabled={inputsDisabled}
-              label="Region Code"
+              label="Region"
               name="regionId"
               required
               options={dropdownOptions.regions.map((region) => ({
