@@ -61,7 +61,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   }
 
   const initialFormValues = recordResponse?.data ?? emptyFormValues;
-  const dropdownOptions = optionsResponse?.data ?? recordResponse?.data.options ?? emptyDropdownOptions;
+  const dropdownOptions = optionsResponse?.data ?? recordResponse?.data.formOptions ?? emptyDropdownOptions;
 
   return { operation, initialFormValues, dropdownOptions, loaderError: null };
 }
@@ -135,8 +135,8 @@ export default function PricingPlanPage() {
               required
               options={dropdownOptions.products.map((product) => ({
                 value: product.id,
-                label: product.code,
-                description: product.name,
+                label: product.name,
+                description: product.code,
               }))}
               value={formValues.productId}
               onChange={(value) => updateField("productId", value)}
@@ -148,8 +148,8 @@ export default function PricingPlanPage() {
               required
               options={dropdownOptions.regions.map((region) => ({
                 value: region.id,
-                label: region.code,
-                description: region.name,
+                label: region.name,
+                description: region.code,
               }))}
               value={formValues.regionId}
               onChange={(value) => updateField("regionId", value)}

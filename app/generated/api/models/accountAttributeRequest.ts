@@ -7,12 +7,12 @@
  */
 import type { AccountAttributeCode } from './accountAttributeCode';
 import type { AccountAttributeName } from './accountAttributeName';
-import type { AttributeType } from './attributeType';
+import type { AccountAttributeType } from './accountAttributeType';
 import type { UpdatedBy } from './updatedBy';
 
 export interface AccountAttributeRequest {
   attributeCode: AccountAttributeCode;
   attributeName: AccountAttributeName;
-  attributeType: AttributeType;
+  attributeType: AccountAttributeType;
   updatedBy: UpdatedBy;
 }

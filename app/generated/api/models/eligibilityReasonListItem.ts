@@ -6,15 +6,14 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { Id } from './id';
-import type { AccountAttributeCodeAndName } from './accountAttributeCodeAndName';
-import type { AccountAttributeType } from './accountAttributeType';
+import type { EligibilityReasonCodeAndName } from './eligibilityReasonCodeAndName';
 import type { DateTime } from './dateTime';
 import type { UpdatedBy } from './updatedBy';
 
-export interface AccountAttributeListItem {
+export interface EligibilityReasonListItem {
   id: Id;
-  attribute: AccountAttributeCodeAndName;
-  type: AccountAttributeType;
+  eligibilityReason: EligibilityReasonCodeAndName;
+  conditions: string[];
   updatedOn: DateTime;
   updatedBy: UpdatedBy;
 }

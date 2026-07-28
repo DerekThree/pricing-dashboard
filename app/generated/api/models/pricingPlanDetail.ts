@@ -19,7 +19,7 @@ export interface PricingPlanDetail {
   planName: PricingPlanName;
   productId: Id;
   regionId: Id;
-  options: ProductRegionOptions;
+  formOptions: ProductRegionOptions;
   activeFrom: Date;
   activeThrough: Date;
   updatedOn: DateTime;

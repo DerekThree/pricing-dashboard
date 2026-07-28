@@ -1,0 +1,150 @@
+.eligibility-reason-form-grid {
+  grid-template-columns: minmax(0, 24rem) minmax(0, 48rem) minmax(0, 24rem);
+}
+
+.eligibility-reason-form-field--code {
+  width: 9.3rem;
+}
+
+.eligibility-reason-conditions-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.eligibility-reason-conditions-title {
+  color: rgb(51 65 85);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.eligibility-reason-add-button {
+  background: rgb(255 255 255);
+  border: 1px solid rgb(191 219 254);
+  border-radius: 0.25rem;
+  color: rgb(37 99 235);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.eligibility-reason-add-button:hover {
+  background: rgb(239 246 255);
+  border-color: rgb(147 197 253);
+  color: rgb(29 78 216);
+}
+
+.eligibility-reason-add-button:disabled {
+  background: rgb(241 245 249);
+  border-color: rgb(203 213 225);
+  color: rgb(148 163 184);
+  cursor: default;
+}
+
+.eligibility-reason-conditions-table {
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+  overflow: hidden;
+  width: 100%;
+}
+
+.eligibility-reason-condition-widget {
+  width: 100%;
+}
+
+.eligibility-reason-condition-editor {
+  background: rgb(255 255 255 / 0.72);
+  border: 1px solid rgb(191 219 254);
+  border-radius: 0.25rem;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(0, 1.6fr) 7rem minmax(0, 1fr) auto;
+  padding: 0.75rem;
+  width: 100%;
+}
+
+.eligibility-reason-remove-button {
+  align-self: end;
+  background: rgb(255 255 255);
+  border: 1px solid rgb(191 219 254);
+  border-radius: 0.25rem;
+  color: rgb(37 99 235);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.625rem 0.75rem;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.eligibility-reason-remove-button:hover {
+  background: rgb(239 246 255);
+  border-color: rgb(147 197 253);
+  color: rgb(29 78 216);
+}
+
+.eligibility-reason-remove-button:disabled {
+  background: rgb(241 245 249);
+  border-color: rgb(203 213 225);
+  color: rgb(148 163 184);
+  cursor: default;
+}
+
+.eligibility-reason-conditions-table-empty {
+  border-width: 0;
+  box-shadow: none;
+  height: 0;
+}
+
+.eligibility-reason-conditions-table .ag-root-wrapper {
+  background: rgb(255 255 255);
+  border: 0;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.eligibility-reason-conditions-table .ag-root-wrapper,
+.eligibility-reason-conditions-table .ag-root-wrapper-body,
+.eligibility-reason-conditions-table .ag-center-cols-clipper,
+.eligibility-reason-conditions-table .ag-center-cols-viewport,
+.eligibility-reason-conditions-table .ag-center-cols-container {
+  min-height: 0;
+}
+
+.eligibility-reason-conditions-table .ag-header {
+  display: none;
+}
+
+.eligibility-reason-conditions-table .ag-cell {
+  padding-left: 0.5rem;
+  padding-right: 0;
+}
+
+.eligibility-reason-table-remove {
+  background: transparent;
+  border: 0;
+  color: rgb(37 99 235);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 700;
+  height: 100%;
+  width: 100%;
+}
+
+.eligibility-reason-table-remove:disabled {
+  color: rgb(148 163 184);
+  cursor: default;
+}
+
+@media (max-width: 84rem) {
+  .eligibility-reason-form-grid {
+    grid-template-columns: minmax(0, 24rem);
+  }
+
+  .eligibility-reason-condition-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

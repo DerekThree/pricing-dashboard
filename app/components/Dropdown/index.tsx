@@ -20,6 +20,7 @@ type BaseDropdownProps = {
   label: string;
   name: string;
   options: DropdownOption[];
+  placeholder?: string;
   required?: boolean;
 };
 
@@ -60,7 +61,7 @@ function SingleValue(props: SingleValueProps<DropdownOption>) {
 }
 
 function formatOptionLabel(option: DropdownOption, context: "menu" | "value", isMulti: boolean) {
-  return context === "value" || !option.description ? option.label : `${option.label} - ${option.description}`;
+  return context === "value" || !option.description ? option.label : `${option.description} - ${option.label}`;
 }
 
 function renderHiddenInputs(name: string, selectedValues: DropdownValue[]) {
@@ -70,6 +71,7 @@ function renderHiddenInputs(name: string, selectedValues: DropdownValue[]) {
 export default function Dropdown(props: DropdownProps) {
   const { disabled, label, name, options } = props;
   const isMulti = props.isMulti === true;
+  const placeholder = props.placeholder ?? `${isMulti ? "Add" : "Select"} ${label.toLowerCase()}`;
   const required = props.required === true;
   const selectedValues = isMulti ? props.values : [props.value];
   const selectedOption = isMulti
@@ -91,7 +93,7 @@ export default function Dropdown(props: DropdownProps) {
         getOptionLabel={(option) => option.label}
         getOptionValue={(option) => String(option.value)}
         options={options}
-        placeholder={`${isMulti ? "Add" : "Select"} ${label.toLowerCase()}`}
+        placeholder={placeholder}
         value={selectedOption}
         onChange={(selected) => {
           if (isMulti) {

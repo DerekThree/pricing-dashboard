@@ -64,11 +64,12 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const initialFormValues = recordResponse?.data ?? emptyFormValues;
   const dropdownOptions = recordResponse && optionsResponse
     ? {
-        states: [...optionsResponse.data.states, ...recordResponse.data.options.states],
-        zipCodes: [...optionsResponse.data.zipCodes, ...recordResponse.data.options.zipCodes],
-        branches: [...optionsResponse.data.branches, ...recordResponse.data.options.branches],
+        states: [...optionsResponse.data.states, ...recordResponse.data.formOptions.states],
+        zipCodes: [...optionsResponse.data.zipCodes, ...recordResponse.data.formOptions.zipCodes],
+        branches: [...optionsResponse.data.branches, ...recordResponse.data.formOptions.branches]
+            .sort((left, right) => left.code.localeCompare(right.code)),
       }
-    : optionsResponse?.data ?? recordResponse?.data.options ?? emptyDropdownOptions;
+    : optionsResponse?.data ?? recordResponse?.data.formOptions ?? emptyDropdownOptions;
 
   return { operation, initialFormValues, dropdownOptions, loaderError: null };
 }
@@ -91,8 +92,8 @@ export const clientAction = createClientAction({
 function getBranchOptions(branches: CoverageOptions["branches"]): DropdownOption[] {
   return branches.map((branch) => ({
     value: branch.id,
-    label: branch.code,
-    description: branch.name,
+    label: branch.name,
+    description: branch.code,
   }));
 }
 

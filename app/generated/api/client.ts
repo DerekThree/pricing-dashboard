@@ -13,6 +13,10 @@ import type {
   BranchListItem,
   BranchRequest,
   CoverageOptions,
+  EligibilityReasonDetailResponse,
+  EligibilityReasonListItem,
+  EligibilityReasonOptions,
+  EligibilityReasonRequest,
   ErrorResponse,
   PricingPlanDetailResponse,
   PricingPlanListItem,
@@ -1454,6 +1458,322 @@ export const getDeleteAccountAttributeUrl = (id: number,) => {
 export const deleteAccountAttribute = async (id: number, options?: RequestInit): Promise<deleteAccountAttributeResponse> => {
   
   return apiMutator<deleteAccountAttributeResponse>(getDeleteAccountAttributeUrl(id),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+
+
+
+/**
+ * @summary List all eligibility reasons
+ */
+export type listEligibilityReasonsResponse200 = {
+  data: EligibilityReasonListItem[]
+  status: 200
+}
+
+export type listEligibilityReasonsResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type listEligibilityReasonsResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type listEligibilityReasonsResponseSuccess = (listEligibilityReasonsResponse200) & {
+  headers: Headers;
+};
+export type listEligibilityReasonsResponseError = (listEligibilityReasonsResponse500 | listEligibilityReasonsResponse503) & {
+  headers: Headers;
+};
+
+export type listEligibilityReasonsResponse = (listEligibilityReasonsResponseSuccess | listEligibilityReasonsResponseError)
+
+export const getListEligibilityReasonsUrl = () => {
+
+
+  
+
+  return `http://localhost:8080/eligibility-reasons`
+}
+
+export const listEligibilityReasons = async ( options?: RequestInit): Promise<listEligibilityReasonsResponse> => {
+  
+  return apiMutator<listEligibilityReasonsResponse>(getListEligibilityReasonsUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+/**
+ * @summary Create an eligibility reason
+ */
+export type createEligibilityReasonResponse201 = {
+  data: EligibilityReasonDetailResponse
+  status: 201
+}
+
+export type createEligibilityReasonResponse400 = {
+  data: ErrorResponse
+  status: 400
+}
+
+export type createEligibilityReasonResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type createEligibilityReasonResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type createEligibilityReasonResponseSuccess = (createEligibilityReasonResponse201) & {
+  headers: Headers;
+};
+export type createEligibilityReasonResponseError = (createEligibilityReasonResponse400 | createEligibilityReasonResponse500 | createEligibilityReasonResponse503) & {
+  headers: Headers;
+};
+
+export type createEligibilityReasonResponse = (createEligibilityReasonResponseSuccess | createEligibilityReasonResponseError)
+
+export const getCreateEligibilityReasonUrl = () => {
+
+
+  
+
+  return `http://localhost:8080/eligibility-reasons`
+}
+
+export const createEligibilityReason = async (eligibilityReasonRequest: EligibilityReasonRequest, options?: RequestInit): Promise<createEligibilityReasonResponse> => {
+  
+  return apiMutator<createEligibilityReasonResponse>(getCreateEligibilityReasonUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      eligibilityReasonRequest,)
+  }
+);}
+
+
+
+/**
+ * @summary Get available eligibility reason options
+ */
+export type getEligibilityReasonOptionsResponse200 = {
+  data: EligibilityReasonOptions
+  status: 200
+}
+
+export type getEligibilityReasonOptionsResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type getEligibilityReasonOptionsResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type getEligibilityReasonOptionsResponseSuccess = (getEligibilityReasonOptionsResponse200) & {
+  headers: Headers;
+};
+export type getEligibilityReasonOptionsResponseError = (getEligibilityReasonOptionsResponse500 | getEligibilityReasonOptionsResponse503) & {
+  headers: Headers;
+};
+
+export type getEligibilityReasonOptionsResponse = (getEligibilityReasonOptionsResponseSuccess | getEligibilityReasonOptionsResponseError)
+
+export const getGetEligibilityReasonOptionsUrl = () => {
+
+
+  
+
+  return `http://localhost:8080/eligibility-reasons/options`
+}
+
+export const getEligibilityReasonOptions = async ( options?: RequestInit): Promise<getEligibilityReasonOptionsResponse> => {
+  
+  return apiMutator<getEligibilityReasonOptionsResponse>(getGetEligibilityReasonOptionsUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+/**
+ * @summary Get an eligibility reason by ID
+ */
+export type getEligibilityReasonResponse200 = {
+  data: EligibilityReasonDetailResponse
+  status: 200
+}
+
+export type getEligibilityReasonResponse404 = {
+  data: ErrorResponse
+  status: 404
+}
+
+export type getEligibilityReasonResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type getEligibilityReasonResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type getEligibilityReasonResponseSuccess = (getEligibilityReasonResponse200) & {
+  headers: Headers;
+};
+export type getEligibilityReasonResponseError = (getEligibilityReasonResponse404 | getEligibilityReasonResponse500 | getEligibilityReasonResponse503) & {
+  headers: Headers;
+};
+
+export type getEligibilityReasonResponse = (getEligibilityReasonResponseSuccess | getEligibilityReasonResponseError)
+
+export const getGetEligibilityReasonUrl = (id: number,) => {
+
+
+  
+
+  return `http://localhost:8080/eligibility-reasons/${id}`
+}
+
+export const getEligibilityReason = async (id: number, options?: RequestInit): Promise<getEligibilityReasonResponse> => {
+  
+  return apiMutator<getEligibilityReasonResponse>(getGetEligibilityReasonUrl(id),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+/**
+ * @summary Replace an eligibility reason
+ */
+export type updateEligibilityReasonResponse200 = {
+  data: EligibilityReasonDetailResponse
+  status: 200
+}
+
+export type updateEligibilityReasonResponse400 = {
+  data: ErrorResponse
+  status: 400
+}
+
+export type updateEligibilityReasonResponse404 = {
+  data: ErrorResponse
+  status: 404
+}
+
+export type updateEligibilityReasonResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type updateEligibilityReasonResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type updateEligibilityReasonResponseSuccess = (updateEligibilityReasonResponse200) & {
+  headers: Headers;
+};
+export type updateEligibilityReasonResponseError = (updateEligibilityReasonResponse400 | updateEligibilityReasonResponse404 | updateEligibilityReasonResponse500 | updateEligibilityReasonResponse503) & {
+  headers: Headers;
+};
+
+export type updateEligibilityReasonResponse = (updateEligibilityReasonResponseSuccess | updateEligibilityReasonResponseError)
+
+export const getUpdateEligibilityReasonUrl = (id: number,) => {
+
+
+  
+
+  return `http://localhost:8080/eligibility-reasons/${id}`
+}
+
+export const updateEligibilityReason = async (id: number,
+    eligibilityReasonRequest: EligibilityReasonRequest, options?: RequestInit): Promise<updateEligibilityReasonResponse> => {
+  
+  return apiMutator<updateEligibilityReasonResponse>(getUpdateEligibilityReasonUrl(id),
+  {      
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      eligibilityReasonRequest,)
+  }
+);}
+
+
+
+/**
+ * @summary Delete an eligibility reason
+ */
+export type deleteEligibilityReasonResponse204 = {
+  data: void
+  status: 204
+}
+
+export type deleteEligibilityReasonResponse404 = {
+  data: ErrorResponse
+  status: 404
+}
+
+export type deleteEligibilityReasonResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type deleteEligibilityReasonResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type deleteEligibilityReasonResponseSuccess = (deleteEligibilityReasonResponse204) & {
+  headers: Headers;
+};
+export type deleteEligibilityReasonResponseError = (deleteEligibilityReasonResponse404 | deleteEligibilityReasonResponse500 | deleteEligibilityReasonResponse503) & {
+  headers: Headers;
+};
+
+export type deleteEligibilityReasonResponse = (deleteEligibilityReasonResponseSuccess | deleteEligibilityReasonResponseError)
+
+export const getDeleteEligibilityReasonUrl = (id: number,) => {
+
+
+  
+
+  return `http://localhost:8080/eligibility-reasons/${id}`
+}
+
+export const deleteEligibilityReason = async (id: number, options?: RequestInit): Promise<deleteEligibilityReasonResponse> => {
+  
+  return apiMutator<deleteEligibilityReasonResponse>(getDeleteEligibilityReasonUrl(id),
   {      
     ...options,
     method: 'DELETE'

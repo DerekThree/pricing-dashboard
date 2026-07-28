@@ -21,7 +21,7 @@ export interface RegionDetail {
   states: State[];
   zipCodes: ZipCode[];
   branches: Id[];
-  options: CoverageOptions;
+  formOptions: CoverageOptions;
   updatedOn: DateTime;
   updatedBy: UpdatedBy;
 }

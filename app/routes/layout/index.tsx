@@ -19,6 +19,7 @@ function Sidebar() {
     { id: "regions", label: "Regions", path: routeUrls.regions },
     { id: "products", label: "Products", path: routeUrls.products },
     { id: "account-attributes", label: "Account Attributes", path: routeUrls.accountAttributes },
+    { id: "eligibility-reasons", label: "Eligibility Reasons", path: routeUrls.eligibilityReasons },
     { id: "pricing-plans", label: "Pricing Plans", path: routeUrls.pricingPlans },
     { id: "simulator", label: "Simulator", path: routeUrls.simulator, hasDividerBefore: true },
   ];

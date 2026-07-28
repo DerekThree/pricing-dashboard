@@ -8,6 +8,7 @@ import {
 export const routeUrls = {
   accountAttributes: "/account-attributes",
   branches: "/branches",
+  eligibilityReasons: "/eligibility-reasons",
   regions: "/regions",
   products: "/products",
   pricingPlans: "/pricing-plans",
@@ -21,6 +22,8 @@ export default [
     route("account-attributes/:operation/:id?", "routes/accountAttributes/crud.tsx"),
     route("branches", "routes/branches/list.tsx"),
     route("branches/:operation/:id?", "routes/branches/crud.tsx"),
+    route("eligibility-reasons", "routes/eligibilityReasons/list.tsx"),
+    route("eligibility-reasons/:operation/:id?", "routes/eligibilityReasons/crud.tsx"),
     route("regions", "routes/regions/list.tsx"),
     route("regions/:operation/:id?", "routes/regions/crud.tsx"),
     route("products", "routes/products/list.tsx"),
