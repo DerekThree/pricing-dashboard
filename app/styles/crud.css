@@ -55,6 +55,13 @@
   cursor: default;
 }
 
+.crud-page-form-field input::placeholder {
+  color: rgb(148 163 184);
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.5;
+}
+
 @media (max-width: 56rem) {
   .form-grid {
     grid-template-columns: minmax(0, 24rem);

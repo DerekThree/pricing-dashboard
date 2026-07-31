@@ -10,7 +10,7 @@ import type { EligibilityReasonOperator } from './eligibilityReasonOperator';
 import type { EligibilityReasonConditionValue } from './eligibilityReasonConditionValue';
 
 export interface EligibilityReasonCondition {
-  attribute: Id;
+  attributeId: Id;
   operator: EligibilityReasonOperator;
   value: EligibilityReasonConditionValue;
 }

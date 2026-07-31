@@ -47,7 +47,7 @@ export default function DataTable<TRow extends object>(props: {
         }
         rowData={props.rowData}
         headerHeight={28}
-        rowHeight={20}
+        rowHeight={25}
         rowSelection={{
           mode: "singleRow",
           enableClickSelection: true,

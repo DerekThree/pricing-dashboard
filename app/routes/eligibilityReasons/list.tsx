@@ -2,13 +2,13 @@ import { useLoaderData } from "react-router";
 import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
-import { listEligibilityReasons } from "../../generated/api/client";
-import type { EligibilityReasonListItem } from "../../generated/api/models";
+import { listReasons } from "../../generated/api/client";
+import type { ReasonListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { formatDateTime } from "../../utils/dateTimeUtils";
 
-const columnDefs: ColDef<EligibilityReasonListItem>[] = [
+const columnDefs: ColDef<ReasonListItem>[] = [
   { field: "eligibilityReason", headerName: "Eligibility Reason" },
   { field: "conditions", headerName: "Conditions", valueFormatter: ({ value }) => Array.isArray(value) ? value.join(", ") : "" },
   { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
@@ -16,11 +16,11 @@ const columnDefs: ColDef<EligibilityReasonListItem>[] = [
 ];
 
 export async function clientLoader() {
-  const { status, data } = await listEligibilityReasons();
+  const { status, data } = await listReasons();
 
   return status === 200
     ? { rowData: data, loaderError: null }
-    : { rowData: [] as EligibilityReasonListItem[], loaderError: getErrorMessage(data, status) };
+    : { rowData: [] as ReasonListItem[], loaderError: getErrorMessage(data, status) };
 }
 
 export default function EligibilityReasonsPage() {

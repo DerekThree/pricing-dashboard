@@ -2,11 +2,11 @@ import "./styles.css";
 
 import {
   AllCommunityModule,
-  type DomLayoutType,
   type ICellRendererParams,
   ModuleRegistry,
   themeQuartz,
   type ColDef,
+  type SelectionChangedEvent,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useState } from "react";
@@ -16,18 +16,20 @@ import Dropdown from "../../components/Dropdown";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
 import {
-  createEligibilityReason,
-  deleteEligibilityReason,
-  getEligibilityReason,
-  getEligibilityReasonOptions,
-  updateEligibilityReason,
+  createReason,
+  deleteReason,
+  getReason,
+  getReasonOptions,
+  updateReason,
 } from "../../generated/api/client";
 import {
   AccountAttributeType,
-  EligibilityReasonOperator,
   type AccountAttributeType as AccountAttributeTypeValue,
-  type EligibilityReasonCondition,
   type AccountAttributeOption,
+  type Id,
+  type ReasonCondition,
+  type ReasonConditionValue,
+  ReasonOperator,
 } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
@@ -39,18 +41,18 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 const emptyFormValues = {
   reasonCode: "",
   reasonName: "",
-  conditions: [] as EligibilityReasonCondition[],
+  conditions: [] as ReasonCondition[],
 };
 
 const emptyDropdownOptions = {
   attributes: [] as AccountAttributeOption[],
-  operators: [] as EligibilityReasonOperator[],
+  operators: [] as ReasonOperator[],
 };
 
 function getOperatorOptions(attributeType?: AccountAttributeTypeValue) {
   return attributeType === AccountAttributeType.TEXT
-    ? [EligibilityReasonOperator["="], EligibilityReasonOperator["<>"]]
-    : Object.values(EligibilityReasonOperator) as EligibilityReasonOperator[];
+    ? [ReasonOperator["="], ReasonOperator["<>"]]
+    : Object.values(ReasonOperator) as ReasonOperator[];
 }
 
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
@@ -58,8 +60,8 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const needsRecord = operation !== crudOps.create;
   const needsOptionsEndpoint = operation === crudOps.create;
   const [recordResponse, optionsResponse] = await Promise.all([
-    needsRecord ? getEligibilityReason(id) : null,
-    needsOptionsEndpoint ? getEligibilityReasonOptions() : null,
+    needsRecord ? getReason(id) : null,
+    needsOptionsEndpoint ? getReasonOptions() : null,
   ]);
 
   if (recordResponse && recordResponse.status !== 200) {
@@ -83,23 +85,25 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const initialFormValues = recordResponse?.data ?? emptyFormValues;
   const dropdownOptions = {
     ...(optionsResponse?.data ?? recordResponse?.data.formOptions ?? emptyDropdownOptions),
-    operators: Object.values(EligibilityReasonOperator) as EligibilityReasonOperator[],
+    operators: Object.values(ReasonOperator) as ReasonOperator[],
   };
 
   return { operation, initialFormValues, dropdownOptions, loaderError: null };
 }
 
 export const clientAction = createClientAction({
-  createRecord: createEligibilityReason,
-  updateRecord: updateEligibilityReason,
-  deleteRecord: deleteEligibilityReason,
+  createRecord: createReason,
+  updateRecord: updateReason,
+  deleteRecord: deleteReason,
   listRouteUrl: routeUrls.eligibilityReasons,
   arrayFields: ["conditions"],
   mapFormValuesToRequest: (formValues) =>
     ({
       reasonCode: formValues.reasonCode,
       reasonName: formValues.reasonName,
-      conditions: (formValues.conditions as string[]).map((condition) => JSON.parse(condition) as EligibilityReasonCondition),
+      conditions: (formValues.conditions as string[]).map(
+        (condition) => JSON.parse(condition) as ReasonCondition,
+      ),
       updatedBy: formValues.updatedBy,
     }),
 });
@@ -108,43 +112,51 @@ export default function EligibilityReasonPage() {
   const { operation, initialFormValues, dropdownOptions, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
-  const [attributeId, setAttributeId] = useState<number>(NaN);
-  const [operator, setOperator] = useState("");
-  const [value, setValue] = useState("");
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
   const inputsDisabled = !!loaderError || operation === crudOps.view || operation === crudOps.delete;
-  const conditionDetailsHidden = !attributeId;
-  const attributeLabels = new Map(dropdownOptions.attributes.map((attribute) => [attribute.id, attribute.name]));
+  const selectedCondition = selectedRowIndex === null ? null : formValues.conditions[selectedRowIndex] ?? null;
+  const attributeId = selectedCondition?.attributeId ?? NaN;
+  const operator = selectedCondition?.operator ?? "";
+  const value = selectedCondition?.value ?? "";
+  const conditionDetailsDisabled = inputsDisabled || !selectedCondition;
+  const attributeLabels = new Map(dropdownOptions.attributes.map((attribute: AccountAttributeOption) => [attribute.id, attribute.name]));
   const attributeType = dropdownOptions.attributes.find((option) => option.id === attributeId)?.type;
 
-  function addCondition() {
-    const conditionValue = attributeType === AccountAttributeType.BOOLEAN
-      ? value === "true"
-      : attributeType === AccountAttributeType.DECIMAL || attributeType === AccountAttributeType.INTEGER
-        ? Number(value)
-        : value;
+  function addRow() {
+    setSelectedRowIndex(formValues.conditions.length);
 
-    const updatedConditions = [
+    updateField("conditions", [
       ...formValues.conditions, 
-      { 
-        attribute: attributeId, 
-        operator: operator as EligibilityReasonOperator, 
-        value: conditionValue 
+      {
+        attributeId: NaN,
+        operator: "" as ReasonOperator,
+        value: "",
       }
-    ];
-
-    updateField("conditions", updatedConditions);
-    setAttributeId(NaN);
-    setOperator("");
-    setValue("");
+    ]);
   }
 
-  function removeCondition(rowIndex: number) {
-    updateField("conditions", formValues.conditions.filter((_, index) => index !== rowIndex));
+  function removeRow(row: ReasonCondition) {
+    setSelectedRowIndex(null);
+    updateField("conditions", formValues.conditions.filter((node: ReasonCondition) => node !== row));
   }
 
-  const conditionColumnDefs: ColDef<EligibilityReasonCondition>[] = [
+  function updateSelectedCondition(updatedCondition: ReasonCondition) {
+    updateField(
+      "conditions",
+      formValues.conditions.map((condition: ReasonCondition, index: number) => (
+        index === selectedRowIndex ? updatedCondition : condition
+      )),
+    );
+  }
+
+  function handleConditionSelectionChanged(event: SelectionChangedEvent<ReasonCondition>) {
+    const nextSelectedRowIndex = event.api.getSelectedNodes()[0]?.rowIndex;
+    setSelectedRowIndex((currentSelectedRowIndex) => nextSelectedRowIndex ?? currentSelectedRowIndex);
+  }
+
+  const conditionColumnDefs: ColDef<ReasonCondition>[] = [
     {
-      field: "attribute",
+      field: "attributeId",
       headerName: "Attribute",
       valueFormatter: ({ value }) => attributeLabels.get(value) ?? "",
     },
@@ -153,19 +165,15 @@ export default function EligibilityReasonPage() {
       cellDataType: false,
       field: "value",
       headerName: "Value",
-      valueFormatter: ({ value }) => (typeof value === "boolean" ? String(value) : value),
+      valueFormatter: ({ value }) => typeof value === "boolean" ? String(value) : String(value ?? ""),
     },
     {
-      cellRenderer: (params: ICellRendererParams<EligibilityReasonCondition>) => (
+      cellRenderer: (params: ICellRendererParams<ReasonCondition>) => (
         <button
           className="eligibility-reason-table-remove"
           disabled={inputsDisabled}
           type="button"
-          onClick={() => {
-            if (typeof params.node.rowIndex === "number") {
-              removeCondition(params.node.rowIndex);
-            }
-          }}
+          onClick={() => { if (params.node.data) { removeRow(params.node.data); }}}
         >
           X
         </button>
@@ -193,7 +201,7 @@ export default function EligibilityReasonPage() {
         <div className="form-grid eligibility-reason-form-grid">
           <div className="crud-page-form-column">
             <label className="crud-page-form-field eligibility-reason-form-field--code" htmlFor="reason-code">
-              <span>Code</span>
+              <span>Reason Code</span>
               <input
                 disabled={inputsDisabled}
                 id="reason-code"
@@ -208,7 +216,7 @@ export default function EligibilityReasonPage() {
               />
             </label>
             <label className="crud-page-form-field" htmlFor="reason-name">
-              <span>Name</span>
+              <span>Reason Name</span>
               <input
                 disabled={inputsDisabled}
                 id="reason-name"
@@ -225,33 +233,54 @@ export default function EligibilityReasonPage() {
           <div className="crud-page-form-column">
             <div className="eligibility-reason-conditions-header">
               <span className="eligibility-reason-conditions-title">Conditions</span>
+              <button
+                className="eligibility-reason-add-button"
+                disabled={inputsDisabled}
+                type="button"
+                onClick={addRow}
+              >
+                Add
+              </button>
             </div>
-            <div className={`eligibility-reason-conditions-table ${formValues.conditions.length === 0 ? "eligibility-reason-conditions-table-empty" : ""}`}>
+            <div
+              className={`eligibility-reason-conditions-table ${
+                formValues.conditions.length === 0 ? "eligibility-reason-conditions-table-empty" : ""
+              }`}
+            >
               <AgGridReact
                 columnDefs={conditionColumnDefs}
-                domLayout={"autoHeight"}
+                domLayout="autoHeight"
                 headerHeight={0}
                 onGridReady={(event) => event.api.sizeColumnsToFit()}
                 onGridSizeChanged={(event) => event.api.sizeColumnsToFit()}
+                onRowDataUpdated={(event) =>
+                  event.api.forEachNode((node) => node.setSelected(node.rowIndex === selectedRowIndex))
+                }
+                onSelectionChanged={handleConditionSelectionChanged}
                 rowData={formValues.conditions}
                 rowHeight={20}
+                rowSelection={{ mode: "singleRow", enableClickSelection: true, checkboxes: false }}
                 suppressNoRowsOverlay
                 suppressCellFocus
                 suppressHorizontalScroll
                 theme={themeQuartz}
               />
             </div>
-            {formValues.conditions.map((condition, index) => (
+            {formValues.conditions.map((condition: ReasonCondition, index: number) => (
               <input key={index} name="conditions" type="hidden" value={JSON.stringify(condition)} />
             ))}
           </div>
           <div className="crud-page-form-column">
             <div className="eligibility-reason-conditions-header">
-              <span className="eligibility-reason-conditions-title">Add Condition</span>
+              <span className="eligibility-reason-conditions-title">Condition Details</span>
             </div>
-            <div className="eligibility-reason-condition-editor">
+            <div
+              className={`eligibility-reason-condition-editor ${
+                conditionDetailsDisabled ? "eligibility-reason-condition-editor-disabled" : ""
+              }`}
+            >
               <Dropdown
-                disabled={inputsDisabled}
+                disabled={conditionDetailsDisabled}
                 label="Attribute"
                 name="condition-widget-attribute"
                 options={dropdownOptions.attributes.map((attribute) => ({
@@ -259,46 +288,67 @@ export default function EligibilityReasonPage() {
                   label: attribute.name,
                   description: attribute.code,
                 }))}
+                placeholder={conditionDetailsDisabled ? "No condition selected" : undefined}
                 value={attributeId}
                 onChange={(nextAttributeId) => {
-                  setAttributeId(nextAttributeId);
-                  const nextAttributeType = dropdownOptions.attributes.find((attribute) => attribute.id === nextAttributeId)?.type;
-                  setOperator(nextAttributeType === AccountAttributeType.BOOLEAN ? EligibilityReasonOperator["="] : "");
-                  setValue("");
+                  const nextAttributeType = dropdownOptions.attributes.find(
+                    (attribute: AccountAttributeOption) => attribute.id === nextAttributeId,
+                  )?.type;
+                  const nextOperator =
+                    nextAttributeType === AccountAttributeType.BOOLEAN ? ReasonOperator["="] : "";
+                  updateSelectedCondition({
+                    attributeId: nextAttributeId as Id,
+                    operator: nextOperator as ReasonOperator,
+                    value: "",
+                  });
                 }}
               />
-              <div className={`eligibility-reason-operator-field ${!attributeId ? "visibility-hidden" : ""}`}>
+              <div className="eligibility-reason-operator-field">
                 <Dropdown
-                  disabled={inputsDisabled || attributeType === AccountAttributeType.BOOLEAN}
+                  disabled={conditionDetailsDisabled || !attributeId || attributeType === AccountAttributeType.BOOLEAN}
                   label="Operator"
                   name="condition-widget-operator"
                   noOptionsMessage="Choose attribute"
                   options={getOperatorOptions(attributeType).map((value) => ({ value, label: value }))}
                   placeholder=""
                   value={operator}
-                  onChange={setOperator}
+                  onChange={(nextOperator) => {
+                    updateSelectedCondition({
+                      attributeId,
+                      operator: nextOperator as ReasonOperator,
+                      value,
+                    });
+                  }}
                 />
               </div>
               {attributeType === AccountAttributeType.BOOLEAN ? (
-                <div className={`crud-page-form-field ${!attributeId ? "visibility-hidden" : ""}`}>
+                <div className="crud-page-form-field">
                   <Dropdown
-                    disabled={inputsDisabled}
+                    disabled={conditionDetailsDisabled || !attributeId}
                     label="Value"
                     name="condition-widget-value"
                     options={[
                       { value: "true", label: "True" },
                       { value: "false", label: "False" },
                     ]}
-                    value={value}
-                    onChange={setValue}
+                    placeholder={!attributeId ? "No attribute selected" : undefined}
+                    value={typeof value === "boolean" ? String(value) : ""}
+                    onChange={(nextValue) => {
+                      updateSelectedCondition({
+                        attributeId,
+                        operator: operator as ReasonOperator,
+                        value: nextValue === "true",
+                      });
+                    }}
                   />
                 </div>
               ) : (
-                <label className={`crud-page-form-field ${!attributeId ? "visibility-hidden" : ""}`} htmlFor="condition-widget-value">
+                <label className="crud-page-form-field" htmlFor="condition-widget-value">
                   <span>Value</span>
                   <input
-                    disabled={inputsDisabled}
+                    disabled={conditionDetailsDisabled || !attributeId}
                     id="condition-widget-value"
+                    placeholder={!attributeId ? "No attribute selected" : undefined}
                     step={attributeType === AccountAttributeType.DECIMAL ? "any" : undefined}
                     type={
                       attributeType === AccountAttributeType.DATE
@@ -308,19 +358,22 @@ export default function EligibilityReasonPage() {
                           ? "number"
                           : "text"
                     }
-                    value={value}
-                    onChange={(event) => setValue(event.target.value)}
+                    value={String(value)}
+                    onChange={(event) => {
+                      const nextValue = event.target.value;
+                      const updatedValue =
+                        attributeType === AccountAttributeType.DECIMAL || attributeType === AccountAttributeType.INTEGER
+                          ? Number(nextValue)
+                          : nextValue;
+                      updateSelectedCondition({
+                        attributeId,
+                        operator: operator as ReasonOperator,
+                        value: updatedValue as ReasonConditionValue,
+                      });
+                    }}
                   />
                 </label>
               )}
-              <button
-                className={`eligibility-reason-remove-button ${conditionDetailsHidden ? "visibility-hidden" : ""}`}
-                disabled={inputsDisabled || !attributeId || !operator || !value}
-                type="button"
-                onClick={addCondition}
-              >
-                Add
-              </button>
             </div>
           </div>
         </div>

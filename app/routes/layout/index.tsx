@@ -18,6 +18,7 @@ function Sidebar() {
     { id: "branches", label: "Branches", path: routeUrls.branches, hasDividerBefore: true },
     { id: "regions", label: "Regions", path: routeUrls.regions },
     { id: "products", label: "Products", path: routeUrls.products },
+    { id: "fees", label: "Fees", path: routeUrls.fees },
     { id: "account-attributes", label: "Account Attributes", path: routeUrls.accountAttributes },
     { id: "eligibility-reasons", label: "Eligibility Reasons", path: routeUrls.eligibilityReasons },
     { id: "pricing-plans", label: "Pricing Plans", path: routeUrls.pricingPlans },

@@ -13,11 +13,10 @@ import type {
   BranchListItem,
   BranchRequest,
   CoverageOptions,
-  EligibilityReasonDetailResponse,
-  EligibilityReasonListItem,
-  EligibilityReasonOptions,
-  EligibilityReasonRequest,
   ErrorResponse,
+  FeeDetailResponse,
+  FeeListItem,
+  FeeRequest,
   PricingPlanDetailResponse,
   PricingPlanListItem,
   PricingPlanRequest,
@@ -25,6 +24,10 @@ import type {
   ProductListItem,
   ProductRegionOptions,
   ProductRequest,
+  ReasonDetailResponse,
+  ReasonListItem,
+  ReasonOptions,
+  ReasonRequest,
   RegionDetailResponse,
   RegionListItem,
   RegionRequest,
@@ -885,6 +888,274 @@ export const deleteProduct = async (id: number, options?: RequestInit): Promise<
 
 
 /**
+ * @summary List all fees
+ */
+export type listFeesResponse200 = {
+  data: FeeListItem[]
+  status: 200
+}
+
+export type listFeesResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type listFeesResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type listFeesResponseSuccess = (listFeesResponse200) & {
+  headers: Headers;
+};
+export type listFeesResponseError = (listFeesResponse500 | listFeesResponse503) & {
+  headers: Headers;
+};
+
+export type listFeesResponse = (listFeesResponseSuccess | listFeesResponseError)
+
+export const getListFeesUrl = () => {
+
+
+  
+
+  return `http://localhost:8080/fees`
+}
+
+export const listFees = async ( options?: RequestInit): Promise<listFeesResponse> => {
+  
+  return apiMutator<listFeesResponse>(getListFeesUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+/**
+ * @summary Create a fee
+ */
+export type createFeeResponse201 = {
+  data: FeeDetailResponse
+  status: 201
+}
+
+export type createFeeResponse400 = {
+  data: ErrorResponse
+  status: 400
+}
+
+export type createFeeResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type createFeeResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type createFeeResponseSuccess = (createFeeResponse201) & {
+  headers: Headers;
+};
+export type createFeeResponseError = (createFeeResponse400 | createFeeResponse500 | createFeeResponse503) & {
+  headers: Headers;
+};
+
+export type createFeeResponse = (createFeeResponseSuccess | createFeeResponseError)
+
+export const getCreateFeeUrl = () => {
+
+
+  
+
+  return `http://localhost:8080/fees`
+}
+
+export const createFee = async (feeRequest: FeeRequest, options?: RequestInit): Promise<createFeeResponse> => {
+  
+  return apiMutator<createFeeResponse>(getCreateFeeUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      feeRequest,)
+  }
+);}
+
+
+
+/**
+ * @summary Get a fee by ID
+ */
+export type getFeeResponse200 = {
+  data: FeeDetailResponse
+  status: 200
+}
+
+export type getFeeResponse404 = {
+  data: ErrorResponse
+  status: 404
+}
+
+export type getFeeResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type getFeeResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type getFeeResponseSuccess = (getFeeResponse200) & {
+  headers: Headers;
+};
+export type getFeeResponseError = (getFeeResponse404 | getFeeResponse500 | getFeeResponse503) & {
+  headers: Headers;
+};
+
+export type getFeeResponse = (getFeeResponseSuccess | getFeeResponseError)
+
+export const getGetFeeUrl = (id: number,) => {
+
+
+  
+
+  return `http://localhost:8080/fees/${id}`
+}
+
+export const getFee = async (id: number, options?: RequestInit): Promise<getFeeResponse> => {
+  
+  return apiMutator<getFeeResponse>(getGetFeeUrl(id),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+/**
+ * @summary Replace a fee
+ */
+export type updateFeeResponse200 = {
+  data: FeeDetailResponse
+  status: 200
+}
+
+export type updateFeeResponse400 = {
+  data: ErrorResponse
+  status: 400
+}
+
+export type updateFeeResponse404 = {
+  data: ErrorResponse
+  status: 404
+}
+
+export type updateFeeResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type updateFeeResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type updateFeeResponseSuccess = (updateFeeResponse200) & {
+  headers: Headers;
+};
+export type updateFeeResponseError = (updateFeeResponse400 | updateFeeResponse404 | updateFeeResponse500 | updateFeeResponse503) & {
+  headers: Headers;
+};
+
+export type updateFeeResponse = (updateFeeResponseSuccess | updateFeeResponseError)
+
+export const getUpdateFeeUrl = (id: number,) => {
+
+
+  
+
+  return `http://localhost:8080/fees/${id}`
+}
+
+export const updateFee = async (id: number,
+    feeRequest: FeeRequest, options?: RequestInit): Promise<updateFeeResponse> => {
+  
+  return apiMutator<updateFeeResponse>(getUpdateFeeUrl(id),
+  {      
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      feeRequest,)
+  }
+);}
+
+
+
+/**
+ * @summary Delete a fee
+ */
+export type deleteFeeResponse204 = {
+  data: void
+  status: 204
+}
+
+export type deleteFeeResponse404 = {
+  data: ErrorResponse
+  status: 404
+}
+
+export type deleteFeeResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type deleteFeeResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type deleteFeeResponseSuccess = (deleteFeeResponse204) & {
+  headers: Headers;
+};
+export type deleteFeeResponseError = (deleteFeeResponse404 | deleteFeeResponse500 | deleteFeeResponse503) & {
+  headers: Headers;
+};
+
+export type deleteFeeResponse = (deleteFeeResponseSuccess | deleteFeeResponseError)
+
+export const getDeleteFeeUrl = (id: number,) => {
+
+
+  
+
+  return `http://localhost:8080/fees/${id}`
+}
+
+export const deleteFee = async (id: number, options?: RequestInit): Promise<deleteFeeResponse> => {
+  
+  return apiMutator<deleteFeeResponse>(getDeleteFeeUrl(id),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+
+
+
+/**
  * @summary List all pricing plans
  */
 export type listPricingPlansResponse200 = {
@@ -1471,31 +1742,31 @@ export const deleteAccountAttribute = async (id: number, options?: RequestInit):
 /**
  * @summary List all eligibility reasons
  */
-export type listEligibilityReasonsResponse200 = {
-  data: EligibilityReasonListItem[]
+export type listReasonsResponse200 = {
+  data: ReasonListItem[]
   status: 200
 }
 
-export type listEligibilityReasonsResponse500 = {
+export type listReasonsResponse500 = {
   data: ErrorResponse
   status: 500
 }
 
-export type listEligibilityReasonsResponse503 = {
+export type listReasonsResponse503 = {
   data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
-export type listEligibilityReasonsResponseSuccess = (listEligibilityReasonsResponse200) & {
+export type listReasonsResponseSuccess = (listReasonsResponse200) & {
   headers: Headers;
 };
-export type listEligibilityReasonsResponseError = (listEligibilityReasonsResponse500 | listEligibilityReasonsResponse503) & {
+export type listReasonsResponseError = (listReasonsResponse500 | listReasonsResponse503) & {
   headers: Headers;
 };
 
-export type listEligibilityReasonsResponse = (listEligibilityReasonsResponseSuccess | listEligibilityReasonsResponseError)
+export type listReasonsResponse = (listReasonsResponseSuccess | listReasonsResponseError)
 
-export const getListEligibilityReasonsUrl = () => {
+export const getListReasonsUrl = () => {
 
 
   
@@ -1503,9 +1774,9 @@ export const getListEligibilityReasonsUrl = () => {
   return `http://localhost:8080/eligibility-reasons`
 }
 
-export const listEligibilityReasons = async ( options?: RequestInit): Promise<listEligibilityReasonsResponse> => {
+export const listReasons = async ( options?: RequestInit): Promise<listReasonsResponse> => {
   
-  return apiMutator<listEligibilityReasonsResponse>(getListEligibilityReasonsUrl(),
+  return apiMutator<listReasonsResponse>(getListReasonsUrl(),
   {      
     ...options,
     method: 'GET'
@@ -1519,36 +1790,36 @@ export const listEligibilityReasons = async ( options?: RequestInit): Promise<li
 /**
  * @summary Create an eligibility reason
  */
-export type createEligibilityReasonResponse201 = {
-  data: EligibilityReasonDetailResponse
+export type createReasonResponse201 = {
+  data: ReasonDetailResponse
   status: 201
 }
 
-export type createEligibilityReasonResponse400 = {
+export type createReasonResponse400 = {
   data: ErrorResponse
   status: 400
 }
 
-export type createEligibilityReasonResponse500 = {
+export type createReasonResponse500 = {
   data: ErrorResponse
   status: 500
 }
 
-export type createEligibilityReasonResponse503 = {
+export type createReasonResponse503 = {
   data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
-export type createEligibilityReasonResponseSuccess = (createEligibilityReasonResponse201) & {
+export type createReasonResponseSuccess = (createReasonResponse201) & {
   headers: Headers;
 };
-export type createEligibilityReasonResponseError = (createEligibilityReasonResponse400 | createEligibilityReasonResponse500 | createEligibilityReasonResponse503) & {
+export type createReasonResponseError = (createReasonResponse400 | createReasonResponse500 | createReasonResponse503) & {
   headers: Headers;
 };
 
-export type createEligibilityReasonResponse = (createEligibilityReasonResponseSuccess | createEligibilityReasonResponseError)
+export type createReasonResponse = (createReasonResponseSuccess | createReasonResponseError)
 
-export const getCreateEligibilityReasonUrl = () => {
+export const getCreateReasonUrl = () => {
 
 
   
@@ -1556,15 +1827,15 @@ export const getCreateEligibilityReasonUrl = () => {
   return `http://localhost:8080/eligibility-reasons`
 }
 
-export const createEligibilityReason = async (eligibilityReasonRequest: EligibilityReasonRequest, options?: RequestInit): Promise<createEligibilityReasonResponse> => {
+export const createReason = async (reasonRequest: ReasonRequest, options?: RequestInit): Promise<createReasonResponse> => {
   
-  return apiMutator<createEligibilityReasonResponse>(getCreateEligibilityReasonUrl(),
+  return apiMutator<createReasonResponse>(getCreateReasonUrl(),
   {      
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
-      eligibilityReasonRequest,)
+      reasonRequest,)
   }
 );}
 
@@ -1573,31 +1844,31 @@ export const createEligibilityReason = async (eligibilityReasonRequest: Eligibil
 /**
  * @summary Get available eligibility reason options
  */
-export type getEligibilityReasonOptionsResponse200 = {
-  data: EligibilityReasonOptions
+export type getReasonOptionsResponse200 = {
+  data: ReasonOptions
   status: 200
 }
 
-export type getEligibilityReasonOptionsResponse500 = {
+export type getReasonOptionsResponse500 = {
   data: ErrorResponse
   status: 500
 }
 
-export type getEligibilityReasonOptionsResponse503 = {
+export type getReasonOptionsResponse503 = {
   data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
-export type getEligibilityReasonOptionsResponseSuccess = (getEligibilityReasonOptionsResponse200) & {
+export type getReasonOptionsResponseSuccess = (getReasonOptionsResponse200) & {
   headers: Headers;
 };
-export type getEligibilityReasonOptionsResponseError = (getEligibilityReasonOptionsResponse500 | getEligibilityReasonOptionsResponse503) & {
+export type getReasonOptionsResponseError = (getReasonOptionsResponse500 | getReasonOptionsResponse503) & {
   headers: Headers;
 };
 
-export type getEligibilityReasonOptionsResponse = (getEligibilityReasonOptionsResponseSuccess | getEligibilityReasonOptionsResponseError)
+export type getReasonOptionsResponse = (getReasonOptionsResponseSuccess | getReasonOptionsResponseError)
 
-export const getGetEligibilityReasonOptionsUrl = () => {
+export const getGetReasonOptionsUrl = () => {
 
 
   
@@ -1605,9 +1876,9 @@ export const getGetEligibilityReasonOptionsUrl = () => {
   return `http://localhost:8080/eligibility-reasons/options`
 }
 
-export const getEligibilityReasonOptions = async ( options?: RequestInit): Promise<getEligibilityReasonOptionsResponse> => {
+export const getReasonOptions = async ( options?: RequestInit): Promise<getReasonOptionsResponse> => {
   
-  return apiMutator<getEligibilityReasonOptionsResponse>(getGetEligibilityReasonOptionsUrl(),
+  return apiMutator<getReasonOptionsResponse>(getGetReasonOptionsUrl(),
   {      
     ...options,
     method: 'GET'
@@ -1621,36 +1892,36 @@ export const getEligibilityReasonOptions = async ( options?: RequestInit): Promi
 /**
  * @summary Get an eligibility reason by ID
  */
-export type getEligibilityReasonResponse200 = {
-  data: EligibilityReasonDetailResponse
+export type getReasonResponse200 = {
+  data: ReasonDetailResponse
   status: 200
 }
 
-export type getEligibilityReasonResponse404 = {
+export type getReasonResponse404 = {
   data: ErrorResponse
   status: 404
 }
 
-export type getEligibilityReasonResponse500 = {
+export type getReasonResponse500 = {
   data: ErrorResponse
   status: 500
 }
 
-export type getEligibilityReasonResponse503 = {
+export type getReasonResponse503 = {
   data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
-export type getEligibilityReasonResponseSuccess = (getEligibilityReasonResponse200) & {
+export type getReasonResponseSuccess = (getReasonResponse200) & {
   headers: Headers;
 };
-export type getEligibilityReasonResponseError = (getEligibilityReasonResponse404 | getEligibilityReasonResponse500 | getEligibilityReasonResponse503) & {
+export type getReasonResponseError = (getReasonResponse404 | getReasonResponse500 | getReasonResponse503) & {
   headers: Headers;
 };
 
-export type getEligibilityReasonResponse = (getEligibilityReasonResponseSuccess | getEligibilityReasonResponseError)
+export type getReasonResponse = (getReasonResponseSuccess | getReasonResponseError)
 
-export const getGetEligibilityReasonUrl = (id: number,) => {
+export const getGetReasonUrl = (id: number,) => {
 
 
   
@@ -1658,9 +1929,9 @@ export const getGetEligibilityReasonUrl = (id: number,) => {
   return `http://localhost:8080/eligibility-reasons/${id}`
 }
 
-export const getEligibilityReason = async (id: number, options?: RequestInit): Promise<getEligibilityReasonResponse> => {
+export const getReason = async (id: number, options?: RequestInit): Promise<getReasonResponse> => {
   
-  return apiMutator<getEligibilityReasonResponse>(getGetEligibilityReasonUrl(id),
+  return apiMutator<getReasonResponse>(getGetReasonUrl(id),
   {      
     ...options,
     method: 'GET'
@@ -1674,41 +1945,41 @@ export const getEligibilityReason = async (id: number, options?: RequestInit): P
 /**
  * @summary Replace an eligibility reason
  */
-export type updateEligibilityReasonResponse200 = {
-  data: EligibilityReasonDetailResponse
+export type updateReasonResponse200 = {
+  data: ReasonDetailResponse
   status: 200
 }
 
-export type updateEligibilityReasonResponse400 = {
+export type updateReasonResponse400 = {
   data: ErrorResponse
   status: 400
 }
 
-export type updateEligibilityReasonResponse404 = {
+export type updateReasonResponse404 = {
   data: ErrorResponse
   status: 404
 }
 
-export type updateEligibilityReasonResponse500 = {
+export type updateReasonResponse500 = {
   data: ErrorResponse
   status: 500
 }
 
-export type updateEligibilityReasonResponse503 = {
+export type updateReasonResponse503 = {
   data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
-export type updateEligibilityReasonResponseSuccess = (updateEligibilityReasonResponse200) & {
+export type updateReasonResponseSuccess = (updateReasonResponse200) & {
   headers: Headers;
 };
-export type updateEligibilityReasonResponseError = (updateEligibilityReasonResponse400 | updateEligibilityReasonResponse404 | updateEligibilityReasonResponse500 | updateEligibilityReasonResponse503) & {
+export type updateReasonResponseError = (updateReasonResponse400 | updateReasonResponse404 | updateReasonResponse500 | updateReasonResponse503) & {
   headers: Headers;
 };
 
-export type updateEligibilityReasonResponse = (updateEligibilityReasonResponseSuccess | updateEligibilityReasonResponseError)
+export type updateReasonResponse = (updateReasonResponseSuccess | updateReasonResponseError)
 
-export const getUpdateEligibilityReasonUrl = (id: number,) => {
+export const getUpdateReasonUrl = (id: number,) => {
 
 
   
@@ -1716,16 +1987,16 @@ export const getUpdateEligibilityReasonUrl = (id: number,) => {
   return `http://localhost:8080/eligibility-reasons/${id}`
 }
 
-export const updateEligibilityReason = async (id: number,
-    eligibilityReasonRequest: EligibilityReasonRequest, options?: RequestInit): Promise<updateEligibilityReasonResponse> => {
+export const updateReason = async (id: number,
+    reasonRequest: ReasonRequest, options?: RequestInit): Promise<updateReasonResponse> => {
   
-  return apiMutator<updateEligibilityReasonResponse>(getUpdateEligibilityReasonUrl(id),
+  return apiMutator<updateReasonResponse>(getUpdateReasonUrl(id),
   {      
     ...options,
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
-      eligibilityReasonRequest,)
+      reasonRequest,)
   }
 );}
 
@@ -1734,36 +2005,36 @@ export const updateEligibilityReason = async (id: number,
 /**
  * @summary Delete an eligibility reason
  */
-export type deleteEligibilityReasonResponse204 = {
+export type deleteReasonResponse204 = {
   data: void
   status: 204
 }
 
-export type deleteEligibilityReasonResponse404 = {
+export type deleteReasonResponse404 = {
   data: ErrorResponse
   status: 404
 }
 
-export type deleteEligibilityReasonResponse500 = {
+export type deleteReasonResponse500 = {
   data: ErrorResponse
   status: 500
 }
 
-export type deleteEligibilityReasonResponse503 = {
+export type deleteReasonResponse503 = {
   data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
-export type deleteEligibilityReasonResponseSuccess = (deleteEligibilityReasonResponse204) & {
+export type deleteReasonResponseSuccess = (deleteReasonResponse204) & {
   headers: Headers;
 };
-export type deleteEligibilityReasonResponseError = (deleteEligibilityReasonResponse404 | deleteEligibilityReasonResponse500 | deleteEligibilityReasonResponse503) & {
+export type deleteReasonResponseError = (deleteReasonResponse404 | deleteReasonResponse500 | deleteReasonResponse503) & {
   headers: Headers;
 };
 
-export type deleteEligibilityReasonResponse = (deleteEligibilityReasonResponseSuccess | deleteEligibilityReasonResponseError)
+export type deleteReasonResponse = (deleteReasonResponseSuccess | deleteReasonResponseError)
 
-export const getDeleteEligibilityReasonUrl = (id: number,) => {
+export const getDeleteReasonUrl = (id: number,) => {
 
 
   
@@ -1771,9 +2042,9 @@ export const getDeleteEligibilityReasonUrl = (id: number,) => {
   return `http://localhost:8080/eligibility-reasons/${id}`
 }
 
-export const deleteEligibilityReason = async (id: number, options?: RequestInit): Promise<deleteEligibilityReasonResponse> => {
+export const deleteReason = async (id: number, options?: RequestInit): Promise<deleteReasonResponse> => {
   
-  return apiMutator<deleteEligibilityReasonResponse>(getDeleteEligibilityReasonUrl(id),
+  return apiMutator<deleteReasonResponse>(getDeleteReasonUrl(id),
   {      
     ...options,
     method: 'DELETE'

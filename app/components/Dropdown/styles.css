@@ -5,6 +5,11 @@
 .dropdown__control {
   border-color: rgb(203 213 225) !important;
   box-shadow: none !important;
+  color: rgb(15 23 42) !important;
+  font-family: inherit !important;
+  font-size: 0.9375rem !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
   min-height: 2.75rem !important;
   overflow: visible !important;
 }
@@ -20,9 +25,26 @@
   pointer-events: auto !important;
 }
 
+.dropdown__control--is-disabled .dropdown__single-value {
+  color: rgb(15 23 42) !important;
+}
+
 .dropdown__value-container {
   overflow: visible !important;
+  padding: 0.625rem 0.75rem !important;
 }
+
+.dropdown__input-container,
+.dropdown__single-value,
+.dropdown__placeholder {
+  font-family: inherit !important;
+  font-size: 0.9375rem !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 
 .crud-page-form-field .dropdown__input:focus {
   box-shadow: none !important;
@@ -41,6 +63,10 @@
 
 .dropdown__dropdown-indicator:hover {
   color: rgb(15 23 42) !important;
+}
+
+.dropdown__control--is-disabled .dropdown__dropdown-indicator:hover {
+  color: rgb(148 163 184) !important;
 }
 
 .dropdown__multi-value {

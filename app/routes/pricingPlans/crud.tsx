@@ -1,5 +1,16 @@
 import "./styles.css";
 
+import {
+  AllCommunityModule,
+  type GridApi,
+  ModuleRegistry,
+  themeQuartz,
+  type ColDef,
+  type ICellRendererParams,
+  type SelectionChangedEvent,
+} from "ag-grid-community";
+import { AgGridReact } from "ag-grid-react";
+import { useRef, useState } from "react";
 import { Form, useLoaderData } from "react-router";
 import { useActionData } from "react-router";
 import type { ClientLoaderFunctionArgs } from "react-router";
@@ -19,6 +30,38 @@ import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
+
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+type FeeRow = {
+  name: string;
+};
+
+type RateRow = {
+  id: string;
+  name: string;
+  isAddRow?: boolean;
+};
+
+const depositFeeRows: FeeRow[] = [
+  { name: "Monthly" },
+  { name: "Annual" },
+  { name: "Overdraft" },
+  { name: "Extended Overdraft" },
+  { name: "Returned Payment" },
+  { name: "ATM" },
+  { name: "Foreign ATM" },
+  { name: "Foreign Transaction" },
+  { name: "Wire" },
+  { name: "Inactivity" },
+];
+
+const creditFeeRows: FeeRow[] = [
+  { name: "Origination" },
+  { name: "Processing" },
+  { name: "Late Payment" },
+  { name: "Returned Payment" },
+];
 
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
@@ -77,8 +120,75 @@ export default function PricingPlanPage() {
   const { operation, initialFormValues, dropdownOptions, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+  const [rateRows, setRateRows] = useState<RateRow[]>([]);
+  const feesGridApiRef = useRef<GridApi<FeeRow> | null>(null);
+  const ratesGridApiRef = useRef<GridApi<RateRow> | null>(null);
+  const pendingSelectedRateIdRef = useRef("");
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
+  const selectedProduct = dropdownOptions.products.find((product) => product.id === formValues.productId);
+  const feeRows = selectedProduct ? [...depositFeeRows, ...creditFeeRows] : [];
+  const displayedRateRows = [...rateRows, { id: "add-rate", name: "Add rate", isAddRow: true }];
+  const feesColumnDefs: ColDef<FeeRow>[] = [{ field: "name", headerName: "Fee" }];
+  const ratesColumnDefs: ColDef<RateRow>[] = [
+    { field: "name", headerName: "Rate" },
+    {
+      cellRenderer: (params: ICellRendererParams<RateRow>) =>
+        params.data?.isAddRow ? null : (
+          <button
+            className="pricing-plan-table-remove"
+            disabled={inputsDisabled}
+            type="button"
+            onClick={() => setRateRows((currentRows) => currentRows.filter((row) => row.id !== params.data?.id))}
+          >
+            X
+          </button>
+        ),
+      colId: "remove",
+      maxWidth: 32,
+      minWidth: 32,
+      resizable: false,
+      sortable: false,
+      width: 32,
+    },
+  ];
+
+  function handleFeesSelectionChanged(event: SelectionChangedEvent<FeeRow>) {
+    const selectedRow = event.api.getSelectedRows()[0];
+
+    if (!selectedRow) {
+      return;
+    }
+
+    ratesGridApiRef.current?.deselectAll();
+  }
+
+  function handleRatesSelectionChanged(event: SelectionChangedEvent<RateRow>) {
+    const selectedRow = event.api.getSelectedRows()[0];
+
+    if (selectedRow) {
+      feesGridApiRef.current?.deselectAll();
+    }
+
+    if (!selectedRow?.isAddRow) {
+      return;
+    }
+
+    const newRow = { id: `rate-${rateRows.length + 1}`, name: `Rate ${rateRows.length + 1}` };
+    pendingSelectedRateIdRef.current = newRow.id;
+    setRateRows((currentRows) => [...currentRows, newRow]);
+  }
+
+  function handleRatesRowDataUpdated() {
+    if (!pendingSelectedRateIdRef.current || !ratesGridApiRef.current) {
+      return;
+    }
+
+    ratesGridApiRef.current.forEachNode((node) => {
+      node.setSelected(node.data?.id === pendingSelectedRateIdRef.current);
+    });
+    pendingSelectedRateIdRef.current = "";
+  }
 
   return (
     <section className="page">
@@ -91,7 +201,7 @@ export default function PricingPlanPage() {
         />
         {loaderError && <p className="page-error">{loaderError}</p>}
         {actionError && <p className="page-error">{actionError}</p>}
-        <div className="form-grid">
+        <div className={`form-grid ${selectedProduct ? "pricing-plan-form-grid" : ""}`}>
           <div className="crud-page-form-column">
             <label className="crud-page-form-field" htmlFor="plan-code">
               <span>Plan Code</span>
@@ -183,6 +293,59 @@ export default function PricingPlanPage() {
               />
             </label>
           </div>
+          {selectedProduct && (
+            <div className="pricing-plan-side-column">
+              <div className="crud-page-form-column">
+                <span className="pricing-plan-section-title">Fees</span>
+                <div className="pricing-plan-table">
+                  <AgGridReact
+                    columnDefs={feesColumnDefs}
+                    defaultColDef={{ flex: 1, minWidth: 0 }}
+                    domLayout="autoHeight"
+                    headerHeight={0}
+                    onGridReady={(event) => {
+                      feesGridApiRef.current = event.api;
+                      event.api.sizeColumnsToFit();
+                    }}
+                    onGridSizeChanged={(event) => event.api.sizeColumnsToFit()}
+                    onSelectionChanged={handleFeesSelectionChanged}
+                    rowData={feeRows}
+                    rowHeight={20}
+                    rowSelection={{ mode: "singleRow", enableClickSelection: true, checkboxes: false }}
+                    suppressNoRowsOverlay
+                    suppressCellFocus
+                    suppressHorizontalScroll
+                    theme={themeQuartz}
+                  />
+                </div>
+              </div>
+              <div className="crud-page-form-column">
+                <span className="pricing-plan-section-title">Rates</span>
+                <div className="pricing-plan-table">
+                  <AgGridReact
+                    columnDefs={ratesColumnDefs}
+                    defaultColDef={{ flex: 1, minWidth: 0 }}
+                    domLayout="autoHeight"
+                    headerHeight={0}
+                    onGridReady={(event) => {
+                      ratesGridApiRef.current = event.api;
+                      event.api.sizeColumnsToFit();
+                    }}
+                    onGridSizeChanged={(event) => event.api.sizeColumnsToFit()}
+                    onRowDataUpdated={handleRatesRowDataUpdated}
+                    onSelectionChanged={handleRatesSelectionChanged}
+                    rowData={displayedRateRows}
+                    rowHeight={20}
+                    rowSelection={{ mode: "singleRow", enableClickSelection: true, checkboxes: false }}
+                    suppressNoRowsOverlay
+                    suppressCellFocus
+                    suppressHorizontalScroll
+                    theme={themeQuartz}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </Form>
     </section>
