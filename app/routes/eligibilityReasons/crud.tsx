@@ -108,7 +108,7 @@ export default function EligibilityReasonPage() {
   const [selectedCondition, setSelectedCondition] = useState<ReasonCondition | null>(null);
   const inputsDisabled = !!loaderError || operation === crudOps.view || operation === crudOps.delete;
   const attributeId = selectedCondition?.attributeId ?? NaN;
-  const operator = selectedCondition?.operator ?? "";
+  const operator = selectedCondition?.operator ?? "" as ReasonOperator;
   const value = selectedCondition?.value ?? "";
   const conditionDetailsDisabled = inputsDisabled || !selectedCondition;
   const attributeLabels = new Map(
@@ -146,18 +146,9 @@ export default function EligibilityReasonPage() {
   }
 
   const conditionColumnDefs: ColDef<ReasonCondition>[] = [
-    {
-      field: "attributeId",
-      headerName: "Attribute",
-      valueFormatter: ({ value }) => attributeLabels.get(value) ?? "",
-    },
-    { field: "operator", width: 36, headerName: "Operator" },
-    {
-      cellDataType: false,
-      field: "value",
-      headerName: "Value",
-      valueFormatter: ({ value }) => String(value ?? ""),
-    },
+    { field: "attributeId", flex: 1.5, valueFormatter: ({ value }) => attributeLabels.get(value) ?? "" },
+    { field: "operator", maxWidth: 30 },
+    { cellDataType: false, flex: 1, field: "value" },
   ];
 
   return (
@@ -211,13 +202,13 @@ export default function EligibilityReasonPage() {
               title="Conditions"
               onAdd={addCondition}
               onRemove={removeCondition}
-              onSelectionChange={(condition) => setSelectedCondition(condition)}
+              onSelectionChanged={(condition) => setSelectedCondition(condition)}
             />
             {formValues.conditions.map((condition: ReasonCondition, index: number) => (
               <input key={index} name="conditions" type="hidden" value={JSON.stringify(condition)} />
             ))}
           </div>
-          <div className="crud-page-form-column">
+          {!inputsDisabled && <div className="crud-page-form-column">
             <div className="selection-list-header">
               <span className="selection-list-title">Condition Details</span>
             </div>
@@ -271,12 +262,8 @@ export default function EligibilityReasonPage() {
                     ]}
                     placeholder={!attributeId ? "No attribute selected" : undefined}
                     value={typeof value === "boolean" ? String(value) : ""}
-                    onChange={(nextValue) => {
-                      updateSelectedCondition({
-                        attributeId,
-                        operator: operator as ReasonOperator,
-                        value: nextValue === "true",
-                      });
+                    onChange={(value) => {
+                      updateSelectedCondition({ attributeId, operator, value });
                     }}
                   />
                 </div>
@@ -297,22 +284,17 @@ export default function EligibilityReasonPage() {
                     }
                     value={String(value)}
                     onChange={(event) => {
-                      const nextValue = event.target.value;
-                      const updatedValue =
+                      const value =
                         attributeType === AccountAttributeType.DECIMAL || attributeType === AccountAttributeType.INTEGER
-                          ? Number(nextValue)
-                          : nextValue;
-                      updateSelectedCondition({
-                        attributeId,
-                        operator: operator as ReasonOperator,
-                        value: updatedValue as ReasonConditionValue,
-                      });
+                          ? Number(event.target.value)
+                          : event.target.value;
+                      updateSelectedCondition({ attributeId, operator, value });
                     }}
                   />
                 </label>
               )}
             </div>
-          </div>
+          </div>}
         </div>
       </Form>
     </section>

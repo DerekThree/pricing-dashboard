@@ -30,6 +30,7 @@ import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
+import SelectionList from "~/app/components/SelectionList";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -129,7 +130,6 @@ export default function PricingPlanPage() {
   const selectedProduct = dropdownOptions.products.find((product) => product.id === formValues.productId);
   const feeRows = selectedProduct ? [...depositFeeRows, ...creditFeeRows] : [];
   const displayedRateRows = [...rateRows, { id: "add-rate", name: "Add rate", isAddRow: true }];
-  const feesColumnDefs: ColDef<FeeRow>[] = [{ field: "name", headerName: "Fee" }];
   const ratesColumnDefs: ColDef<RateRow>[] = [
     { field: "name", headerName: "Rate" },
     {
@@ -296,53 +296,26 @@ export default function PricingPlanPage() {
           {selectedProduct && (
             <div className="pricing-plan-side-column">
               <div className="crud-page-form-column">
-                <span className="pricing-plan-section-title">Fees</span>
-                <div className="pricing-plan-table">
-                  <AgGridReact
-                    columnDefs={feesColumnDefs}
-                    defaultColDef={{ flex: 1, minWidth: 0 }}
-                    domLayout="autoHeight"
-                    headerHeight={0}
-                    onGridReady={(event) => {
-                      feesGridApiRef.current = event.api;
-                      event.api.sizeColumnsToFit();
-                    }}
-                    onGridSizeChanged={(event) => event.api.sizeColumnsToFit()}
-                    onSelectionChanged={handleFeesSelectionChanged}
-                    rowData={feeRows}
-                    rowHeight={20}
-                    rowSelection={{ mode: "singleRow", enableClickSelection: true, checkboxes: false }}
-                    suppressNoRowsOverlay
-                    suppressCellFocus
-                    suppressHorizontalScroll
-                    theme={themeQuartz}
-                  />
-                </div>
+                <SelectionList
+                  columnDefs={[{ field: "name" }]}
+                  disabled={inputsDisabled}
+                  rowData={depositFeeRows}
+                  title="Fees"
+                  onAdd={() => ({ name: "new"})}
+                  onRemove={() => {}}
+                  onSelectionChanged={() => {}}
+                />
               </div>
               <div className="crud-page-form-column">
-                <span className="pricing-plan-section-title">Rates</span>
-                <div className="pricing-plan-table">
-                  <AgGridReact
-                    columnDefs={ratesColumnDefs}
-                    defaultColDef={{ flex: 1, minWidth: 0 }}
-                    domLayout="autoHeight"
-                    headerHeight={0}
-                    onGridReady={(event) => {
-                      ratesGridApiRef.current = event.api;
-                      event.api.sizeColumnsToFit();
-                    }}
-                    onGridSizeChanged={(event) => event.api.sizeColumnsToFit()}
-                    onRowDataUpdated={handleRatesRowDataUpdated}
-                    onSelectionChanged={handleRatesSelectionChanged}
-                    rowData={displayedRateRows}
-                    rowHeight={20}
-                    rowSelection={{ mode: "singleRow", enableClickSelection: true, checkboxes: false }}
-                    suppressNoRowsOverlay
-                    suppressCellFocus
-                    suppressHorizontalScroll
-                    theme={themeQuartz}
-                  />
-                </div>
+                <SelectionList
+                  columnDefs={[{ field: "name" }]}
+                  disabled={inputsDisabled}
+                  rowData={[]}
+                  title="Rates"
+                  onAdd={() => ({ name: "new"})}
+                  onRemove={() => {}}
+                  onSelectionChanged={() => {}}
+                />
               </div>
             </div>
           )}

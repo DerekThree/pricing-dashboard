@@ -66,7 +66,7 @@ function formatOptionLabel(option: DropdownOption, context: "menu" | "value", is
 }
 
 function renderHiddenInputs(name: string, selectedValues: DropdownValue[]) {
-  return selectedValues.map((value) => <input key={String(value)} name={name} type="hidden" value={value} />);
+  return selectedValues.map((value) => <input key={String(value)} name={name} type="hidden" value={String(value)} />);
 }
 
 export default function Dropdown(props: DropdownProps) {

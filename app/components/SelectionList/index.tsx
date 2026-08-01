@@ -7,6 +7,7 @@ import {
   ModuleRegistry,
   themeQuartz,
   type ColDef,
+  type SelectionChangedEvent,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 
@@ -17,7 +18,7 @@ type SelectionListProps<TRow extends object> = {
   disabled?: boolean;
   onAdd(): TRow;
   onRemove?(row: TRow): void;
-  onSelectionChange?(row: TRow | null): void;
+  onSelectionChanged?(row: TRow | null): void;
   rowData: TRow[];
   title: string;
 };
@@ -27,20 +28,35 @@ export default function SelectionList<TRow extends object>({
   disabled = false,
   onAdd,
   onRemove,
-  onSelectionChange,
+  onSelectionChanged,
   rowData,
   title,
 }: SelectionListProps<TRow>) {
   const [selectedRow, setSelectedRow] = useState<TRow | null>(null);
 
+  const removeButtonColumnDef: ColDef<TRow> = {
+    cellRenderer: (params: ICellRendererParams<TRow>) => (
+      <button
+        className="selection-list-remove-button"
+        disabled={disabled}
+        type="button"
+        onClick={() => { if (params.node.data) { handleRemove(params.node.data); } }}
+      >
+        X
+      </button>
+    ),
+    maxWidth: 32,
+  };
+  const resolvedColumnDefs = onRemove ? [ ...columnDefs, removeButtonColumnDef ] : columnDefs;
+  
   useEffect(() => {
     if (selectedRow && !rowData.includes(selectedRow)) {
       setSelectedRow(null);
       return;
     }
 
-    onSelectionChange?.(selectedRow);
-  }, [onSelectionChange, rowData, selectedRow]);
+    onSelectionChanged?.(selectedRow);
+  }, [onSelectionChanged, rowData, selectedRow]);
 
   function handleAdd() {
     const newRow = onAdd();
@@ -55,29 +71,17 @@ export default function SelectionList<TRow extends object>({
     onRemove?.(row);
   }
 
-  const resolvedColumnDefs = onRemove
-    ? [
-        ...columnDefs,
-        {
-          cellRenderer: (params: ICellRendererParams<TRow>) => (
-            <button
-              className="selection-list-remove-button"
-              disabled={disabled}
-              type="button"
-              onClick={() => { if (params.node.data) { handleRemove(params.node.data); } }}
-            >
-              X
-            </button>
-          ),
-          colId: "remove",
-          maxWidth: 32,
-          minWidth: 32,
-          resizable: false,
-          sortable: false,
-          width: 32,
-        } satisfies ColDef<TRow>,
-      ]
-    : columnDefs;
+  function handleSelectionChanged(event: SelectionChangedEvent<TRow>) {
+    if (disabled) {
+      return;
+    }
+
+    const selectedRow = event.api.getSelectedRows()[0];
+
+    if (selectedRow) {
+      setSelectedRow(selectedRow);
+    }
+  }
 
   return (
     <div className="selection-list">
@@ -95,23 +99,16 @@ export default function SelectionList<TRow extends object>({
       <div className={`selection-list-table ${rowData.length === 0 ? "selection-list-table-empty" : ""}`}>
         <AgGridReact
           columnDefs={resolvedColumnDefs}
+          defaultColDef={{ minWidth: 0, flex: 1 }}
           domLayout="autoHeight"
           headerHeight={0}
-          onGridReady={(event) => event.api.sizeColumnsToFit()}
-          onGridSizeChanged={(event) => event.api.sizeColumnsToFit()}
           onRowDataUpdated={(event) =>
             event.api.forEachNode((node) => node.setSelected(node.data === selectedRow))
           }
-          onSelectionChanged={(event) => {
-            const selectedRow = event.api.getSelectedRows()[0];
-
-            if (selectedRow) {
-              setSelectedRow(selectedRow);
-            }
-          }}
+          onSelectionChanged={handleSelectionChanged}
           rowData={rowData}
           rowHeight={20}
-          rowSelection={{ mode: "singleRow", enableClickSelection: true, checkboxes: false }}
+          rowSelection={{ mode: "singleRow", enableClickSelection: !disabled, checkboxes: false }}
           suppressCellFocus
           suppressHorizontalScroll
           suppressNoRowsOverlay
