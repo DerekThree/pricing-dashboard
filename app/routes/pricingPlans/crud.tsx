@@ -22,10 +22,10 @@ import {
   createPricingPlan,
   deletePricingPlan,
   getPricingPlan,
-  getProductRegionOptions,
+  getPricingPlanOptions,
   updatePricingPlan,
 } from "../../generated/api/client";
-import type { ProductRegionOptions } from "../../generated/api/models";
+import type { PricingPlanOptions } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
@@ -74,7 +74,8 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     activeFrom: "",
     activeThrough: "",
   };
-  const emptyDropdownOptions: ProductRegionOptions = {
+  const emptyDropdownOptions: PricingPlanOptions = {
+    fees: [],
     products: [],
     regions: [],
   };
@@ -83,7 +84,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
   const [recordResponse, optionsResponse] = await Promise.all([
     needsRecord ? getPricingPlan(id) : null,
-    needsOptionsEndpoint ? getProductRegionOptions() : null,
+    needsOptionsEndpoint ? getPricingPlanOptions() : null,
   ]);
 
   if (recordResponse && recordResponse.status !== 200) {
@@ -127,7 +128,8 @@ export default function PricingPlanPage() {
   const pendingSelectedRateIdRef = useRef("");
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
-  const selectedProduct = dropdownOptions.products.find((product) => product.id === formValues.productId);
+  const selectedProduct = dropdownOptions.products.find((product) =>
+    product.id === formValues.productId);
   const feeRows = selectedProduct ? [...depositFeeRows, ...creditFeeRows] : [];
   const displayedRateRows = [...rateRows, { id: "add-rate", name: "Add rate", isAddRow: true }];
   const ratesColumnDefs: ColDef<RateRow>[] = [

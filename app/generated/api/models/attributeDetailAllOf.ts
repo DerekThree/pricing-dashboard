@@ -7,10 +7,8 @@
  */
 import type { Id } from './id';
 import type { DateTime } from './dateTime';
-import type { ProductRegionOptions } from './productRegionOptions';
 
-export type PricingPlanDetailAllOf = {
+export type AttributeDetailAllOf = {
   id: Id;
   updatedOn: DateTime;
-  options: ProductRegionOptions;
 };

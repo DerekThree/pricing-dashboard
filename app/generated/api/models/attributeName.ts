@@ -6,4 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type EligibilityReasonConditionValue = string | number | boolean;
+/**
+ * @minLength 1
+ * @maxLength 100
+ */
+export type AttributeName = string;

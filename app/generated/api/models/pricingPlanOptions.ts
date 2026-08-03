@@ -7,8 +7,10 @@
  */
 import type { ProductOption } from './productOption';
 import type { RegionOption } from './regionOption';
+import type { FeeOption } from './feeOption';
 
-export interface ProductRegionOptions {
+export interface PricingPlanOptions {
   products: ProductOption[];
   regions: RegionOption[];
+  fees: FeeOption[];
 }

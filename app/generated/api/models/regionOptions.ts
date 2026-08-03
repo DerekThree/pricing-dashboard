@@ -7,10 +7,10 @@
  */
 import type { State } from './state';
 import type { ZipCode } from './zipCode';
-import type { RegionBranchOption } from './regionBranchOption';
+import type { BranchOption } from './branchOption';
 
 export interface RegionOptions {
   states: State[];
   zipCodes: ZipCode[];
-  branches: RegionBranchOption[];
+  branches: BranchOption[];
 }

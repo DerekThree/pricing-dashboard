@@ -6,11 +6,13 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { Id } from './id';
-import type { EligibilityReasonOptions } from './eligibilityReasonOptions';
-import type { DateTime } from './dateTime';
+import type { FeeCode } from './feeCode';
+import type { FeeName } from './feeName';
+import type { ProductType } from './productType';
 
-export type EligibilityReasonDetailAllOf = {
+export interface FeeOption {
   id: Id;
-  formOptions: EligibilityReasonOptions;
-  updatedOn: DateTime;
-};
+  code: FeeCode;
+  name: FeeName;
+  productTypes: ProductType[];
+}

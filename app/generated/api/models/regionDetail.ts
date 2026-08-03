@@ -10,7 +10,7 @@ import type { RegionCode } from './regionCode';
 import type { RegionName } from './regionName';
 import type { State } from './state';
 import type { ZipCode } from './zipCode';
-import type { CoverageOptions } from './coverageOptions';
+import type { RegionOptions } from './regionOptions';
 import type { DateTime } from './dateTime';
 import type { UpdatedBy } from './updatedBy';
 
@@ -21,7 +21,7 @@ export interface RegionDetail {
   states: State[];
   zipCodes: ZipCode[];
   branches: Id[];
-  formOptions: CoverageOptions;
+  formOptions: RegionOptions;
   updatedOn: DateTime;
   updatedBy: UpdatedBy;
 }

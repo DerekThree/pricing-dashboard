@@ -5,8 +5,9 @@
  * REST API for managing branches, regions, products, and pricing plans.
  * OpenAPI spec version: 1.0.0
  */
+import type { AttributeDetail } from './attributeDetail';
 
 /**
- * @pattern ^[A-Z0-9]{8}$
+ * Account attribute response
  */
-export type PlanCode = string;
+export type AttributeDetailResponse = AttributeDetail;

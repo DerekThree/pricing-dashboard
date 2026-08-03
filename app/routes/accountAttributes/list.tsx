@@ -2,18 +2,18 @@ import { useLoaderData } from "react-router";
 import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
-import { listAccountAttributes } from "../../generated/api/client";
-import { AttributeType, type AccountAttributeListItem } from "../../generated/api/models";
+import { listAttributes } from "../../generated/api/client";
+import { AccountAttributeType, type AccountAttributeListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { formatDateTime } from "../../utils/dateTimeUtils";
 
 const attributeTypeLabels: Record<AccountAttributeListItem["type"], string> = {
-  [AttributeType.TEXT]: "Text",
-  [AttributeType.DECIMAL]: "Decimal",
-  [AttributeType.INTEGER]: "Integer",
-  [AttributeType.DATE]: "Date",
-  [AttributeType.BOOLEAN]: "Boolean",
+  [AccountAttributeType.TEXT]: "Text",
+  [AccountAttributeType.DECIMAL]: "Decimal",
+  [AccountAttributeType.INTEGER]: "Integer",
+  [AccountAttributeType.DATE]: "Date",
+  [AccountAttributeType.BOOLEAN]: "Boolean",
 };
 
 const columnDefs: ColDef<AccountAttributeListItem>[] = [
@@ -28,7 +28,7 @@ const columnDefs: ColDef<AccountAttributeListItem>[] = [
 ];
 
 export async function clientLoader() {
-  const { status, data } = await listAccountAttributes();
+  const { status, data } = await listAttributes();
 
   return status === 200
     ? { rowData: data, loaderError: null }

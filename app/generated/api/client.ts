@@ -6,23 +6,22 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
-  AccountAttributeDetailResponse,
-  AccountAttributeListItem,
-  AccountAttributeRequest,
+  AttributeDetailResponse,
+  AttributeListItem,
+  AttributeRequest,
   BranchDetailResponse,
   BranchListItem,
   BranchRequest,
-  CoverageOptions,
   ErrorResponse,
   FeeDetailResponse,
   FeeListItem,
   FeeRequest,
   PricingPlanDetailResponse,
   PricingPlanListItem,
+  PricingPlanOptions,
   PricingPlanRequest,
   ProductDetailResponse,
   ProductListItem,
-  ProductRegionOptions,
   ProductRequest,
   ReasonDetailResponse,
   ReasonListItem,
@@ -30,6 +29,7 @@ import type {
   ReasonRequest,
   RegionDetailResponse,
   RegionListItem,
+  RegionOptions,
   RegionRequest,
   SyntheticServiceUnavailableResponse
 } from './models';
@@ -408,31 +408,31 @@ export const createRegion = async (regionRequest: RegionRequest, options?: Reque
 /**
  * @summary Get available region options
  */
-export type getCoverageOptionsResponse200 = {
-  data: CoverageOptions
+export type getRegionOptionsResponse200 = {
+  data: RegionOptions
   status: 200
 }
 
-export type getCoverageOptionsResponse500 = {
+export type getRegionOptionsResponse500 = {
   data: ErrorResponse
   status: 500
 }
 
-export type getCoverageOptionsResponse503 = {
+export type getRegionOptionsResponse503 = {
   data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
-export type getCoverageOptionsResponseSuccess = (getCoverageOptionsResponse200) & {
+export type getRegionOptionsResponseSuccess = (getRegionOptionsResponse200) & {
   headers: Headers;
 };
-export type getCoverageOptionsResponseError = (getCoverageOptionsResponse500 | getCoverageOptionsResponse503) & {
+export type getRegionOptionsResponseError = (getRegionOptionsResponse500 | getRegionOptionsResponse503) & {
   headers: Headers;
 };
 
-export type getCoverageOptionsResponse = (getCoverageOptionsResponseSuccess | getCoverageOptionsResponseError)
+export type getRegionOptionsResponse = (getRegionOptionsResponseSuccess | getRegionOptionsResponseError)
 
-export const getGetCoverageOptionsUrl = () => {
+export const getGetRegionOptionsUrl = () => {
 
 
   
@@ -440,9 +440,9 @@ export const getGetCoverageOptionsUrl = () => {
   return `http://localhost:8080/regions/options`
 }
 
-export const getCoverageOptions = async ( options?: RequestInit): Promise<getCoverageOptionsResponse> => {
+export const getRegionOptions = async ( options?: RequestInit): Promise<getRegionOptionsResponse> => {
   
-  return apiMutator<getCoverageOptionsResponse>(getGetCoverageOptionsUrl(),
+  return apiMutator<getRegionOptionsResponse>(getGetRegionOptionsUrl(),
   {      
     ...options,
     method: 'GET'
@@ -1260,31 +1260,31 @@ export const createPricingPlan = async (pricingPlanRequest: PricingPlanRequest, 
 /**
  * @summary Get available pricing plan options
  */
-export type getProductRegionOptionsResponse200 = {
-  data: ProductRegionOptions
+export type getPricingPlanOptionsResponse200 = {
+  data: PricingPlanOptions
   status: 200
 }
 
-export type getProductRegionOptionsResponse500 = {
+export type getPricingPlanOptionsResponse500 = {
   data: ErrorResponse
   status: 500
 }
 
-export type getProductRegionOptionsResponse503 = {
+export type getPricingPlanOptionsResponse503 = {
   data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
-export type getProductRegionOptionsResponseSuccess = (getProductRegionOptionsResponse200) & {
+export type getPricingPlanOptionsResponseSuccess = (getPricingPlanOptionsResponse200) & {
   headers: Headers;
 };
-export type getProductRegionOptionsResponseError = (getProductRegionOptionsResponse500 | getProductRegionOptionsResponse503) & {
+export type getPricingPlanOptionsResponseError = (getPricingPlanOptionsResponse500 | getPricingPlanOptionsResponse503) & {
   headers: Headers;
 };
 
-export type getProductRegionOptionsResponse = (getProductRegionOptionsResponseSuccess | getProductRegionOptionsResponseError)
+export type getPricingPlanOptionsResponse = (getPricingPlanOptionsResponseSuccess | getPricingPlanOptionsResponseError)
 
-export const getGetProductRegionOptionsUrl = () => {
+export const getGetPricingPlanOptionsUrl = () => {
 
 
   
@@ -1292,9 +1292,9 @@ export const getGetProductRegionOptionsUrl = () => {
   return `http://localhost:8080/pricing-plans/options`
 }
 
-export const getProductRegionOptions = async ( options?: RequestInit): Promise<getProductRegionOptionsResponse> => {
+export const getPricingPlanOptions = async ( options?: RequestInit): Promise<getPricingPlanOptionsResponse> => {
   
-  return apiMutator<getProductRegionOptionsResponse>(getGetProductRegionOptionsUrl(),
+  return apiMutator<getPricingPlanOptionsResponse>(getGetPricingPlanOptionsUrl(),
   {      
     ...options,
     method: 'GET'
@@ -1474,31 +1474,31 @@ export const deletePricingPlan = async (id: number, options?: RequestInit): Prom
 /**
  * @summary List all account attributes
  */
-export type listAccountAttributesResponse200 = {
-  data: AccountAttributeListItem[]
+export type listAttributesResponse200 = {
+  data: AttributeListItem[]
   status: 200
 }
 
-export type listAccountAttributesResponse500 = {
+export type listAttributesResponse500 = {
   data: ErrorResponse
   status: 500
 }
 
-export type listAccountAttributesResponse503 = {
+export type listAttributesResponse503 = {
   data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
-export type listAccountAttributesResponseSuccess = (listAccountAttributesResponse200) & {
+export type listAttributesResponseSuccess = (listAttributesResponse200) & {
   headers: Headers;
 };
-export type listAccountAttributesResponseError = (listAccountAttributesResponse500 | listAccountAttributesResponse503) & {
+export type listAttributesResponseError = (listAttributesResponse500 | listAttributesResponse503) & {
   headers: Headers;
 };
 
-export type listAccountAttributesResponse = (listAccountAttributesResponseSuccess | listAccountAttributesResponseError)
+export type listAttributesResponse = (listAttributesResponseSuccess | listAttributesResponseError)
 
-export const getListAccountAttributesUrl = () => {
+export const getListAttributesUrl = () => {
 
 
   
@@ -1506,9 +1506,9 @@ export const getListAccountAttributesUrl = () => {
   return `http://localhost:8080/account-attributes`
 }
 
-export const listAccountAttributes = async ( options?: RequestInit): Promise<listAccountAttributesResponse> => {
+export const listAttributes = async ( options?: RequestInit): Promise<listAttributesResponse> => {
   
-  return apiMutator<listAccountAttributesResponse>(getListAccountAttributesUrl(),
+  return apiMutator<listAttributesResponse>(getListAttributesUrl(),
   {      
     ...options,
     method: 'GET'
@@ -1522,36 +1522,36 @@ export const listAccountAttributes = async ( options?: RequestInit): Promise<lis
 /**
  * @summary Create an account attribute
  */
-export type createAccountAttributeResponse201 = {
-  data: AccountAttributeDetailResponse
+export type createAttributeResponse201 = {
+  data: AttributeDetailResponse
   status: 201
 }
 
-export type createAccountAttributeResponse400 = {
+export type createAttributeResponse400 = {
   data: ErrorResponse
   status: 400
 }
 
-export type createAccountAttributeResponse500 = {
+export type createAttributeResponse500 = {
   data: ErrorResponse
   status: 500
 }
 
-export type createAccountAttributeResponse503 = {
+export type createAttributeResponse503 = {
   data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
-export type createAccountAttributeResponseSuccess = (createAccountAttributeResponse201) & {
+export type createAttributeResponseSuccess = (createAttributeResponse201) & {
   headers: Headers;
 };
-export type createAccountAttributeResponseError = (createAccountAttributeResponse400 | createAccountAttributeResponse500 | createAccountAttributeResponse503) & {
+export type createAttributeResponseError = (createAttributeResponse400 | createAttributeResponse500 | createAttributeResponse503) & {
   headers: Headers;
 };
 
-export type createAccountAttributeResponse = (createAccountAttributeResponseSuccess | createAccountAttributeResponseError)
+export type createAttributeResponse = (createAttributeResponseSuccess | createAttributeResponseError)
 
-export const getCreateAccountAttributeUrl = () => {
+export const getCreateAttributeUrl = () => {
 
 
   
@@ -1559,15 +1559,15 @@ export const getCreateAccountAttributeUrl = () => {
   return `http://localhost:8080/account-attributes`
 }
 
-export const createAccountAttribute = async (accountAttributeRequest: AccountAttributeRequest, options?: RequestInit): Promise<createAccountAttributeResponse> => {
+export const createAttribute = async (attributeRequest: AttributeRequest, options?: RequestInit): Promise<createAttributeResponse> => {
   
-  return apiMutator<createAccountAttributeResponse>(getCreateAccountAttributeUrl(),
+  return apiMutator<createAttributeResponse>(getCreateAttributeUrl(),
   {      
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
-      accountAttributeRequest,)
+      attributeRequest,)
   }
 );}
 
@@ -1576,36 +1576,36 @@ export const createAccountAttribute = async (accountAttributeRequest: AccountAtt
 /**
  * @summary Get an account attribute by ID
  */
-export type getAccountAttributeResponse200 = {
-  data: AccountAttributeDetailResponse
+export type getAttributeResponse200 = {
+  data: AttributeDetailResponse
   status: 200
 }
 
-export type getAccountAttributeResponse404 = {
+export type getAttributeResponse404 = {
   data: ErrorResponse
   status: 404
 }
 
-export type getAccountAttributeResponse500 = {
+export type getAttributeResponse500 = {
   data: ErrorResponse
   status: 500
 }
 
-export type getAccountAttributeResponse503 = {
+export type getAttributeResponse503 = {
   data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
-export type getAccountAttributeResponseSuccess = (getAccountAttributeResponse200) & {
+export type getAttributeResponseSuccess = (getAttributeResponse200) & {
   headers: Headers;
 };
-export type getAccountAttributeResponseError = (getAccountAttributeResponse404 | getAccountAttributeResponse500 | getAccountAttributeResponse503) & {
+export type getAttributeResponseError = (getAttributeResponse404 | getAttributeResponse500 | getAttributeResponse503) & {
   headers: Headers;
 };
 
-export type getAccountAttributeResponse = (getAccountAttributeResponseSuccess | getAccountAttributeResponseError)
+export type getAttributeResponse = (getAttributeResponseSuccess | getAttributeResponseError)
 
-export const getGetAccountAttributeUrl = (id: number,) => {
+export const getGetAttributeUrl = (id: number,) => {
 
 
   
@@ -1613,9 +1613,9 @@ export const getGetAccountAttributeUrl = (id: number,) => {
   return `http://localhost:8080/account-attributes/${id}`
 }
 
-export const getAccountAttribute = async (id: number, options?: RequestInit): Promise<getAccountAttributeResponse> => {
+export const getAttribute = async (id: number, options?: RequestInit): Promise<getAttributeResponse> => {
   
-  return apiMutator<getAccountAttributeResponse>(getGetAccountAttributeUrl(id),
+  return apiMutator<getAttributeResponse>(getGetAttributeUrl(id),
   {      
     ...options,
     method: 'GET'
@@ -1629,41 +1629,41 @@ export const getAccountAttribute = async (id: number, options?: RequestInit): Pr
 /**
  * @summary Replace an account attribute
  */
-export type updateAccountAttributeResponse200 = {
-  data: AccountAttributeDetailResponse
+export type updateAttributeResponse200 = {
+  data: AttributeDetailResponse
   status: 200
 }
 
-export type updateAccountAttributeResponse400 = {
+export type updateAttributeResponse400 = {
   data: ErrorResponse
   status: 400
 }
 
-export type updateAccountAttributeResponse404 = {
+export type updateAttributeResponse404 = {
   data: ErrorResponse
   status: 404
 }
 
-export type updateAccountAttributeResponse500 = {
+export type updateAttributeResponse500 = {
   data: ErrorResponse
   status: 500
 }
 
-export type updateAccountAttributeResponse503 = {
+export type updateAttributeResponse503 = {
   data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
-export type updateAccountAttributeResponseSuccess = (updateAccountAttributeResponse200) & {
+export type updateAttributeResponseSuccess = (updateAttributeResponse200) & {
   headers: Headers;
 };
-export type updateAccountAttributeResponseError = (updateAccountAttributeResponse400 | updateAccountAttributeResponse404 | updateAccountAttributeResponse500 | updateAccountAttributeResponse503) & {
+export type updateAttributeResponseError = (updateAttributeResponse400 | updateAttributeResponse404 | updateAttributeResponse500 | updateAttributeResponse503) & {
   headers: Headers;
 };
 
-export type updateAccountAttributeResponse = (updateAccountAttributeResponseSuccess | updateAccountAttributeResponseError)
+export type updateAttributeResponse = (updateAttributeResponseSuccess | updateAttributeResponseError)
 
-export const getUpdateAccountAttributeUrl = (id: number,) => {
+export const getUpdateAttributeUrl = (id: number,) => {
 
 
   
@@ -1671,16 +1671,16 @@ export const getUpdateAccountAttributeUrl = (id: number,) => {
   return `http://localhost:8080/account-attributes/${id}`
 }
 
-export const updateAccountAttribute = async (id: number,
-    accountAttributeRequest: AccountAttributeRequest, options?: RequestInit): Promise<updateAccountAttributeResponse> => {
+export const updateAttribute = async (id: number,
+    attributeRequest: AttributeRequest, options?: RequestInit): Promise<updateAttributeResponse> => {
   
-  return apiMutator<updateAccountAttributeResponse>(getUpdateAccountAttributeUrl(id),
+  return apiMutator<updateAttributeResponse>(getUpdateAttributeUrl(id),
   {      
     ...options,
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
-      accountAttributeRequest,)
+      attributeRequest,)
   }
 );}
 
@@ -1689,36 +1689,36 @@ export const updateAccountAttribute = async (id: number,
 /**
  * @summary Delete an account attribute
  */
-export type deleteAccountAttributeResponse204 = {
+export type deleteAttributeResponse204 = {
   data: void
   status: 204
 }
 
-export type deleteAccountAttributeResponse404 = {
+export type deleteAttributeResponse404 = {
   data: ErrorResponse
   status: 404
 }
 
-export type deleteAccountAttributeResponse500 = {
+export type deleteAttributeResponse500 = {
   data: ErrorResponse
   status: 500
 }
 
-export type deleteAccountAttributeResponse503 = {
+export type deleteAttributeResponse503 = {
   data: SyntheticServiceUnavailableResponse
   status: 503
 }
     
-export type deleteAccountAttributeResponseSuccess = (deleteAccountAttributeResponse204) & {
+export type deleteAttributeResponseSuccess = (deleteAttributeResponse204) & {
   headers: Headers;
 };
-export type deleteAccountAttributeResponseError = (deleteAccountAttributeResponse404 | deleteAccountAttributeResponse500 | deleteAccountAttributeResponse503) & {
+export type deleteAttributeResponseError = (deleteAttributeResponse404 | deleteAttributeResponse500 | deleteAttributeResponse503) & {
   headers: Headers;
 };
 
-export type deleteAccountAttributeResponse = (deleteAccountAttributeResponseSuccess | deleteAccountAttributeResponseError)
+export type deleteAttributeResponse = (deleteAttributeResponseSuccess | deleteAttributeResponseError)
 
-export const getDeleteAccountAttributeUrl = (id: number,) => {
+export const getDeleteAttributeUrl = (id: number,) => {
 
 
   
@@ -1726,9 +1726,9 @@ export const getDeleteAccountAttributeUrl = (id: number,) => {
   return `http://localhost:8080/account-attributes/${id}`
 }
 
-export const deleteAccountAttribute = async (id: number, options?: RequestInit): Promise<deleteAccountAttributeResponse> => {
+export const deleteAttribute = async (id: number, options?: RequestInit): Promise<deleteAttributeResponse> => {
   
-  return apiMutator<deleteAccountAttributeResponse>(getDeleteAccountAttributeUrl(id),
+  return apiMutator<deleteAttributeResponse>(getDeleteAttributeUrl(id),
   {      
     ...options,
     method: 'DELETE'

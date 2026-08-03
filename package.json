@@ -4,8 +4,9 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
+    "clean:api": "powershell -NoProfile -Command \"Remove-Item -Recurse -Force app/generated/api/models -ErrorAction SilentlyContinue; Remove-Item -Force app/generated/api/client.ts -ErrorAction SilentlyContinue\"",
     "dev": "react-router dev",
-    "generate:api": "orval",
+    "generate:api": "npm run clean:api && orval",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
   },

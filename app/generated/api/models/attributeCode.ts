@@ -5,8 +5,8 @@
  * REST API for managing branches, regions, products, and pricing plans.
  * OpenAPI spec version: 1.0.0
  */
-import type { AccountAttributeOption } from './accountAttributeOption';
 
-export interface EligibilityReasonOptions {
-  attributes: AccountAttributeOption[];
-}
+/**
+ * @pattern ^[A-Z0-9]{1,25}$
+ */
+export type AttributeCode = string;
