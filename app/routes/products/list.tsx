@@ -7,11 +7,7 @@ import { ProductType, type ProductListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { formatDateTime } from "../../utils/dateTimeUtils";
-
-const productTypeLabels: Record<ProductListItem["productType"], string> = {
-  [ProductType.DEPOSIT]: "Deposit",
-  [ProductType.CREDIT]: "Credit",
-};
+import { productTypeLabels } from "../../utils/formUtils";
 
 const columnDefs: ColDef<ProductListItem>[] = [
   { field: "product", headerName: "Product" },

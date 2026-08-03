@@ -60,10 +60,10 @@ export default function ProductPage() {
               <input
                 disabled={inputsDisabled}
                 id="product-code"
-                maxLength={8}
+                maxLength={25}
                 name="productCode"
-                pattern="[A-Z0-9]{8}"
-                title="Product code must be exactly 8 uppercase letters or digits."
+                pattern="[A-Z0-9]{1,25}"
+                title="Product code must be 1 to 25 uppercase letters or digits."
                 required
                 type="text"
                 value={formValues.productCode}

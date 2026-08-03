@@ -71,10 +71,10 @@ export default function FeePage() {
               <input
                 disabled={inputsDisabled}
                 id="fee-code"
-                maxLength={8}
+                maxLength={25}
                 name="feeCode"
-                pattern="[A-Z0-9]{8}"
-                title="Fee code must be exactly 8 uppercase letters or digits."
+                pattern="[A-Z0-9]{1,25}"
+                title="Fee code must be 1 to 25 uppercase letters or digits."
                 required
                 type="text"
                 value={formValues.feeCode}

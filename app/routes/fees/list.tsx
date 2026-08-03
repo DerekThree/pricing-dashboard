@@ -8,11 +8,7 @@ import type { FeeListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { formatDateTime } from "../../utils/dateTimeUtils";
-
-const productTypeLabels: Record<ProductType, string> = {
-  [ProductType.DEPOSIT]: "Deposit",
-  [ProductType.CREDIT]: "Credit",
-};
+import { productTypeLabels } from "../../utils/formUtils";
 
 const columnDefs: ColDef<FeeListItem>[] = [
   { field: "fee", headerName: "Fee" },

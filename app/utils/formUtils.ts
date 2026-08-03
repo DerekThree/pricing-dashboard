@@ -15,7 +15,13 @@ export function preventEnterSubmit(event: React.KeyboardEvent<HTMLFormElement>) 
   }
 }
 
+export const productTypeLabels: Record<ProductType, string> = {
+  [ProductType.DEPOSIT]: "Standard Deposit",
+  [ProductType.CD]: "Certificate of Deposit",
+  [ProductType.CREDIT]: "Credit",
+};
+
 export const productTypeOptions = Object.values(ProductType).map((productType) => ({
   value: productType,
-  label: productType[0] + productType.slice(1).toLowerCase(),
+  label: productTypeLabels[productType],
 }));

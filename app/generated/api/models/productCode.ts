@@ -7,6 +7,6 @@
  */
 
 /**
- * @pattern ^[A-Z0-9]{8}$
+ * @pattern ^[A-Z0-9]{1,25}$
  */
 export type ProductCode = string;

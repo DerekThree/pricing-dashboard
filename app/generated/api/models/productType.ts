@@ -12,5 +12,6 @@ export type ProductType = typeof ProductType[keyof typeof ProductType];
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ProductType = {
   DEPOSIT: 'DEPOSIT',
+  CD: 'CD',
   CREDIT: 'CREDIT',
 } as const;
