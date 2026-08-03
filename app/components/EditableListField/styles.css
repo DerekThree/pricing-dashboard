@@ -1,0 +1,31 @@
+.selection-list-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.selection-list-add-button {
+  background: rgb(255 255 255);
+  border: 1px solid rgb(191 219 254);
+  border-radius: 0.25rem;
+  color: rgb(37 99 235);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.selection-list-add-button:hover {
+  background: rgb(245 248 255);
+  border-color: rgb(147 197 253);
+  color: rgb(29 78 216);
+}
+
+.selection-list-add-button:disabled {
+  background: rgb(241 245 249);
+  border-color: rgb(203 213 225);
+  color: rgb(148 163 184);
+  cursor: default;
+}

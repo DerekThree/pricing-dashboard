@@ -8,9 +8,11 @@
 import type { Id } from './id';
 import type { ProductCode } from './productCode';
 import type { ProductName } from './productName';
+import type { ProductType } from './productType';
 
 export interface ProductOption {
   id: Id;
   code: ProductCode;
   name: ProductName;
+  type: ProductType;
 }

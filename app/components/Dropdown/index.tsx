@@ -18,7 +18,7 @@ export type DropdownOption = {
 type BaseDropdownProps = {
   disabled: boolean;
   label: string;
-  name: string;
+  name?: string;
   noOptionsMessage?: string;
   options: DropdownOption[];
   placeholder?: string;
@@ -106,7 +106,7 @@ export default function Dropdown(props: DropdownProps) {
           }
         }}
       />
-      {renderHiddenInputs(name, selectedValues)}
+      {name ? renderHiddenInputs(name, selectedValues) : null}
     </label>
   );
 }

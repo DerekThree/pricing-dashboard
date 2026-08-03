@@ -6,7 +6,7 @@ import { Form, type ClientLoaderFunctionArgs, useActionData, useLoaderData } fro
 
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import Dropdown from "../../components/Dropdown";
-import SelectionList from "../../components/SelectionList";
+import EditableListField from "../../components/EditableListField";
 import useFormValues from "../../hooks/useFormValues";
 import {
   createReason,
@@ -195,7 +195,7 @@ export default function EligibilityReasonPage() {
             </label>
           </div>
           <div className="crud-page-form-column">
-            <SelectionList
+            <EditableListField
               columnDefs={conditionColumnDefs}
               disabled={inputsDisabled}
               rowData={formValues.conditions}

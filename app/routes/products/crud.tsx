@@ -9,7 +9,7 @@ import useFormValues from "../../hooks/useFormValues";
 import { createProduct, deleteProduct, getProduct, updateProduct, } from "../../generated/api/client";
 import { ProductType } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps, } from "../../utils/crudRouteUtils";
-import { preventEnterSubmit } from "../../utils/formUtils";
+import { preventEnterSubmit, productTypeOptions } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 
 const emptyFormValues = {
@@ -96,10 +96,7 @@ export default function ProductPage() {
                 label="Product Type"
                 name="productType"
                 required
-                options={[
-                  { value: ProductType.DEPOSIT, label: "Deposit" },
-                  { value: ProductType.CREDIT, label: "Credit" },
-                ]}
+                options={productTypeOptions}
                 value={formValues.productType}
                 onChange={(value) => updateField("productType", value)}
               />

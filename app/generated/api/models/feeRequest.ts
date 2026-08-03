@@ -13,6 +13,6 @@ import type { UpdatedBy } from './updatedBy';
 export interface FeeRequest {
   feeCode: FeeCode;
   feeName: FeeName;
-  productType: ProductType;
+  productTypes: ProductType[];
   updatedBy: UpdatedBy;
 }

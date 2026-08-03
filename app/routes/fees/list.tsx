@@ -9,7 +9,7 @@ import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { formatDateTime } from "../../utils/dateTimeUtils";
 
-const productTypeLabels: Record<FeeListItem["productType"], string> = {
+const productTypeLabels: Record<ProductType, string> = {
   [ProductType.DEPOSIT]: "Deposit",
   [ProductType.CREDIT]: "Credit",
 };
@@ -17,9 +17,15 @@ const productTypeLabels: Record<FeeListItem["productType"], string> = {
 const columnDefs: ColDef<FeeListItem>[] = [
   { field: "fee", headerName: "Fee" },
   {
-    field: "productType",
-    headerName: "Product Type",
-    valueFormatter: ({ value }) => productTypeLabels[value as FeeListItem["productType"]] ?? value,
+    field: "productTypes",
+    headerName: "Product Types",
+    valueFormatter: ({ value }) => {
+      const productTypes = Array.isArray(value) ? (value as ProductType[]) : [];
+
+      return productTypes
+        .map((productType) => productTypeLabels[productType] ?? productType)
+        .join(", ");
+    },
   },
   { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
   { field: "updatedBy", headerName: "Updated By" },

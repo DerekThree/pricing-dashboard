@@ -40,6 +40,19 @@
   width: 100%;
 }
 
+.crud-page-form-field input:not(:disabled):not(:-webkit-autofill),
+.crud-page-form-field select:not(:disabled) {
+  background-color: rgb(255 255 255);
+}
+
+.crud-page-form-field input:-webkit-autofill,
+.crud-page-form-field input:-webkit-autofill:hover,
+.crud-page-form-field input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px rgb(255 255 255) inset;
+  -webkit-text-fill-color: rgb(15 23 42);
+  caret-color: rgb(15 23 42);
+}
+
 .crud-page-form-field input:focus,
 .crud-page-form-field select:focus {
   border-color: rgb(37 99 235);

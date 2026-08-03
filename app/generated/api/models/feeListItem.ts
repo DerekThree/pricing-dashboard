@@ -14,7 +14,7 @@ import type { UpdatedBy } from './updatedBy';
 export interface FeeListItem {
   id: Id;
   fee: FeeCodeAndName;
-  productType: ProductType;
+  productTypes: ProductType[];
   updatedOn: DateTime;
   updatedBy: UpdatedBy;
 }

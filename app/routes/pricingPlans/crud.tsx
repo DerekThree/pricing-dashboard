@@ -30,7 +30,7 @@ import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
-import SelectionList from "~/app/components/SelectionList";
+import EditableListField from "~/app/components/EditableListField";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -296,7 +296,7 @@ export default function PricingPlanPage() {
           {selectedProduct && (
             <div className="pricing-plan-side-column">
               <div className="crud-page-form-column">
-                <SelectionList
+                <EditableListField
                   columnDefs={[{ field: "name" }]}
                   disabled={inputsDisabled}
                   rowData={depositFeeRows}
@@ -307,7 +307,7 @@ export default function PricingPlanPage() {
                 />
               </div>
               <div className="crud-page-form-column">
-                <SelectionList
+                <EditableListField
                   columnDefs={[{ field: "name" }]}
                   disabled={inputsDisabled}
                   rowData={[]}

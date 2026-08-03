@@ -2,19 +2,19 @@ import "./styles.css";
 
 import { Form, useActionData, useLoaderData } from "react-router";
 
-import Dropdown from "../../components/Dropdown";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
 import { createFee, deleteFee, getFee, updateFee } from "../../generated/api/client";
 import { ProductType } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
-import { preventEnterSubmit } from "../../utils/formUtils";
+import { preventEnterSubmit, productTypeOptions } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
+import MultiSelectField from "~/app/components/MultiSelectField";
 
 const emptyFormValues = {
   feeCode: "",
   feeName: "",
-  productType: "",
+  productTypes: [] as ProductType[],
 };
 
 export const clientLoader = createClientLoader({
@@ -27,10 +27,11 @@ export const clientAction = createClientAction({
   updateRecord: updateFee,
   deleteRecord: deleteFee,
   listRouteUrl: routeUrls.fees,
+  arrayFields: ["productTypes"],
   mapFormValuesToRequest: (formValues) =>
     ({
       ...formValues,
-      productType: formValues.productType as ProductType,
+      productTypes: formValues.productTypes as ProductType[],
     }),
 });
 
@@ -40,6 +41,17 @@ export default function FeePage() {
   const { formValues, updateField } = useFormValues(initialFormValues);
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
+
+  function handleAddProductType(productType: ProductType) {
+    updateField("productTypes", [...formValues.productTypes, productType]);
+  }
+
+  function handleRemoveProductType(productType: ProductType) {
+    updateField(
+      "productTypes",
+      formValues.productTypes.filter((currentProductType) => currentProductType !== productType),
+    );
+  }
 
   return (
     <section className="page">
@@ -90,18 +102,17 @@ export default function FeePage() {
           </div>
           <div className="crud-page-form-column">
             <div className="fee-form-field--product-type">
-              <Dropdown
+              <MultiSelectField
                 disabled={inputsDisabled}
-                label="Product Type"
-                name="productType"
-                required
-                options={[
-                  { value: ProductType.DEPOSIT, label: "Deposit" },
-                  { value: ProductType.CREDIT, label: "Credit" },
-                ]}
-                value={formValues.productType}
-                onChange={(value) => updateField("productType", value)}
+                options={productTypeOptions}
+                selectedValues={formValues.productTypes}
+                title="Product Types"
+                onAdd={handleAddProductType}
+                onRemove={handleRemoveProductType}
               />
+              {formValues.productTypes.map((productType: ProductType, index: number) => (
+                <input key={index} name="productTypes" type="hidden" value={productType} />
+              ))}
             </div>
           </div>
         </div>

@@ -1,5 +1,10 @@
 .dropdown {
+  position: relative;
   width: 100%;
+}
+
+.dropdown__menu {
+  z-index: 20 !important;
 }
 
 .dropdown__control {
