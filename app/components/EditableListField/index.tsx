@@ -47,19 +47,19 @@ export default function EditableListField<TRow extends object>({
     <div className="selection-list">
       <div className="selection-list-header">
         <span className="selection-list-title">{title}</span>
-        <button
+        {!disabled && <button
           className="selection-list-add-button"
           disabled={disabled}
           type="button"
           onClick={handleAdd}
         >
           Add
-        </button>
+        </button>}
       </div>
       <ListTable
         columnDefs={columnDefs}
         disabled={disabled}
-        noRowsText={`No ${title}`}
+        noRowsText={`No ${title.toLowerCase()}`}
         onRemove={onRemove}
         onRowDataUpdated={handleRowDataUpdated}
         onSelectionChanged={handleSelectionChanged}

@@ -1,4 +1,5 @@
 import "../shared/ListTable/styles.css";
+import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import Dropdown from "../Dropdown";
 import ListTable from "../shared/ListTable/ListTable";
 
@@ -18,6 +19,7 @@ type MultiSelectFieldProps = {
 };
 
 type MultiSelectRow = {
+  description?: string;
   label: string;
   value: string | number;
 };
@@ -31,10 +33,27 @@ export default function MultiSelectField({
   title,
 }: MultiSelectFieldProps) {
   const availableOptions = options.filter((option) => !selectedValues.includes(option.value));
+
+  const columnDefs: ColDef<MultiSelectRow>[] = [
+    {
+      field: "label",
+      cellRenderer: ({ data }: ICellRendererParams<MultiSelectRow>) =>
+        (
+          <div style={{ height: "100%", width: "100%" }} title={data?.description ?? data?.label}>
+            {data?.label}
+          </div>
+        ),
+    },
+  ];
+
   const rowData: MultiSelectRow[] = selectedValues.map((value) => {
     const option = options.find((currentOption) => currentOption.value === value);
 
-    return { label: option?.label ?? String(value), value };
+    return {
+      description: option?.description,
+      label: option?.label ?? String(value),
+      value,
+    };
   });
 
   return (
@@ -52,9 +71,9 @@ export default function MultiSelectField({
         />
       )}
       <ListTable
-        columnDefs={[{ field: "label" }]}
+        columnDefs={columnDefs}
         disabled={disabled}
-        noRowsText={`No ${title}`}
+        noRowsText={`No ${title.toLowerCase()}`}
         onRemove={(row) => onRemove(row.value)}
         rowData={rowData}
         selectable={false}

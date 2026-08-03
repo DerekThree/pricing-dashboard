@@ -4,9 +4,8 @@ import { Form, useLoaderData } from "react-router";
 import { useActionData } from "react-router";
 import type { ClientLoaderFunctionArgs } from "react-router";
 
-import Dropdown from "../../components/Dropdown";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
-import type { DropdownOption } from "../../components/Dropdown";
+import MultiSelectField, { type MultiSelectOption } from "../../components/MultiSelectField";
 import useFormValues from "../../hooks/useFormValues";
 import {
   createRegion,
@@ -83,13 +82,13 @@ export const clientAction = createClientAction({
   mapFormValuesToRequest: (formValues) =>
     ({
       ...formValues,
-      states:  formValues.states,
+      states: formValues.states,
       zipCodes: formValues.zipCodes,
       branches: (formValues.branches as string[]).map((branchId) => Number(branchId)),
     }),
 });
 
-function getBranchOptions(branches: CoverageOptions["branches"]): DropdownOption[] {
+function getBranchOptions(branches: CoverageOptions["branches"]): MultiSelectOption[] {
   return branches.map((branch) => ({
     value: branch.id,
     label: branch.name,
@@ -103,6 +102,33 @@ export default function RegionPage() {
   const { formValues, updateField } = useFormValues(initialFormValues);
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
+  const stateOptions = dropdownOptions.states.map((value) => ({ value, label: value }));
+  const zipCodeOptions = dropdownOptions.zipCodes.map((value) => ({ value, label: value }));
+  const branchOptions = getBranchOptions(dropdownOptions.branches);
+
+  function handleAddState(value: string) {
+    updateField("states", [...formValues.states, value]);
+  }
+
+  function handleRemoveState(value: string) {
+    updateField("states", formValues.states.filter((currentValue) => currentValue !== value));
+  }
+
+  function handleAddZipCode(value: string) {
+    updateField("zipCodes", [...formValues.zipCodes, value]);
+  }
+
+  function handleRemoveZipCode(value: string) {
+    updateField("zipCodes", formValues.zipCodes.filter((currentValue) => currentValue !== value));
+  }
+
+  function handleAddBranch(value: number) {
+    updateField("branches", [...formValues.branches, value]);
+  }
+
+  function handleRemoveBranch(value: number) {
+    updateField("branches", formValues.branches.filter((currentValue) => currentValue !== value));
+  }
 
   return (
     <section className="page">
@@ -148,33 +174,43 @@ export default function RegionPage() {
             </label>
           </div>
           <div className="crud-page-form-column">
-            <Dropdown
+            <MultiSelectField
               disabled={inputsDisabled}
-              isMulti
-              label="States"
-              name="states"
-              options={dropdownOptions.states.map((value) => ({ value, label: value }))}
-              values={formValues.states}
-              onChange={(values) => updateField("states", values)}
+              options={branchOptions}
+              selectedValues={formValues.branches}
+              title="Branches"
+              onAdd={(value) => handleAddBranch(Number(value))}
+              onRemove={(value) => handleRemoveBranch(Number(value))}
             />
-            <Dropdown
+            {formValues.branches.map((branchId, index) => (
+              <input key={index} name="branches" type="hidden" value={branchId} />
+            ))}
+          </div>
+          <div className="crud-page-form-column">
+            <MultiSelectField
               disabled={inputsDisabled}
-              isMulti
-              label="Zip Codes"
-              name="zipCodes"
-              options={dropdownOptions.zipCodes.map((value) => ({ value, label: value }))}
-              values={formValues.zipCodes}
-              onChange={(values) => updateField("zipCodes", values)}
+              options={zipCodeOptions}
+              selectedValues={formValues.zipCodes}
+              title="Zip Codes"
+              onAdd={(value) => handleAddZipCode(String(value))}
+              onRemove={(value) => handleRemoveZipCode(String(value))}
             />
-            <Dropdown
+            {formValues.zipCodes.map((zipCode, index) => (
+              <input key={index} name="zipCodes" type="hidden" value={zipCode} />
+            ))}
+          </div>
+          <div className="crud-page-form-column">
+            <MultiSelectField
               disabled={inputsDisabled}
-              isMulti
-              label="Branches"
-              name="branches"
-              options={getBranchOptions(dropdownOptions.branches)}
-              values={formValues.branches}
-              onChange={(values) => updateField("branches", values)}
+              options={stateOptions}
+              selectedValues={formValues.states}
+              title="States"
+              onAdd={(value) => handleAddState(String(value))}
+              onRemove={(value) => handleRemoveState(String(value))}
             />
+            {formValues.states.map((state, index) => (
+              <input key={index} name="states" type="hidden" value={state} />
+            ))}
           </div>
         </div>
       </Form>

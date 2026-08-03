@@ -38,7 +38,6 @@ export default function ListTable<TRow extends object>({
     cellRenderer: (params: ICellRendererParams<TRow>) => (
       <button
         className="selection-list-remove-button"
-        disabled={disabled}
         type="button"
         onClick={() => params.node.data && onRemove(params.node.data)}
       >
@@ -49,9 +48,9 @@ export default function ListTable<TRow extends object>({
   };
 
   return (
-    <div className="selection-list-table">
+    <div className={`selection-list-table${disabled ? " selection-list-table-disabled" : ""}`}>
       <AgGridReact
-        columnDefs={[...columnDefs, removeButtonColumnDef]}
+        columnDefs={disabled ? columnDefs : [...columnDefs, removeButtonColumnDef]}
         defaultColDef={{ minWidth: 0, flex: 1 }}
         domLayout="autoHeight"
         headerHeight={0}
@@ -59,7 +58,7 @@ export default function ListTable<TRow extends object>({
         onRowDataUpdated={onRowDataUpdated}
         onSelectionChanged={onSelectionChanged}
         rowData={rowData}
-        rowHeight={20}
+        rowHeight={25}
         rowSelection={{ mode: "singleRow", enableClickSelection: selectable, checkboxes: false }}
         suppressCellFocus
         suppressHorizontalScroll
