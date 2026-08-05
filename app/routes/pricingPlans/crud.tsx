@@ -25,7 +25,7 @@ import {
   getPricingPlanOptions,
   updatePricingPlan,
 } from "../../generated/api/client";
-import { type PricingPlanDetail } from "../../generated/api/models";
+import { FeeType, type FeeOption, type PricingPlanDetail } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
@@ -72,6 +72,7 @@ function toFormValues(record: PricingPlanDetail) {
     regionId: record.region.id,
     activeFrom: record.activeFrom,
     activeThrough: record.activeThrough,
+    fees: record.fees.map((feeDetail) => feeDetail.fee),
   };
 }
 
@@ -84,6 +85,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     regionId: NaN,
     activeFrom: "",
     activeThrough: "",
+    fees: [] as FeeOption[],
   };
   const needsRecord = operation !== crudOps.create;
   const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
@@ -134,9 +136,29 @@ export default function PricingPlanPage() {
   const { operation, initialFormValues, options, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+  const [selectedFee, setSelectedFee] = useState<FeeOption | null>(null);
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
   const selectedProduct = options?.products.find((product) => product.id === formValues.productId);
+
+  function addFee() {
+    const newFee: FeeOption = { 
+      id: NaN, 
+      code: "", 
+      name: "", 
+      type: FeeType.FLAT, 
+      productTypes: [] 
+    };
+
+    updateField("fees", [...formValues.fees, newFee])
+
+    return newFee;
+  }
+
+  function removeFee(row: FeeOption) {
+    updateField("fees", formValues.fees.filter((fee) => fee !== row));
+    setSelectedFee(selectedFee === row ? null : selectedFee);
+  }
 
   return (
     <section className="page">
@@ -237,11 +259,11 @@ export default function PricingPlanPage() {
                 <EditableListField
                   columnDefs={[{ field: "name" }]}
                   disabled={inputsDisabled}
-                  rowData={[]}
+                  rowData={formValues.fees}
                   title="Fees"
-                  onAdd={() => ({ name: "new"})}
-                  onRemove={() => {}}
-                  onSelectionChanged={() => {}}
+                  onAdd={addFee}
+                  onRemove={removeFee}
+                  onSelectionChanged={setSelectedFee}
                 />
               </div>
               <div className="crud-page-form-column">

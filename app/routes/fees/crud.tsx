@@ -52,11 +52,11 @@ export default function FeePage() {
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
-  function handleAddProductType(productType: ProductType) {
+  function addProductType(productType: ProductType) {
     updateField("productTypes", [...formValues.productTypes, productType]);
   }
 
-  function handleRemoveProductType(productType: ProductType) {
+  function removeProductType(productType: ProductType) {
     updateField(
       "productTypes",
       formValues.productTypes.filter((currentProductType) => currentProductType !== productType),
@@ -126,8 +126,8 @@ export default function FeePage() {
                 options={productTypeOptions}
                 selectedValues={formValues.productTypes}
                 title="Product Types"
-                onAdd={handleAddProductType}
-                onRemove={handleRemoveProductType}
+                onAdd={addProductType}
+                onRemove={removeProductType}
               />
               {formValues.productTypes.map((productType: ProductType, index: number) => (
                 <input key={index} name="productTypes" type="hidden" value={productType} />
