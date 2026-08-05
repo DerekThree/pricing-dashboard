@@ -61,8 +61,8 @@ export default function BranchPage() {
                 id="branch-code"
                 maxLength={25}
                 name="branchCode"
-                pattern="[A-Z0-9]{1,25}"
-                title="Branch code must be 1 to 25 uppercase letters or digits."
+                pattern="[A-Za-z0-9]{1,25}"
+                title="Branch code must be 1 to 25 letters or digits."
                 required
                 type="text"
                 value={formValues.branchCode}

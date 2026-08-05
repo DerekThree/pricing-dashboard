@@ -74,8 +74,8 @@ export default function FeePage() {
                 id="fee-code"
                 maxLength={25}
                 name="feeCode"
-                pattern="[A-Z0-9]{1,25}"
-                title="Fee code must be 1 to 25 uppercase letters or digits."
+                pattern="[A-Za-z0-9]{1,25}"
+                title="Fee code must be 1 to 25 letters or digits."
                 required
                 type="text"
                 value={formValues.feeCode}

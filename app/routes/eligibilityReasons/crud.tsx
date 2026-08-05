@@ -182,9 +182,9 @@ export default function EligibilityReasonPage() {
                 id="reason-code"
                 maxLength={25}
                 name="reasonCode"
-                pattern="[A-Z0-9]{1,25}"
+                pattern="[A-Za-z0-9]{1,25}"
                 required
-                title="Code must be 1 to 25 uppercase letters or digits."
+                title="Code must be 1 to 25 letters or digits."
                 type="text"
                 value={formValues.reasonCode}
                 onChange={(event) => updateField("reasonCode", event.target.value)}
