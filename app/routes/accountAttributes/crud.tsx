@@ -37,6 +37,7 @@ export const clientAction = createClientAction({
   mapFormValuesToRequest: (formValues) =>
     ({
       ...formValues,
+      attributeCode: (formValues.attributeCode as string).toUpperCase(),
       attributeType: formValues.attributeType as AttributeType,
     }),
 });
@@ -66,14 +67,14 @@ export default function AccountAttributePage() {
               <input
                 disabled={inputsDisabled}
                 id="attribute-code"
-                maxLength={8}
+                maxLength={25}
                 name="attributeCode"
-                pattern="[A-Z0-9]{8}"
-                title="Attribute code must be exactly 8 uppercase letters or digits."
+                pattern="[A-Z0-9]{1,25}"
+                title="Attribute code must be 1 to 25 uppercase letters or digits."
                 required
                 type="text"
                 value={formValues.attributeCode}
-                onChange={(event) => updateField("attributeCode", event.target.value.toUpperCase())}
+                onChange={(event) => updateField("attributeCode", event.target.value)}
               />
             </label>
             <label className="crud-page-form-field" htmlFor="attribute-name">

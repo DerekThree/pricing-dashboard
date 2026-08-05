@@ -102,7 +102,7 @@ export const clientAction = createClientAction({
   arrayFields: ["conditions"],
   mapFormValuesToRequest: (formValues) =>
     ({
-      reasonCode: formValues.reasonCode,
+      reasonCode: (formValues.reasonCode as string).toUpperCase(),
       reasonName: formValues.reasonName,
       conditions: (formValues.conditions as string[]).map(
         (condition) => JSON.parse(condition) as ReasonCondition,
@@ -180,14 +180,14 @@ export default function EligibilityReasonPage() {
               <input
                 disabled={inputsDisabled}
                 id="reason-code"
-                maxLength={8}
+                maxLength={25}
                 name="reasonCode"
-                pattern="[A-Z0-9]{8}"
+                pattern="[A-Z0-9]{1,25}"
                 required
-                title="Code must be exactly 8 uppercase letters or digits."
+                title="Code must be 1 to 25 uppercase letters or digits."
                 type="text"
                 value={formValues.reasonCode}
-                onChange={(event) => updateField("reasonCode", event.target.value.toUpperCase())}
+                onChange={(event) => updateField("reasonCode", event.target.value)}
               />
             </label>
             <label className="crud-page-form-field" htmlFor="reason-name">

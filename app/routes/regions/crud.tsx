@@ -65,9 +65,9 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const initialFormValues = recordResponse?.data ? toFormValues(recordResponse.data) : emptyFormValues;
   const options = recordResponse && optionsResponse
     ? {
-        states: [...optionsResponse.data.states, ...recordResponse.data.states],
-        zipCodes: [...optionsResponse.data.zipCodes, ...recordResponse.data.zipCodes],
-        branches: [...optionsResponse.data.branches, ...recordResponse.data.branches],
+        states: [...recordResponse.data.states, ...optionsResponse.data.states ],
+        zipCodes: [...recordResponse.data.zipCodes, ...optionsResponse.data.zipCodes ],
+        branches: [...recordResponse.data.branches, ...optionsResponse.data.branches ],
       }
     : optionsResponse?.data ?? {
         states: recordResponse!.data.states,
@@ -87,6 +87,7 @@ export const clientAction = createClientAction({
   mapFormValuesToRequest: (formValues) =>
     ({
       ...formValues,
+      regionCode: (formValues.regionCode as string).toUpperCase(),
       states: formValues.states,
       zipCodes: formValues.zipCodes,
       branches: (formValues.branches as string[]).map((branchId) => Number(branchId)),
@@ -142,14 +143,14 @@ export default function RegionPage() {
               <input
                 disabled={inputsDisabled}
                 id="region-code"
-                maxLength={8}
+                maxLength={25}
                 name="regionCode"
-                pattern="[A-Z0-9]{8}"
-                title="Region code must be exactly 8 uppercase letters or digits."
+                pattern="[A-Z0-9]{1,25}"
+                title="Region code must be 1 to 25 uppercase letters or digits."
                 required
                 type="text"
                 value={formValues.regionCode}
-                onChange={(event) => updateField("regionCode", event.target.value.toUpperCase())}
+                onChange={(event) => updateField("regionCode", event.target.value)}
               />
             </label>
             <label className="crud-page-form-field" htmlFor="region-name">

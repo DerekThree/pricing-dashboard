@@ -123,6 +123,11 @@ export const clientAction = createClientAction({
   updateRecord: updatePricingPlan,
   deleteRecord: deletePricingPlan,
   listRouteUrl: routeUrls.pricingPlans,
+  mapFormValuesToRequest: (formValues) =>
+    ({
+      ...formValues,
+      planCode: (formValues.planCode as string).toUpperCase(),
+    }),
 });
 
 export default function PricingPlanPage() {
@@ -146,21 +151,19 @@ export default function PricingPlanPage() {
         {actionError && <p className="page-error">{actionError}</p>}
         <div className={`form-grid ${selectedProduct ? "pricing-plan-form-grid" : ""}`}>
           <div className="crud-page-form-column">
-            <label className="crud-page-form-field" htmlFor="plan-code">
+            <label className="crud-page-form-field crud-page-form-field--code" htmlFor="plan-code">
               <span>Plan Code</span>
               <input
                 disabled={inputsDisabled}
                 id="plan-code"
-                maxLength={8}
+                maxLength={25}
                 name="planCode"
-                pattern="[A-Z0-9]{8}"
-                title="Plan code must be exactly 8 uppercase letters or digits."
+                pattern="[A-Z0-9]{1,25}"
+                title="Plan code must be 1 to 25 uppercase letters or digits."
                 required
                 type="text"
                 value={formValues.planCode}
-                onChange={(event) =>
-                  updateField("planCode", event.target.value.toUpperCase())
-                }
+                onChange={(event) => updateField("planCode", event.target.value)}
               />
             </label>
             <label className="crud-page-form-field" htmlFor="plan-name">

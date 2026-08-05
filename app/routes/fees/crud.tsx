@@ -31,6 +31,7 @@ export const clientAction = createClientAction({
   mapFormValuesToRequest: (formValues) =>
     ({
       ...formValues,
+      feeCode: (formValues.feeCode as string).toUpperCase(),
       productTypes: formValues.productTypes as ProductType[],
     }),
 });
@@ -78,9 +79,7 @@ export default function FeePage() {
                 required
                 type="text"
                 value={formValues.feeCode}
-                onChange={(event) =>
-                  updateField("feeCode", event.target.value.toUpperCase())
-                }
+                onChange={(event) => updateField("feeCode", event.target.value)}
               />
             </label>
             <label className="crud-page-form-field" htmlFor="fee-name">

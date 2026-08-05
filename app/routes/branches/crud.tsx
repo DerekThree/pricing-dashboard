@@ -27,6 +27,11 @@ export const clientAction = createClientAction({
   updateRecord: updateBranch,
   deleteRecord: deleteBranch,
   listRouteUrl: routeUrls.branches,
+  mapFormValuesToRequest: (formValues) =>
+    ({
+      ...formValues,
+      branchCode: (formValues.branchCode as string).toUpperCase(),
+    }),
 });
 
 export default function BranchPage() {
@@ -54,14 +59,14 @@ export default function BranchPage() {
               <input
                 disabled={inputsDisabled}
                 id="branch-code"
-                maxLength={8}
+                maxLength={25}
                 name="branchCode"
-                pattern="[A-Z0-9]{8}"
-                title="Branch code must be exactly 8 uppercase letters or digits."
+                pattern="[A-Z0-9]{1,25}"
+                title="Branch code must be 1 to 25 uppercase letters or digits."
                 required
                 type="text"
                 value={formValues.branchCode}
-                onChange={(event) => updateField("branchCode", event.target.value.toUpperCase())}
+                onChange={(event) => updateField("branchCode", event.target.value)}
               />
             </label>
             <label className="crud-page-form-field" htmlFor="branch-name">

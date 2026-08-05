@@ -40,6 +40,11 @@
   width: 100%;
 }
 
+.crud-page-form-field--code input,
+.crud-page-form-field[class*="-form-field--code"] input {
+  text-transform: uppercase;
+}
+
 .crud-page-form-field input:not(:disabled):not(:-webkit-autofill),
 .crud-page-form-field select:not(:disabled) {
   background-color: rgb(255 255 255);

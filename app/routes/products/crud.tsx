@@ -31,6 +31,7 @@ export const clientAction = createClientAction({
   mapFormValuesToRequest: (formValues) =>
     ({
       ...formValues,
+      productCode: (formValues.productCode as string).toUpperCase(),
       productType: formValues.productType as ProductType,
     }),
 });
@@ -67,9 +68,7 @@ export default function ProductPage() {
                 required
                 type="text"
                 value={formValues.productCode}
-                onChange={(event) =>
-                  updateField("productCode", event.target.value.toUpperCase())
-                }
+                onChange={(event) => updateField("productCode", event.target.value)}
               />
             </label>
             <label className="crud-page-form-field" htmlFor="product-name">
