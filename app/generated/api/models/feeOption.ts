@@ -8,11 +8,13 @@
 import type { Id } from './id';
 import type { FeeCode } from './feeCode';
 import type { FeeName } from './feeName';
+import type { FeeType } from './feeType';
 import type { ProductType } from './productType';
 
 export interface FeeOption {
   id: Id;
   code: FeeCode;
   name: FeeName;
+  type: FeeType;
   productTypes: ProductType[];
 }

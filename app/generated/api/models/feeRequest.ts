@@ -7,12 +7,14 @@
  */
 import type { FeeCode } from './feeCode';
 import type { FeeName } from './feeName';
+import type { FeeType } from './feeType';
 import type { ProductType } from './productType';
 import type { UpdatedBy } from './updatedBy';
 
 export interface FeeRequest {
   feeCode: FeeCode;
   feeName: FeeName;
+  feeType: FeeType;
   productTypes: ProductType[];
   updatedBy: UpdatedBy;
 }

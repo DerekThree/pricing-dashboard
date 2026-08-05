@@ -7,6 +7,7 @@
  */
 import type { Id } from './id';
 import type { FeeCodeAndName } from './feeCodeAndName';
+import type { FeeType } from './feeType';
 import type { ProductType } from './productType';
 import type { DateTime } from './dateTime';
 import type { UpdatedBy } from './updatedBy';
@@ -14,6 +15,7 @@ import type { UpdatedBy } from './updatedBy';
 export interface FeeListItem {
   id: Id;
   fee: FeeCodeAndName;
+  feeType: FeeType;
   productTypes: ProductType[];
   updatedOn: DateTime;
   updatedBy: UpdatedBy;

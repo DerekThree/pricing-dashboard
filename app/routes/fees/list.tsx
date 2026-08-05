@@ -3,15 +3,21 @@ import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
 import { listFees } from "../../generated/api/client";
-import { ProductType } from "../../generated/api/models";
+import { FeeType, ProductType } from "../../generated/api/models";
 import type { FeeListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { formatDateTime } from "../../utils/dateTimeUtils";
 import { productTypeLabels } from "../../utils/formUtils";
+import { feeTypeLabels } from "./feeTypeLabels";
 
 const columnDefs: ColDef<FeeListItem>[] = [
   { field: "fee", headerName: "Fee" },
+  {
+    field: "feeType",
+    headerName: "Fee Type",
+    valueFormatter: ({ value }) => feeTypeLabels[value as FeeType],
+  },
   {
     field: "productTypes",
     headerName: "Product Types",

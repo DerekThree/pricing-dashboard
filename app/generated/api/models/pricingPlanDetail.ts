@@ -11,6 +11,7 @@ import type { PricingPlanName } from './pricingPlanName';
 import type { ProductOption } from './productOption';
 import type { RegionOption } from './regionOption';
 import type { Date } from './date';
+import type { PricingPlanFeeDetail } from './pricingPlanFeeDetail';
 import type { DateTime } from './dateTime';
 import type { UpdatedBy } from './updatedBy';
 
@@ -22,6 +23,7 @@ export interface PricingPlanDetail {
   region: RegionOption;
   activeFrom: Date;
   activeThrough: Date;
+  fees: PricingPlanFeeDetail[];
   updatedOn: DateTime;
   updatedBy: UpdatedBy;
 }

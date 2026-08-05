@@ -237,7 +237,7 @@ export default function PricingPlanPage() {
                 <EditableListField
                   columnDefs={[{ field: "name" }]}
                   disabled={inputsDisabled}
-                  rowData={depositFeeRows}
+                  rowData={[]}
                   title="Fees"
                   onAdd={() => ({ name: "new"})}
                   onRemove={() => {}}

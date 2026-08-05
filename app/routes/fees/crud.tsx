@@ -3,19 +3,27 @@ import "./styles.css";
 import { Form, useActionData, useLoaderData } from "react-router";
 
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
+import Dropdown from "../../components/Dropdown";
 import useFormValues from "../../hooks/useFormValues";
 import { createFee, deleteFee, getFee, updateFee } from "../../generated/api/client";
-import { ProductType } from "../../generated/api/models";
+import { FeeType, ProductType } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, productTypeOptions } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 import MultiSelectField from "~/app/components/MultiSelectField";
+import { feeTypeLabels } from "./feeTypeLabels";
 
 const emptyFormValues = {
   feeCode: "",
   feeName: "",
+  feeType: "" as FeeType,
   productTypes: [] as ProductType[],
 };
+
+const feeTypeOptions = Object.values(FeeType).map((feeType) => ({
+  value: feeType,
+  label: feeTypeLabels[feeType],
+}));
 
 export const clientLoader = createClientLoader({
   getRecord: getFee,
@@ -32,6 +40,7 @@ export const clientAction = createClientAction({
     ({
       ...formValues,
       feeCode: (formValues.feeCode as string).toUpperCase(),
+      feeType: formValues.feeType as FeeType,
       productTypes: formValues.productTypes as ProductType[],
     }),
 });
@@ -100,7 +109,18 @@ export default function FeePage() {
             </label>
           </div>
           <div className="crud-page-form-column">
-            <div className="fee-form-field--product-type">
+            <label className="fee-form-field">
+              <Dropdown
+                disabled={inputsDisabled}
+                label="Fee Type"
+                name="feeType"
+                options={feeTypeOptions}
+                required
+                value={formValues.feeType}
+                onChange={(feeType: FeeType) => updateField("feeType", feeType)}
+              />
+            </label>
+            <label className="fee-form-field">
               <MultiSelectField
                 disabled={inputsDisabled}
                 options={productTypeOptions}
@@ -112,7 +132,7 @@ export default function FeePage() {
               {formValues.productTypes.map((productType: ProductType, index: number) => (
                 <input key={index} name="productTypes" type="hidden" value={productType} />
               ))}
-            </div>
+            </label>
           </div>
         </div>
       </Form>

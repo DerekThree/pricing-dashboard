@@ -9,6 +9,7 @@ import type { PricingPlanCode } from './pricingPlanCode';
 import type { PricingPlanName } from './pricingPlanName';
 import type { Id } from './id';
 import type { Date } from './date';
+import type { PricingPlanFeeRequest } from './pricingPlanFeeRequest';
 import type { UpdatedBy } from './updatedBy';
 
 export interface PricingPlanRequest {
@@ -18,5 +19,6 @@ export interface PricingPlanRequest {
   regionId: Id;
   activeFrom: Date;
   activeThrough: Date;
+  fees: PricingPlanFeeRequest[];
   updatedBy: UpdatedBy;
 }
