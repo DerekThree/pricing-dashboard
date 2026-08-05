@@ -3,7 +3,7 @@ import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
 import { listProducts } from "../../generated/api/client";
-import { ProductType, type ProductListItem } from "../../generated/api/models";
+import { type ProductListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { formatDateTime } from "../../utils/dateTimeUtils";
@@ -14,7 +14,7 @@ const columnDefs: ColDef<ProductListItem>[] = [
   {
     field: "productType",
     headerName: "Product Type",
-    valueFormatter: ({ value }) => productTypeLabels[value as ProductListItem["productType"]] ?? value,
+    valueFormatter: ({ value }) => productTypeLabels[value as ProductListItem["productType"]],
   },
   { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
   { field: "updatedBy", headerName: "Updated By" },

@@ -1,5 +1,11 @@
 import { ProductType } from "../generated/api/models/productType";
 
+type IdNameCodeOption = {
+  id: number;
+  name: string;
+  code: string;
+};
+
 export function preventEnterSubmit(event: React.KeyboardEvent<HTMLFormElement>) {
   if (event.key !== "Enter") {
     return;
@@ -13,6 +19,12 @@ export function preventEnterSubmit(event: React.KeyboardEvent<HTMLFormElement>) 
   ) {
     target.blur();
   }
+}
+
+export function toDropdownOption(option: IdNameCodeOption | string) {
+  return typeof option === "string"
+    ? { value: option, label: option }
+    : { value: option.id, label: option.name, description: option.code };
 }
 
 export const productTypeLabels: Record<ProductType, string> = {

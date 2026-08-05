@@ -14,7 +14,7 @@ type DropdownProps = {
   label: string;
   name?: string;
   noOptionsMessage?: string;
-  options: DropdownOption[];
+  options?: DropdownOption[];
   placeholder?: string;
   required?: boolean;  
   onChange(value: any): void;
@@ -40,7 +40,7 @@ export default function Dropdown(props: DropdownProps) {
   const noOptionsMessage = props.noOptionsMessage ?? "No options";
   const placeholder = props.placeholder ?? `Select ${label.toLowerCase()}`;
   const required = props.required === true;
-  const selectedOption = options.find((option) => option.value === value) ?? null;
+  const selectedOption = options?.find((option) => option.value === value) ?? null;
 
   return (
     <label className="crud-page-form-field" htmlFor={name}>

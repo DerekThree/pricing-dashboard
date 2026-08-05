@@ -5,7 +5,18 @@
  * REST API for managing branches, regions, products, and pricing plans.
  * OpenAPI spec version: 1.0.0
  */
-import type { ReasonRequest } from './reasonRequest';
-import type { ReasonDetailAllOf } from './reasonDetailAllOf';
+import type { Id } from './id';
+import type { ReasonCode } from './reasonCode';
+import type { ReasonName } from './reasonName';
+import type { ReasonConditionDetail } from './reasonConditionDetail';
+import type { DateTime } from './dateTime';
+import type { UpdatedBy } from './updatedBy';
 
-export type ReasonDetail = ReasonRequest & ReasonDetailAllOf;
+export interface ReasonDetail {
+  id: Id;
+  reasonCode: ReasonCode;
+  reasonName: ReasonName;
+  conditions: ReasonConditionDetail[];
+  updatedOn: DateTime;
+  updatedBy: UpdatedBy;
+}

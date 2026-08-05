@@ -5,7 +5,7 @@ import { useActionData } from "react-router";
 import type { ClientLoaderFunctionArgs } from "react-router";
 
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
-import MultiSelectField, { type MultiSelectOption } from "../../components/MultiSelectField";
+import MultiSelectField from "../../components/MultiSelectField";
 import useFormValues from "../../hooks/useFormValues";
 import {
   createRegion,
@@ -14,11 +14,21 @@ import {
   updateRegion,
   deleteRegion,
 } from "../../generated/api/client";
-import type { RegionOptions } from "../../generated/api/models";
+import type { RegionDetail } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
-import { preventEnterSubmit } from "../../utils/formUtils";
+import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
+
+function toFormValues(record: RegionDetail) {
+  return {
+    regionCode: record.regionCode,
+    regionName: record.regionName,
+    states: record.states,
+    zipCodes: record.zipCodes,
+    branches: record.branches.map((branch) => branch.id),
+  };
+}
 
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
@@ -27,14 +37,8 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     regionName: "",
     states: [],
     zipCodes: [],
-    branches: [],
+    branches: [] as number[],
   };
-  const emptyDropdownOptions: RegionOptions = {
-    states: [],
-    zipCodes: [],
-    branches: [],
-  };
-
   const needsRecord = operation !== crudOps.create;
   const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
   const [recordResponse, optionsResponse] = await Promise.all([
@@ -46,7 +50,6 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     return {
       operation,
       initialFormValues: emptyFormValues,
-      dropdownOptions: emptyDropdownOptions,
       loaderError: getErrorMessage(recordResponse.data, recordResponse.status),
     };
   }
@@ -55,22 +58,24 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     return {
       operation,
       initialFormValues: emptyFormValues,
-      dropdownOptions: emptyDropdownOptions,
       loaderError: getErrorMessage(optionsResponse.data, optionsResponse.status),
     };
   }
 
-  const initialFormValues = recordResponse?.data ?? emptyFormValues;
-  const dropdownOptions = recordResponse && optionsResponse
+  const initialFormValues = recordResponse?.data ? toFormValues(recordResponse.data) : emptyFormValues;
+  const options = recordResponse && optionsResponse
     ? {
-        states: [...optionsResponse.data.states, ...recordResponse.data.formOptions.states],
-        zipCodes: [...optionsResponse.data.zipCodes, ...recordResponse.data.formOptions.zipCodes],
-        branches: [...optionsResponse.data.branches, ...recordResponse.data.formOptions.branches]
-            .sort((left, right) => left.code.localeCompare(right.code)),
+        states: [...optionsResponse.data.states, ...recordResponse.data.states],
+        zipCodes: [...optionsResponse.data.zipCodes, ...recordResponse.data.zipCodes],
+        branches: [...optionsResponse.data.branches, ...recordResponse.data.branches],
       }
-    : optionsResponse?.data ?? recordResponse?.data.formOptions ?? emptyDropdownOptions;
+    : optionsResponse?.data ?? {
+        states: recordResponse!.data.states,
+        zipCodes: recordResponse!.data.zipCodes,
+        branches: recordResponse!.data.branches,
+      };
 
-  return { operation, initialFormValues, dropdownOptions, loaderError: null };
+  return { operation, initialFormValues, options, loaderError: null };
 }
 
 export const clientAction = createClientAction({
@@ -88,46 +93,35 @@ export const clientAction = createClientAction({
     }),
 });
 
-function getBranchOptions(branches: RegionOptions["branches"]): MultiSelectOption[] {
-  return branches.map((branch) => ({
-    value: branch.id,
-    label: branch.name,
-    description: branch.code,
-  }));
-}
-
 export default function RegionPage() {
-  const { operation, initialFormValues, dropdownOptions, loaderError } = useLoaderData<typeof clientLoader>();
+  const { operation, initialFormValues, options, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
-  const stateOptions = dropdownOptions.states.map((value: string) => ({ value, label: value }));
-  const zipCodeOptions = dropdownOptions.zipCodes.map((value: string) => ({ value, label: value }));
-  const branchOptions = getBranchOptions(dropdownOptions.branches);
 
   function handleAddState(value: string) {
     updateField("states", [...formValues.states, value]);
   }
 
-  function handleRemoveState(value: string) {
+  function handleRemoveState(value: string | number) {
     updateField("states", formValues.states.filter((currentValue: string) => currentValue !== value));
   }
 
-  function handleAddZipCode(value: string) {
-    updateField("zipCodes", [...formValues.zipCodes, value]);
+  function handleAddZipCode(value: string | number) {
+    updateField("zipCodes", [...formValues.zipCodes, String(value)]);
   }
 
-  function handleRemoveZipCode(value: string) {
+  function handleRemoveZipCode(value: string | number) {
     updateField("zipCodes", formValues.zipCodes.filter((currentValue: string) => currentValue !== value));
   }
 
-  function handleAddBranch(value: number) {
-    updateField("branches", [...formValues.branches, value]);
+  function handleAddBranch(value: string | number) {
+    updateField("branches", [...formValues.branches, Number(value)]);
   }
 
-  function handleRemoveBranch(value: number) {
-    updateField("branches", formValues.branches.filter((currentValue: number) => currentValue !== value));
+  function handleRemoveBranch(value: string | number) {
+    updateField("branches", formValues.branches.filter((currentValue) => currentValue !== Number(value)));
   }
 
   return (
@@ -176,24 +170,24 @@ export default function RegionPage() {
           <div className="crud-page-form-column">
             <MultiSelectField
               disabled={inputsDisabled}
-              options={branchOptions}
+              options={options?.branches.map(toDropdownOption)}
               selectedValues={formValues.branches}
               title="Branches"
-              onAdd={(value) => handleAddBranch(Number(value))}
-              onRemove={(value) => handleRemoveBranch(Number(value))}
+              onAdd={handleAddBranch}
+              onRemove={handleRemoveBranch}
             />
-            {formValues.branches.map((branchId: number, index: number) => (
+            {formValues.branches.map((branchId, index) => (
               <input key={index} name="branches" type="hidden" value={branchId} />
             ))}
           </div>
           <div className="crud-page-form-column">
             <MultiSelectField
               disabled={inputsDisabled}
-              options={zipCodeOptions}
+              options={options?.zipCodes.map(toDropdownOption)}
               selectedValues={formValues.zipCodes}
               title="Zip Codes"
-              onAdd={(value) => handleAddZipCode(String(value))}
-              onRemove={(value) => handleRemoveZipCode(String(value))}
+              onAdd={handleAddZipCode}
+              onRemove={handleRemoveZipCode}
             />
             {formValues.zipCodes.map((zipCode: string, index: number) => (
               <input key={index} name="zipCodes" type="hidden" value={zipCode} />
@@ -202,11 +196,11 @@ export default function RegionPage() {
           <div className="crud-page-form-column">
             <MultiSelectField
               disabled={inputsDisabled}
-              options={stateOptions}
+              options={options?.states.map(toDropdownOption)}
               selectedValues={formValues.states}
               title="States"
-              onAdd={(value) => handleAddState(String(value))}
-              onRemove={(value) => handleRemoveState(String(value))}
+              onAdd={handleAddState}
+              onRemove={handleRemoveState}
             />
             {formValues.states.map((state: string, index: number) => (
               <input key={index} name="states" type="hidden" value={state} />

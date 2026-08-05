@@ -25,10 +25,10 @@ import {
   getPricingPlanOptions,
   updatePricingPlan,
 } from "../../generated/api/client";
-import type { PricingPlanOptions } from "../../generated/api/models";
+import { type PricingPlanDetail } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
-import { preventEnterSubmit } from "../../utils/formUtils";
+import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 import EditableListField from "~/app/components/EditableListField";
 
@@ -64,6 +64,17 @@ const creditFeeRows: FeeRow[] = [
   { name: "Returned Payment" },
 ];
 
+function toFormValues(record: PricingPlanDetail) {
+  return {
+    planCode: record.planCode,
+    planName: record.planName,
+    productId: record.product.id,
+    regionId: record.region.id,
+    activeFrom: record.activeFrom,
+    activeThrough: record.activeThrough,
+  };
+}
+
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
   const emptyFormValues = {
@@ -74,12 +85,6 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     activeFrom: "",
     activeThrough: "",
   };
-  const emptyDropdownOptions: PricingPlanOptions = {
-    fees: [],
-    products: [],
-    regions: [],
-  };
-
   const needsRecord = operation !== crudOps.create;
   const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
   const [recordResponse, optionsResponse] = await Promise.all([
@@ -91,7 +96,6 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     return {
       operation,
       initialFormValues: emptyFormValues,
-      dropdownOptions: emptyDropdownOptions,
       loaderError: getErrorMessage(recordResponse.data, recordResponse.status),
     };
   }
@@ -100,15 +104,18 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     return {
       operation,
       initialFormValues: emptyFormValues,
-      dropdownOptions: emptyDropdownOptions,
       loaderError: getErrorMessage(optionsResponse.data, optionsResponse.status),
     };
   }
 
-  const initialFormValues = recordResponse?.data ?? emptyFormValues;
-  const dropdownOptions = optionsResponse?.data ?? recordResponse?.data.formOptions ?? emptyDropdownOptions;
+  const initialFormValues = recordResponse?.data ? toFormValues(recordResponse.data) : emptyFormValues;
+  const options = optionsResponse?.data ?? {
+    fees: [],
+    products: [recordResponse!.data.product],
+    regions: [recordResponse!.data.region],
+  };
 
-  return { operation, initialFormValues, dropdownOptions, loaderError: null };
+  return { operation, initialFormValues, options, loaderError: null };
 }
 
 export const clientAction = createClientAction({
@@ -119,78 +126,12 @@ export const clientAction = createClientAction({
 });
 
 export default function PricingPlanPage() {
-  const { operation, initialFormValues, dropdownOptions, loaderError } = useLoaderData<typeof clientLoader>();
+  const { operation, initialFormValues, options, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
-  const [rateRows, setRateRows] = useState<RateRow[]>([]);
-  const feesGridApiRef = useRef<GridApi<FeeRow> | null>(null);
-  const ratesGridApiRef = useRef<GridApi<RateRow> | null>(null);
-  const pendingSelectedRateIdRef = useRef("");
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
-  const selectedProduct = dropdownOptions.products.find((product) =>
-    product.id === formValues.productId);
-  const feeRows = selectedProduct ? [...depositFeeRows, ...creditFeeRows] : [];
-  const displayedRateRows = [...rateRows, { id: "add-rate", name: "Add rate", isAddRow: true }];
-  const ratesColumnDefs: ColDef<RateRow>[] = [
-    { field: "name", headerName: "Rate" },
-    {
-      cellRenderer: (params: ICellRendererParams<RateRow>) =>
-        params.data?.isAddRow ? null : (
-          <button
-            className="pricing-plan-table-remove"
-            disabled={inputsDisabled}
-            type="button"
-            onClick={() => setRateRows((currentRows) => currentRows.filter((row) => row.id !== params.data?.id))}
-          >
-            X
-          </button>
-        ),
-      colId: "remove",
-      maxWidth: 32,
-      minWidth: 32,
-      resizable: false,
-      sortable: false,
-      width: 32,
-    },
-  ];
-
-  function handleFeesSelectionChanged(event: SelectionChangedEvent<FeeRow>) {
-    const selectedRow = event.api.getSelectedRows()[0];
-
-    if (!selectedRow) {
-      return;
-    }
-
-    ratesGridApiRef.current?.deselectAll();
-  }
-
-  function handleRatesSelectionChanged(event: SelectionChangedEvent<RateRow>) {
-    const selectedRow = event.api.getSelectedRows()[0];
-
-    if (selectedRow) {
-      feesGridApiRef.current?.deselectAll();
-    }
-
-    if (!selectedRow?.isAddRow) {
-      return;
-    }
-
-    const newRow = { id: `rate-${rateRows.length + 1}`, name: `Rate ${rateRows.length + 1}` };
-    pendingSelectedRateIdRef.current = newRow.id;
-    setRateRows((currentRows) => [...currentRows, newRow]);
-  }
-
-  function handleRatesRowDataUpdated() {
-    if (!pendingSelectedRateIdRef.current || !ratesGridApiRef.current) {
-      return;
-    }
-
-    ratesGridApiRef.current.forEachNode((node) => {
-      node.setSelected(node.data?.id === pendingSelectedRateIdRef.current);
-    });
-    pendingSelectedRateIdRef.current = "";
-  }
+  const selectedProduct = options?.products.find((product) => product.id === formValues.productId);
 
   return (
     <section className="page">
@@ -245,11 +186,7 @@ export default function PricingPlanPage() {
               label="Product"
               name="productId"
               required
-              options={dropdownOptions.products.map((product) => ({
-                value: product.id,
-                label: product.name,
-                description: product.code,
-              }))}
+              options={options?.products.map(toDropdownOption)}
               value={formValues.productId}
               onChange={(value) => updateField("productId", value)}
             />
@@ -258,11 +195,7 @@ export default function PricingPlanPage() {
               label="Region"
               name="regionId"
               required
-              options={dropdownOptions.regions.map((region) => ({
-                value: region.id,
-                label: region.name,
-                description: region.code,
-              }))}
+              options={options?.regions.map(toDropdownOption)}
               value={formValues.regionId}
               onChange={(value) => updateField("regionId", value)}
             />

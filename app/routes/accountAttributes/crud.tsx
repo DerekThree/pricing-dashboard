@@ -12,10 +12,11 @@ import {
   getAttribute,
   updateAttribute,
 } from "../../generated/api/client";
-import { AccountAttributeType } from "../../generated/api/models";
+import { AttributeType } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
+import { attributeTypeLabels } from "./attributeTypeLabels";
 
 const emptyFormValues = {
   attributeCode: "",
@@ -36,7 +37,7 @@ export const clientAction = createClientAction({
   mapFormValuesToRequest: (formValues) =>
     ({
       ...formValues,
-      attributeType: formValues.attributeType as AccountAttributeType,
+      attributeType: formValues.attributeType as AttributeType,
     }),
 });
 
@@ -97,13 +98,10 @@ export default function AccountAttributePage() {
                 label="Attribute Type"
                 name="attributeType"
                 required
-                options={[
-                  { value: AccountAttributeType.TEXT, label: "Text" },
-                  { value: AccountAttributeType.DECIMAL, label: "Decimal" },
-                  { value: AccountAttributeType.INTEGER, label: "Integer" },
-                  { value: AccountAttributeType.DATE, label: "Date" },
-                  { value: AccountAttributeType.BOOLEAN, label: "Boolean" },
-                ]}
+                options={Object.values(AttributeType).map((attributeType) => ({
+                  value: attributeType,
+                  label: attributeTypeLabels[attributeType],
+                }))}
                 value={formValues.attributeType}
                 onChange={(value) => updateField("attributeType", value)}
               />

@@ -16,10 +16,8 @@ const columnDefs: ColDef<FeeListItem>[] = [
     field: "productTypes",
     headerName: "Product Types",
     valueFormatter: ({ value }) => {
-      const productTypes = Array.isArray(value) ? (value as ProductType[]) : [];
-
-      return productTypes
-        .map((productType) => productTypeLabels[productType] ?? productType)
+      return (value as ProductType[])
+        .map((productType) => productTypeLabels[productType])
         .join(", ");
     },
   },

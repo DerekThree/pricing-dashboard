@@ -10,7 +10,7 @@ import { formatDateTime } from "../../utils/dateTimeUtils";
 
 const columnDefs: ColDef<ReasonListItem>[] = [
   { field: "eligibilityReason", headerName: "Eligibility Reason" },
-  { field: "conditions", headerName: "Conditions", valueFormatter: ({ value }) => Array.isArray(value) ? value.join(", ") : "" },
+  { field: "conditions", headerName: "Conditions", valueFormatter: ({ value }) => (value as string[]).join(", ") },
   { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
   { field: "updatedBy", headerName: "Updated By" },
 ];

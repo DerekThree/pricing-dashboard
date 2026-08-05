@@ -13,7 +13,7 @@ type MultiSelectFieldProps = {
   disabled?: boolean;
   onAdd(value: string | number): void;
   onRemove(value: string | number): void;
-  options: MultiSelectOption[];
+  options?: MultiSelectOption[];
   selectedValues: Array<string | number>;
   title: string;
 };
@@ -32,7 +32,7 @@ export default function MultiSelectField({
   selectedValues,
   title,
 }: MultiSelectFieldProps) {
-  const availableOptions = options.filter((option) => !selectedValues.includes(option.value));
+  const availableOptions = options?.filter((option) => !selectedValues.includes(option.value));
 
   const columnDefs: ColDef<MultiSelectRow>[] = [
     {
@@ -47,7 +47,7 @@ export default function MultiSelectField({
   ];
 
   const rowData: MultiSelectRow[] = selectedValues.map((value) => {
-    const option = options.find((currentOption) => currentOption.value === value);
+    const option = options?.find((currentOption) => currentOption.value === value);
 
     return {
       description: option?.description,
@@ -62,9 +62,9 @@ export default function MultiSelectField({
         <span className="selection-list-title">{title}</span>
       ) : (
         <Dropdown
-          disabled={availableOptions.length === 0}
+          disabled={!availableOptions || availableOptions.length === 0}
           label={title}
-          placeholder={availableOptions.length === 0 ? `No available ${title.toLowerCase()}` : `Add ${title.toLowerCase()}`}
+          placeholder={!availableOptions || availableOptions.length === 0 ? `No available ${title.toLowerCase()}` : `Add ${title.toLowerCase()}`}
           options={availableOptions}
           value=""
           onChange={onAdd}
