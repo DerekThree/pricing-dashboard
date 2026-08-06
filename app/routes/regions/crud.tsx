@@ -14,7 +14,7 @@ import {
   updateRegion,
   deleteRegion,
 } from "../../generated/api/client";
-import type { RegionDetail } from "../../generated/api/models";
+import type { RegionDetail, RegionRequest } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
@@ -32,12 +32,13 @@ function toFormValues(record: RegionDetail) {
 
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
-  const emptyFormValues = {
+  const emptyFormValues: RegionRequest = {
     regionCode: "",
     regionName: "",
     states: [],
     zipCodes: [],
     branches: [] as number[],
+    updatedBy: "",
   };
   const needsRecord = operation !== crudOps.create;
   const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
@@ -50,6 +51,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     return {
       operation,
       initialFormValues: emptyFormValues,
+      options: { states: [], zipCodes: [], branches: [] },
       loaderError: getErrorMessage(recordResponse.data, recordResponse.status),
     };
   }
@@ -58,6 +60,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     return {
       operation,
       initialFormValues: emptyFormValues,
+      options: { states: [], zipCodes: [], branches: [] },
       loaderError: getErrorMessage(optionsResponse.data, optionsResponse.status),
     };
   }
@@ -65,9 +68,9 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const initialFormValues = recordResponse?.data ? toFormValues(recordResponse.data) : emptyFormValues;
   const options = recordResponse && optionsResponse
     ? {
-        states: [...recordResponse.data.states, ...optionsResponse.data.states ],
-        zipCodes: [...recordResponse.data.zipCodes, ...optionsResponse.data.zipCodes ],
-        branches: [...recordResponse.data.branches, ...optionsResponse.data.branches ],
+        states: [...recordResponse.data.states, ...optionsResponse.data.states],
+        zipCodes: [...recordResponse.data.zipCodes, ...optionsResponse.data.zipCodes],
+        branches: [...recordResponse.data.branches, ...optionsResponse.data.branches],
       }
     : optionsResponse?.data ?? {
         states: recordResponse!.data.states,
@@ -171,7 +174,7 @@ export default function RegionPage() {
           <div className="crud-page-form-column">
             <MultiSelectField
               disabled={inputsDisabled}
-              options={options?.branches.map(toDropdownOption)}
+              options={options.branches.map(toDropdownOption)}
               selectedValues={formValues.branches}
               title="Branches"
               onAdd={addBranch}
@@ -184,7 +187,7 @@ export default function RegionPage() {
           <div className="crud-page-form-column">
             <MultiSelectField
               disabled={inputsDisabled}
-              options={options?.zipCodes.map(toDropdownOption)}
+              options={options.zipCodes.map(toDropdownOption)}
               selectedValues={formValues.zipCodes}
               title="Zip Codes"
               onAdd={addZipCode}
@@ -197,7 +200,7 @@ export default function RegionPage() {
           <div className="crud-page-form-column">
             <MultiSelectField
               disabled={inputsDisabled}
-              options={options?.states.map(toDropdownOption)}
+              options={options.states.map(toDropdownOption)}
               selectedValues={formValues.states}
               title="States"
               onAdd={addState}

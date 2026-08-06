@@ -6,18 +6,19 @@ import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import Dropdown from "../../components/Dropdown";
 import useFormValues from "../../hooks/useFormValues";
 import { createFee, deleteFee, getFee, updateFee } from "../../generated/api/client";
-import { FeeType, ProductType } from "../../generated/api/models";
+import { FeeType, ProductType, type FeeRequest } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, productTypeOptions } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 import MultiSelectField from "~/app/components/MultiSelectField";
-import { feeTypeLabels } from "./feeTypeLabels";
+import { feeTypeLabels } from "./feeCalcMethodLabels";
 
-const emptyFormValues = {
+const emptyFormValues: FeeRequest = {
   feeCode: "",
   feeName: "",
   feeType: "" as FeeType,
   productTypes: [] as ProductType[],
+  updatedBy: "",
 };
 
 const feeTypeOptions = Object.values(FeeType).map((feeType) => ({

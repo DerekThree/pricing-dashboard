@@ -9,12 +9,14 @@ import { createBranch, deleteBranch, getBranch, updateBranch } from "../../gener
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
+import type { BranchRequest } from "~/app/generated/api/models";
 
-const emptyFormValues = {
+const emptyFormValues: BranchRequest = {
   branchCode: "",
   branchName: "",
   state: "",
   zipCode: "",
+  updatedBy: "",
 };
 
 export const clientLoader = createClientLoader({

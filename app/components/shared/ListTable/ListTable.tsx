@@ -34,6 +34,7 @@ export default function ListTable<TRow extends object>({
   rowData,
   selectable = false,
 }: ListTableProps<TRow>) {
+  const isEmpty = rowData.length === 0;
   const removeButtonColumnDef: ColDef<TRow> = {
     cellRenderer: (params: ICellRendererParams<TRow>) => (
       <button
@@ -48,7 +49,9 @@ export default function ListTable<TRow extends object>({
   };
 
   return (
-    <div className={`selection-list-table${disabled ? " selection-list-table-disabled" : ""}`}>
+    <div
+      className={`selection-list-table${disabled || isEmpty? " selection-list-table-disabled" : ""}`}
+    >
       <AgGridReact
         columnDefs={disabled ? columnDefs : [...columnDefs, removeButtonColumnDef]}
         defaultColDef={{ minWidth: 0, flex: 1 }}

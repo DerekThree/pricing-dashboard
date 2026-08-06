@@ -9,7 +9,7 @@ import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { formatDateTime } from "../../utils/dateTimeUtils";
 import { productTypeLabels } from "../../utils/formUtils";
-import { feeTypeLabels } from "./feeTypeLabels";
+import { feeTypeLabels } from "./feeCalcMethodLabels";
 
 const columnDefs: ColDef<FeeListItem>[] = [
   { field: "fee", headerName: "Fee" },

@@ -23,16 +23,18 @@ import {
   type ReasonConditionValue,
   type ReasonDetail,
   ReasonOperator,
+  type ReasonRequest,
 } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
 
-const emptyFormValues = {
+const emptyFormValues: ReasonRequest = {
   reasonCode: "",
   reasonName: "",
   conditions: [] as ReasonCondition[],
+  updatedBy: "",
 };
 
 function getOperatorOptions(attributeType?: AttributeTypeValue) {
@@ -68,6 +70,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     return {
       operation,
       initialFormValues: emptyFormValues,
+      options: { attributes: [], operators: [] },
       loaderError: getErrorMessage(recordResponse.data, recordResponse.status),
     };
   }
@@ -76,6 +79,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     return {
       operation,
       initialFormValues: emptyFormValues,
+      options: { attributes: [], operators: [] },
       loaderError: getErrorMessage(optionsResponse.data, optionsResponse.status),
     };
   }
@@ -121,7 +125,7 @@ export default function EligibilityReasonPage() {
   const operator = selectedCondition?.operator ?? "" as ReasonOperator;
   const value = selectedCondition?.value ?? "";
   const conditionDetailsDisabled = inputsDisabled || !selectedCondition;
-  const attributeType = options?.attributes.find((attribute) => attribute.id === attributeId)?.type;
+  const attributeType = options.attributes.find((attribute) => attribute.id === attributeId)?.type;
 
   function addCondition() {
     const newCondition: ReasonCondition = {
@@ -156,7 +160,7 @@ export default function EligibilityReasonPage() {
     {
       field: "attributeId",
       flex: 1.5,
-      valueGetter: ({ data }) => options?.attributes.find((attribute) => attribute.id === data?.attributeId)?.name,
+      valueGetter: ({ data }) => options.attributes.find((attribute) => attribute.id === data?.attributeId)?.name,
     },
     { field: "operator", maxWidth: 30 },
     { cellDataType: false, flex: 1, field: "value" },
@@ -232,11 +236,11 @@ export default function EligibilityReasonPage() {
                 disabled={conditionDetailsDisabled}
                 label="Attribute"
                 name="condition-widget-attribute"
-                options={options?.attributes.map(toDropdownOption)}
+                options={options.attributes.map(toDropdownOption)}
                 placeholder={conditionDetailsDisabled ? "No condition selected" : undefined}
                 value={attributeId}
                 onChange={(attributeId: Id) => {
-                  const attribute = options?.attributes.find((attr) => attr.id === attributeId);
+                  const attribute = options.attributes.find((attr) => attr.id === attributeId);
                   const operator = attribute?.type === AttributeType.BOOLEAN
                     ? ReasonOperator["="] 
                     : ""  as ReasonOperator;

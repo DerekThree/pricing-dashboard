@@ -25,12 +25,22 @@ import {
   getPricingPlanOptions,
   updatePricingPlan,
 } from "../../generated/api/client";
-import { FeeType, type FeeOption, type PricingPlanDetail } from "../../generated/api/models";
+import {
+  FeeType,
+  type FeeOption,
+  type PricingPlanDetail,
+  type PricingPlanFeeDetail,
+  type PricingPlanRequest,
+  type PricingPlanFeeRequest,
+  type PricingPlanOptions,
+  type ReasonOption,
+} from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 import EditableListField from "~/app/components/EditableListField";
+import MultiSelectField from "~/app/components/MultiSelectField";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -64,7 +74,7 @@ const creditFeeRows: FeeRow[] = [
   { name: "Returned Payment" },
 ];
 
-function toFormValues(record: PricingPlanDetail) {
+function toFormValues(record: PricingPlanDetail): PricingPlanRequest {
   return {
     planCode: record.planCode,
     planName: record.planName,
@@ -72,20 +82,26 @@ function toFormValues(record: PricingPlanDetail) {
     regionId: record.region.id,
     activeFrom: record.activeFrom,
     activeThrough: record.activeThrough,
-    fees: record.fees.map((feeDetail) => feeDetail.fee),
+    fees: record.fees.map((fee) => ({
+      feeId: fee.fee.id,
+      amount: fee.amount,
+      reasons: fee.reasons.map((reason) => reason.id),
+    })),
+    updatedBy: record.updatedBy,
   };
 }
 
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
-  const emptyFormValues = {
+  const emptyFormValues: PricingPlanRequest = {
     planCode: "",
     planName: "",
     productId: NaN,
     regionId: NaN,
     activeFrom: "",
     activeThrough: "",
-    fees: [] as FeeOption[],
+    fees: [] as PricingPlanFeeRequest[],
+    updatedBy: "",
   };
   const needsRecord = operation !== crudOps.create;
   const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
@@ -98,6 +114,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     return {
       operation,
       initialFormValues: emptyFormValues,
+      options: { fees: [], products: [], regions: [], reasons: [] } as PricingPlanOptions,
       loaderError: getErrorMessage(recordResponse.data, recordResponse.status),
     };
   }
@@ -106,6 +123,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     return {
       operation,
       initialFormValues: emptyFormValues,
+      options: { fees: [], products: [], regions: [], reasons: [] } as PricingPlanOptions,
       loaderError: getErrorMessage(optionsResponse.data, optionsResponse.status),
     };
   }
@@ -115,6 +133,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     fees: [],
     products: [recordResponse!.data.product],
     regions: [recordResponse!.data.region],
+    reasons: [],
   };
 
   return { operation, initialFormValues, options, loaderError: null };
@@ -125,10 +144,20 @@ export const clientAction = createClientAction({
   updateRecord: updatePricingPlan,
   deleteRecord: deletePricingPlan,
   listRouteUrl: routeUrls.pricingPlans,
+  arrayFields: ["fees"],
   mapFormValuesToRequest: (formValues) =>
     ({
       ...formValues,
       planCode: (formValues.planCode as string).toUpperCase(),
+      fees: (formValues.fees as string[]).map((fee) => {
+        const parsedFee = JSON.parse(fee) as PricingPlanFeeRequest;
+
+        return {
+          feeId: parsedFee.feeId,
+          amount: parsedFee.amount,
+          reasons: parsedFee.reasons.map((reasonId) => reasonId),
+        };
+      }),
     }),
 });
 
@@ -136,18 +165,22 @@ export default function PricingPlanPage() {
   const { operation, initialFormValues, options, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
-  const [selectedFee, setSelectedFee] = useState<FeeOption | null>(null);
+  const [selectedFee, setSelectedFee] = useState<PricingPlanFeeRequest | null>(null);
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
-  const selectedProduct = options?.products.find((product) => product.id === formValues.productId);
+  const selectedProduct = options.products.find((product) => product.id === formValues.productId);
+  const feeOptions = selectedProduct
+    ? options.fees
+        .filter((fee) => fee.productTypes.includes(selectedProduct.type))
+        .map(toDropdownOption)
+    : [];
+  const reasonOptions = options.reasons.map(toDropdownOption);
 
   function addFee() {
-    const newFee: FeeOption = { 
-      id: NaN, 
-      code: "", 
-      name: "", 
-      type: FeeType.FLAT, 
-      productTypes: [] 
+    const newFee: PricingPlanFeeRequest = { 
+      feeId: NaN,
+      amount: NaN,
+      reasons: [],
     };
 
     updateField("fees", [...formValues.fees, newFee])
@@ -155,9 +188,14 @@ export default function PricingPlanPage() {
     return newFee;
   }
 
-  function removeFee(row: FeeOption) {
-    updateField("fees", formValues.fees.filter((fee) => fee !== row));
-    setSelectedFee(selectedFee === row ? null : selectedFee);
+  function removeFee(removedFee: PricingPlanFeeRequest) {
+    updateField("fees", formValues.fees.filter((fee) => fee !== removedFee));
+    setSelectedFee(selectedFee === removedFee ? null : selectedFee);
+  }
+
+  function updateSelectedFee(updatedFee: Partial<PricingPlanFeeRequest>) {
+    Object.assign(selectedFee!, updatedFee);
+    updateField("fees", [...formValues.fees]);
   }
 
   return (
@@ -211,7 +249,7 @@ export default function PricingPlanPage() {
               label="Product"
               name="productId"
               required
-              options={options?.products.map(toDropdownOption)}
+              options={options.products.map(toDropdownOption)}
               value={formValues.productId}
               onChange={(value) => updateField("productId", value)}
             />
@@ -220,7 +258,7 @@ export default function PricingPlanPage() {
               label="Region"
               name="regionId"
               required
-              options={options?.regions.map(toDropdownOption)}
+              options={options.regions.map(toDropdownOption)}
               value={formValues.regionId}
               onChange={(value) => updateField("regionId", value)}
             />
@@ -257,7 +295,10 @@ export default function PricingPlanPage() {
             <div className="pricing-plan-side-column">
               <div className="crud-page-form-column">
                 <EditableListField
-                  columnDefs={[{ field: "name" }]}
+                  columnDefs={[{ field: "feeId", valueFormatter: (params) => {
+                    const feeOption = feeOptions.find((option) => option.value === params.value);
+                    return feeOption ? feeOption.label : "New Fee";
+                  }}]}
                   disabled={inputsDisabled}
                   rowData={formValues.fees}
                   title="Fees"
@@ -265,6 +306,9 @@ export default function PricingPlanPage() {
                   onRemove={removeFee}
                   onSelectionChanged={setSelectedFee}
                 />
+                {formValues.fees.map((fee, index: number) => (
+                  <input key={index} name="fees" type="hidden" value={JSON.stringify(fee)} />
+                ))}
               </div>
               <div className="crud-page-form-column">
                 <EditableListField
@@ -277,6 +321,45 @@ export default function PricingPlanPage() {
                   onSelectionChanged={() => {}}
                 />
               </div>
+            </div>
+          )}
+          {selectedProduct && selectedFee && (
+            <div className="crud-page-form-column">
+              <Dropdown
+              disabled={inputsDisabled || !selectedFee}
+              label="Fee Name"
+              options={feeOptions}
+              value={selectedFee?.feeId}
+              onChange={(feeId) => updateSelectedFee({ feeId })}
+            />
+              <label className="crud-page-form-field" htmlFor="pricing-plan-fee-amount">
+              <span>Fee Amount</span>
+              <input
+                disabled={inputsDisabled || !selectedFee}
+                id="pricing-plan-fee-amount"
+                type="number"
+                value={selectedFee?.amount}
+                onChange={(event) => updateSelectedFee({
+                    amount: event.target.value === "" ? NaN : Number(event.target.value),
+                  })
+                }
+              />
+            </label>
+              <MultiSelectField
+              disabled={inputsDisabled || !selectedFee}
+              options={reasonOptions}
+              selectedValues={selectedFee?.reasons ?? []}
+              title="Reason to waive"
+              onAdd={(reasonId) => { updateSelectedFee({
+                  reasons: [...(selectedFee?.reasons ?? []), Number(reasonId)],
+                });
+              }}
+              onRemove={(reasonId) =>
+                updateSelectedFee({
+                  reasons: (selectedFee?.reasons ?? []).filter((reason) => reason !== reasonId),
+                })
+              }
+              />
             </div>
           )}
         </div>

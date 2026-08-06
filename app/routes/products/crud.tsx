@@ -7,15 +7,16 @@ import Dropdown from "../../components/Dropdown";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
 import { createProduct, deleteProduct, getProduct, updateProduct, } from "../../generated/api/client";
-import { ProductType } from "../../generated/api/models";
+import { ProductType, type ProductRequest } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps, } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, productTypeOptions } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 
-const emptyFormValues = {
+const emptyFormValues: ProductRequest = {
   productCode: "",
   productName: "",
-  productType: "",
+  productType: "" as ProductType,
+  updatedBy: "",
 };
 
 export const clientLoader = createClientLoader({

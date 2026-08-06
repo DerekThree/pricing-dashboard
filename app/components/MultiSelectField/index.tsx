@@ -2,18 +2,13 @@ import "../shared/ListTable/styles.css";
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import Dropdown from "../Dropdown";
 import ListTable from "../shared/ListTable/ListTable";
-
-export type MultiSelectOption = {
-  description?: string;
-  label: string;
-  value: string | number;
-};
+import type { DropdownOption } from "../shared/DropdownOption";
 
 type MultiSelectFieldProps = {
   disabled?: boolean;
   onAdd(value: string | number): void;
   onRemove(value: string | number): void;
-  options?: MultiSelectOption[];
+  options?: DropdownOption<string | number>[];
   selectedValues: Array<string | number>;
   title: string;
 };

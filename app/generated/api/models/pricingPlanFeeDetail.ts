@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { FeeOption } from './feeOption';
-import type { PricingPlanFeeReason } from './pricingPlanFeeReason';
+import type { ReasonOption } from './reasonOption';
 
 export interface PricingPlanFeeDetail {
   fee: FeeOption;
   amount: number;
-  reasons: PricingPlanFeeReason[];
+  reasons: ReasonOption[];
 }

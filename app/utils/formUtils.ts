@@ -6,6 +6,12 @@ type IdNameCodeOption = {
   code: string;
 };
 
+type DropdownOption = {
+  value: string | number;
+  label: string;
+  description?: string;
+};
+
 export function preventEnterSubmit(event: React.KeyboardEvent<HTMLFormElement>) {
   if (event.key !== "Enter") {
     return;
@@ -23,8 +29,8 @@ export function preventEnterSubmit(event: React.KeyboardEvent<HTMLFormElement>) 
 
 export function toDropdownOption(option: IdNameCodeOption | string) {
   return typeof option === "string"
-    ? { value: option, label: option }
-    : { value: option.id, label: option.name, description: option.code };
+    ? { value: option, label: option } as DropdownOption
+    : { value: option.id, label: option.name, description: option.code } as DropdownOption;
 }
 
 export const productTypeLabels: Record<ProductType, string> = {
