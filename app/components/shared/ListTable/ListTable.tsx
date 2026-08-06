@@ -14,6 +14,7 @@ import { AgGridReact } from "ag-grid-react";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 type ListTableProps<TRow extends object> = {
+  hideButtons?: boolean;
   columnDefs: ColDef<TRow>[];
   disabled?: boolean;
   noRowsText: string;
@@ -25,6 +26,7 @@ type ListTableProps<TRow extends object> = {
 };
 
 export default function ListTable<TRow extends object>({
+  hideButtons = false,
   columnDefs,
   disabled = false,
   noRowsText,
@@ -36,11 +38,11 @@ export default function ListTable<TRow extends object>({
 }: ListTableProps<TRow>) {
   const isEmpty = rowData.length === 0;
   const removeButtonColumnDef: ColDef<TRow> = {
-    cellRenderer: (params: ICellRendererParams<TRow>) => (
-      <button
-        className="selection-list-remove-button"
-        type="button"
-        onClick={() => params.node.data && onRemove(params.node.data)}
+        cellRenderer: (params: ICellRendererParams<TRow>) => (
+          <button
+            className="selection-list-remove-button"
+            type="button"
+            onClick={() => params.node.data && onRemove(params.node.data)}
       >
         X
       </button>
@@ -50,10 +52,10 @@ export default function ListTable<TRow extends object>({
 
   return (
     <div
-      className={`selection-list-table${disabled || isEmpty? " selection-list-table-disabled" : ""}`}
+      className={`selection-list-table${disabled || isEmpty ? " selection-list-table-disabled" : ""}${selectable ? " selection-list-table-selectable" : ""}`}
     >
       <AgGridReact
-        columnDefs={disabled ? columnDefs : [...columnDefs, removeButtonColumnDef]}
+        columnDefs={disabled || hideButtons ? columnDefs : [...columnDefs, removeButtonColumnDef]}
         defaultColDef={{ minWidth: 0, flex: 1 }}
         domLayout="autoHeight"
         headerHeight={0}

@@ -7,6 +7,7 @@ import type { ColDef, RowDataUpdatedEvent, SelectionChangedEvent } from "ag-grid
 import ListTable from "../shared/ListTable/ListTable";
 
 type EditableListFieldProps<TRow extends object> = {
+  hideButtons?: boolean;
   columnDefs: ColDef<TRow>[];
   disabled?: boolean;
   onAdd(): TRow | void;
@@ -17,6 +18,7 @@ type EditableListFieldProps<TRow extends object> = {
 };
 
 export default function EditableListField<TRow extends object>({
+  hideButtons = false,
   columnDefs,
   disabled = false,
   onAdd,
@@ -47,9 +49,8 @@ export default function EditableListField<TRow extends object>({
     <div className="selection-list">
       <div className="selection-list-header">
         <span className="selection-list-title">{title}</span>
-        {!disabled && <button
+        {!disabled && !hideButtons && <button
           className="selection-list-add-button"
-          disabled={disabled}
           type="button"
           onClick={handleAdd}
         >
@@ -57,6 +58,7 @@ export default function EditableListField<TRow extends object>({
         </button>}
       </div>
       <ListTable
+        hideButtons={hideButtons}
         columnDefs={columnDefs}
         disabled={disabled}
         noRowsText={`No ${title.toLowerCase()}`}

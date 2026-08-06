@@ -130,7 +130,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
 
   const initialFormValues = recordResponse?.data ? toFormValues(recordResponse.data) : emptyFormValues;
   const options = optionsResponse?.data ?? {
-    fees: [],
+    fees: recordResponse!.data.fees.map((fee) => fee.fee),
     products: [recordResponse!.data.product],
     regions: [recordResponse!.data.region],
     reasons: [],
@@ -299,7 +299,7 @@ export default function PricingPlanPage() {
                     const feeOption = feeOptions.find((option) => option.value === params.value);
                     return feeOption ? feeOption.label : "New Fee";
                   }}]}
-                  disabled={inputsDisabled}
+                  hideButtons={inputsDisabled}
                   rowData={formValues.fees}
                   title="Fees"
                   onAdd={addFee}
@@ -309,8 +309,51 @@ export default function PricingPlanPage() {
                 {formValues.fees.map((fee, index: number) => (
                   <input key={index} name="fees" type="hidden" value={JSON.stringify(fee)} />
                 ))}
+
+                    <Dropdown
+                      disabled={inputsDisabled || !selectedFee}
+                      label="Fee Name"
+                      options={feeOptions}
+                      value={selectedFee?.feeId}
+                      onChange={(feeId) => updateSelectedFee({ feeId })}
+                    />
+                    <label className="crud-page-form-field" htmlFor="pricing-plan-fee-amount">
+                      <span>Fee Amount</span>
+                      <input
+                        disabled={inputsDisabled || !selectedFee}
+                        id="pricing-plan-fee-amount"
+                        type="number"
+                        value={selectedFee?.amount || ""}
+                        onChange={(event) =>
+                          updateSelectedFee({
+                            amount: event.target.value === "" ? NaN : Number(event.target.value),
+                          })
+                        }
+                      />
+                    </label>
+                    <MultiSelectField
+                      disabled={inputsDisabled || !selectedFee}
+                      options={reasonOptions}
+                      selectedValues={selectedFee?.reasons ?? []}
+                      title="Reasons to waive"
+                      onAdd={(reasonId) =>
+                        updateSelectedFee({
+                          reasons: [...selectedFee!.reasons, Number(reasonId)],
+                        })
+                      }
+                      onRemove={(reasonId) =>
+                        updateSelectedFee({
+                          reasons: selectedFee!.reasons.filter((reason) => reason !== reasonId),
+                        })
+                      }
+                    />
+                  </div>
+
               </div>
-              <div className="crud-page-form-column">
+
+          )}
+          {selectedProduct && (
+            <div className="crud-page-form-column">
                 <EditableListField
                   columnDefs={[{ field: "name" }]}
                   disabled={inputsDisabled}
@@ -320,46 +363,6 @@ export default function PricingPlanPage() {
                   onRemove={() => {}}
                   onSelectionChanged={() => {}}
                 />
-              </div>
-            </div>
-          )}
-          {selectedProduct && selectedFee && (
-            <div className="crud-page-form-column">
-              <Dropdown
-              disabled={inputsDisabled || !selectedFee}
-              label="Fee Name"
-              options={feeOptions}
-              value={selectedFee?.feeId}
-              onChange={(feeId) => updateSelectedFee({ feeId })}
-            />
-              <label className="crud-page-form-field" htmlFor="pricing-plan-fee-amount">
-              <span>Fee Amount</span>
-              <input
-                disabled={inputsDisabled || !selectedFee}
-                id="pricing-plan-fee-amount"
-                type="number"
-                value={selectedFee?.amount}
-                onChange={(event) => updateSelectedFee({
-                    amount: event.target.value === "" ? NaN : Number(event.target.value),
-                  })
-                }
-              />
-            </label>
-              <MultiSelectField
-              disabled={inputsDisabled || !selectedFee}
-              options={reasonOptions}
-              selectedValues={selectedFee?.reasons ?? []}
-              title="Reason to waive"
-              onAdd={(reasonId) => { updateSelectedFee({
-                  reasons: [...(selectedFee?.reasons ?? []), Number(reasonId)],
-                });
-              }}
-              onRemove={(reasonId) =>
-                updateSelectedFee({
-                  reasons: (selectedFee?.reasons ?? []).filter((reason) => reason !== reasonId),
-                })
-              }
-              />
             </div>
           )}
         </div>

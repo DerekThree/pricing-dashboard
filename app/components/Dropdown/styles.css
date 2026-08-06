@@ -19,6 +19,11 @@
   overflow: visible !important;
 }
 
+.dropdown__control:not(.dropdown__control--is-disabled),
+.dropdown__option {
+  cursor: pointer;
+}
+
 .dropdown__control--is-focused {
   border-color: rgb(37 99 235) !important;
   box-shadow: 0 0 0 3px rgb(191 219 254) !important;
@@ -30,7 +35,7 @@
   pointer-events: auto !important;
 }
 
-.dropdown__control--is-disabled .dropdown__single-value {
+.dropdown__control--is-disabled {
   color: rgb(15 23 42) !important;
 }
 
@@ -40,7 +45,6 @@
 }
 
 .dropdown__input-container,
-.dropdown__single-value,
 .dropdown__placeholder {
   font-family: inherit !important;
   font-size: 0.875rem !important;

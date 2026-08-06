@@ -7,6 +7,7 @@
 
 .selection-list-title {
   color: rgb(51 65 85);
+  cursor: default;
   font-size: 0.875rem;
   font-weight: 600;
 }
@@ -19,6 +20,9 @@
   width: 100%;
 }
 
+.selection-list-table .selection-list-table-disabled {
+  padding-left: 0.5rem;
+}
 .selection-list-table .ag-root-wrapper {
   background: rgb(255 255 255);
   border: 0;
@@ -45,9 +49,20 @@
   display: none;
 }
 
+.selection-list-table .ag-overlay-no-rows-wrapper {
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-left: 0.5rem;
+  line-height: 25px;
+}
+
 .selection-list-table .ag-cell {
   padding-left: 0.5rem;
   padding-right: 0;
+}
+
+.selection-list-table-selectable:not(.selection-list-table-disabled) .ag-row {
+  cursor: pointer;
 }
 
 .selection-list-remove-button {
@@ -59,9 +74,4 @@
   font-weight: 700;
   height: 100%;
   width: 100%;
-}
-
-.selection-list-remove-button:disabled {
-  color: rgb(148 163 184);
-  cursor: default;
 }

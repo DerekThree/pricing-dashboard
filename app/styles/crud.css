@@ -73,6 +73,14 @@
   cursor: default;
 }
 
+.crud-page-form-field input[type="date"]:not(:disabled) {
+  cursor: text;
+}
+
+.crud-page-form-field input[type="date"]:not(:disabled)::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
 .crud-page-form-field input::placeholder {
   color: rgb(148 163 184);
   font-size: inherit;

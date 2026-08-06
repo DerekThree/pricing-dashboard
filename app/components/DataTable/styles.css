@@ -37,6 +37,10 @@
   font-weight: 700;
 }
 
+.data-table .ag-row {
+  cursor: pointer;
+}
+
 .ag-body .ag-layout-normal {
   background-color: rgb(232 240 255);
 }
