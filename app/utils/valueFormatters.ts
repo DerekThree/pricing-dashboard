@@ -1,3 +1,5 @@
+import type { ValueFormatterParams } from "ag-grid-community";
+
 const listDateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "2-digit",
   day: "2-digit",
@@ -8,7 +10,11 @@ const listDateFormatter = new Intl.DateTimeFormat("en-US", {
   hour12: true,
 });
 
-export function formatDateTime(value: unknown) {
+export function listFormatter({ value }: ValueFormatterParams): string {
+  return (value as string[]).join(", ");
+}
+
+export function dateTimeFormatter({ value }: ValueFormatterParams): string {
   if (typeof value !== "string" || value.length === 0) {
     return value == null ? "" : String(value);
   }

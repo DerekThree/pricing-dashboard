@@ -29,17 +29,17 @@ export const clientAction = createClientAction({
   updateRecord: updateBranch,
   deleteRecord: deleteBranch,
   listRouteUrl: routeUrls.branches,
-  mapFormValuesToRequest: (formValues) =>
-    ({
-      ...formValues,
-      branchCode: (formValues.branchCode as string).toUpperCase(),
-    }),
+  mapFormDataToRequest: (formData) => ({
+      ...Object.fromEntries(formData),
+      branchCode: String(formData.get("branchCode")).toUpperCase(),
+    })
 });
 
 export default function BranchPage() {
   const { operation, initialFormValues, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+  
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 

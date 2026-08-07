@@ -6,7 +6,7 @@ import { listPricingPlans } from "../../generated/api/client";
 import type { PricingPlanListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
-import { formatDateTime } from "../../utils/dateTimeUtils";
+import { dateTimeFormatter } from "../../utils/valueFormatters";
 
 function formatDate(value: unknown) {
   return typeof value === "string" ? value : "";
@@ -16,9 +16,9 @@ const columnDefs: ColDef<PricingPlanListItem>[] = [
   { field: "pricingPlan", headerName: "Pricing Plan" },
   { field: "product", headerName: "Product" },
   { field: "region", headerName: "Region" },
-  { field: "activeFrom", headerName: "Active From", valueFormatter: ({ value }) => formatDate(value) },
-  { field: "activeThrough", headerName: "Active Through", valueFormatter: ({ value }) => formatDate(value) },
-  { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
+  { field: "activeFrom", headerName: "Active From", valueFormatter: dateTimeFormatter },
+  { field: "activeThrough", headerName: "Active Through", valueFormatter: dateTimeFormatter },
+  { field: "updatedOn", headerName: "Updated On", valueFormatter: dateTimeFormatter },
   { field: "updatedBy", headerName: "Updated By" },
 ];
 

@@ -14,21 +14,11 @@ import {
   updateRegion,
   deleteRegion,
 } from "../../generated/api/client";
-import type { RegionDetail, RegionRequest } from "../../generated/api/models";
+import type { RegionDetail, RegionOptions, RegionRequest } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
-
-function toFormValues(record: RegionDetail) {
-  return {
-    regionCode: record.regionCode,
-    regionName: record.regionName,
-    states: record.states,
-    zipCodes: record.zipCodes,
-    branches: record.branches.map((branch) => branch.id),
-  };
-}
 
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
@@ -40,6 +30,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     branches: [] as number[],
     updatedBy: "",
   };
+  
   const needsRecord = operation !== crudOps.create;
   const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
   const [recordResponse, optionsResponse] = await Promise.all([
@@ -47,11 +38,18 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     needsOptionsEndpoint ? getRegionOptions() : null,
   ]);
 
+  function toFormValues(record: RegionDetail): RegionRequest {
+    return {
+      ...record,
+      branches: record.branches.map((branch) => branch.id),
+    };
+  }
+
   if (recordResponse && recordResponse.status !== 200) {
     return {
       operation,
       initialFormValues: emptyFormValues,
-      options: { states: [], zipCodes: [], branches: [] },
+      options: { states: [], zipCodes: [], branches: [] } as RegionOptions,
       loaderError: getErrorMessage(recordResponse.data, recordResponse.status),
     };
   }
@@ -60,7 +58,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     return {
       operation,
       initialFormValues: emptyFormValues,
-      options: { states: [], zipCodes: [], branches: [] },
+      options: { states: [], zipCodes: [], branches: [] } as RegionOptions,
       loaderError: getErrorMessage(optionsResponse.data, optionsResponse.status),
     };
   }
@@ -86,14 +84,12 @@ export const clientAction = createClientAction({
   updateRecord: updateRegion,
   deleteRecord: deleteRegion,
   listRouteUrl: routeUrls.regions,
-  arrayFields: ["states", "zipCodes", "branches"],
-  mapFormValuesToRequest: (formValues) =>
-    ({
-      ...formValues,
-      regionCode: (formValues.regionCode as string).toUpperCase(),
-      states: formValues.states,
-      zipCodes: formValues.zipCodes,
-      branches: (formValues.branches as string[]).map((branchId) => Number(branchId)),
+  mapFormDataToRequest: (formData) => ({
+      ...Object.fromEntries(formData),
+      regionCode: String(formData.get("regionCode")).toUpperCase(),
+      states: formData.getAll("states"),
+      zipCodes: formData.getAll("zipCodes"),
+      branches: formData.getAll("branches").map((branchId) => Number(branchId)),
     }),
 });
 
@@ -101,6 +97,7 @@ export default function RegionPage() {
   const { operation, initialFormValues, options, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+  
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 

@@ -50,12 +50,9 @@ type ApiResponse = {
   headers: Headers;
 };
 
-type SuccessData<TResponse extends ApiResponse> =
-  Extract<TResponse, { status: 200 }>["data"];
-
-type CrudLoaderConfig<TFormValues, TResponse extends ApiResponse> = {
+type CrudLoaderConfig<TRequest, TResponse extends ApiResponse> = {
   getRecord(id: number): Promise<TResponse>;
-  emptyFormValues: TFormValues;
+  emptyFormValues: TRequest;
 };
 
 type CrudActionConfig<TRequest> = {
@@ -63,24 +60,23 @@ type CrudActionConfig<TRequest> = {
   updateRecord(id: number, record: TRequest): Promise<ApiResponse>;
   deleteRecord(id: number): Promise<ApiResponse>;
   listRouteUrl: string;
-  arrayFields?: (keyof TRequest)[];
-  mapFormValuesToRequest?: (formValues: Record<string, unknown>) => TRequest;
+  mapFormDataToRequest?: (formData: FormData) => TRequest;
 };
 
-export function createClientLoader<TFormValues, TResponse extends ApiResponse>({
+export function createClientLoader<TRequest, TResponse extends ApiResponse>({
   getRecord,
   emptyFormValues,
-}: CrudLoaderConfig<TFormValues, TResponse>) {
+}: CrudLoaderConfig<TRequest, TResponse>) {
   return async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     const { operation, id } = validateCrudRouteParams(params);
-    let initialFormValues: TFormValues | SuccessData<TResponse> = emptyFormValues;
+    let initialFormValues: TRequest = emptyFormValues;
     let loaderError: string | null = null;
 
     if (operation !== crudOps.create) {
       const response = await getRecord(id);
 
       if (response.status === 200) {
-        initialFormValues = response.data as SuccessData<TResponse>;
+        initialFormValues = response.data as TRequest;
       } else {
         loaderError = getErrorMessage(response.data, response.status);
       }
@@ -95,8 +91,7 @@ export function createClientAction<TRequest>({
   updateRecord,
   deleteRecord,
   listRouteUrl,
-  arrayFields = [],
-  mapFormValuesToRequest,
+  mapFormDataToRequest,
 }: CrudActionConfig<TRequest>) {
   return async function clientAction({ request, params }: ClientActionFunctionArgs) {
     const { operation, id } = validateCrudRouteParams(params);
@@ -105,14 +100,10 @@ export function createClientAction<TRequest>({
 
     if (operation === crudOps.create || operation === crudOps.update) {
       const formData = await request.formData();
-      const formValues = Object.fromEntries(formData) as Record<string, unknown>;
-      formValues.updatedBy = "user";
-
-      for (const field of arrayFields) {
-        formValues[String(field)] = formData.getAll(String(field));
-      }
-
-      const apiRequest = mapFormValuesToRequest ? mapFormValuesToRequest(formValues) : (formValues as TRequest);
+      formData.set("updatedBy", "user");
+      const apiRequest = mapFormDataToRequest
+        ? mapFormDataToRequest(formData)
+        : (Object.fromEntries(formData) as TRequest);
 
       if (operation === crudOps.create) {
         response = await createRecord(apiRequest);

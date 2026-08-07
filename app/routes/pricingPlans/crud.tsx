@@ -34,23 +34,6 @@ import MultiSelectField from "~/app/components/MultiSelectField";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-function toFormValues(record: PricingPlanDetail): PricingPlanRequest {
-  return {
-    planCode: record.planCode,
-    planName: record.planName,
-    productId: record.product.id,
-    regionId: record.region.id,
-    activeFrom: record.activeFrom,
-    activeThrough: record.activeThrough,
-    fees: record.fees.map((fee) => ({
-      feeId: fee.fee.id,
-      amount: fee.amount,
-      reasons: fee.reasons.map((reason) => reason.id),
-    })),
-    updatedBy: record.updatedBy,
-  };
-}
-
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
   const emptyFormValues: PricingPlanRequest = {
@@ -63,12 +46,26 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     fees: [] as PricingPlanFeeRequest[],
     updatedBy: "",
   };
+
   const needsRecord = operation !== crudOps.create;
   const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
   const [recordResponse, optionsResponse] = await Promise.all([
     needsRecord ? getPricingPlan(id) : null,
     needsOptionsEndpoint ? getPricingPlanOptions() : null,
   ]);
+
+  function toFormValues(record: PricingPlanDetail): PricingPlanRequest {
+    return {
+      ...record,
+      productId: record.product.id,
+      regionId: record.region.id,
+      fees: record.fees.map((fee) => ({
+        feeId: fee.fee.id,
+        amount: fee.amount,
+        reasons: fee.reasons.map((reason) => reason.id),
+      })),
+    };
+  }
 
   if (recordResponse && recordResponse.status !== 200) {
     return {
@@ -104,20 +101,10 @@ export const clientAction = createClientAction({
   updateRecord: updatePricingPlan,
   deleteRecord: deletePricingPlan,
   listRouteUrl: routeUrls.pricingPlans,
-  arrayFields: ["fees"],
-  mapFormValuesToRequest: (formValues) =>
-    ({
-      ...formValues,
-      planCode: (formValues.planCode as string).toUpperCase(),
-      fees: (formValues.fees as string[]).map((fee) => {
-        const parsedFee = JSON.parse(fee) as PricingPlanFeeRequest;
-
-        return {
-          feeId: parsedFee.feeId,
-          amount: parsedFee.amount,
-          reasons: parsedFee.reasons.map((reasonId) => reasonId),
-        };
-      }),
+  mapFormDataToRequest: (formData) => ({
+      ...Object.fromEntries(formData),
+      planCode: String(formData.get("planCode")).toUpperCase(),
+      fees: formData.getAll("fees").map((fee) => JSON.parse(String(fee))),
     }),
 });
 
@@ -125,10 +112,12 @@ export default function PricingPlanPage() {
   const { operation, initialFormValues, options, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
-  const [selectedFee, setSelectedFee] = useState<PricingPlanFeeRequest | null>(null);
+
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
+    
   const selectedProduct = options.products.find((product) => product.id === formValues.productId);
+  const [selectedFee, setSelectedFee] = useState<PricingPlanFeeRequest | null>(null);
   const feeOptions = selectedProduct
     ? options.fees
         .filter((fee) => fee.productTypes.includes(selectedProduct.type))

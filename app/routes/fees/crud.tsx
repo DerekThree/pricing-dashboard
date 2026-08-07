@@ -8,10 +8,11 @@ import useFormValues from "../../hooks/useFormValues";
 import { createFee, deleteFee, getFee, updateFee } from "../../generated/api/client";
 import { FeeType, ProductType, type FeeRequest } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
-import { preventEnterSubmit, productTypeOptions } from "../../utils/formUtils";
+import { preventEnterSubmit } from "../../utils/formUtils";
+import { productTypeOptions } from "../products/productTypeLabels";
 import { routeUrls } from "../../routes";
 import MultiSelectField from "~/app/components/MultiSelectField";
-import { feeTypeLabels } from "./feeCalcMethodLabels";
+import { feeTypeLabels } from "./feeTypeLabels";
 
 const emptyFormValues: FeeRequest = {
   feeCode: "",
@@ -20,11 +21,6 @@ const emptyFormValues: FeeRequest = {
   productTypes: [] as ProductType[],
   updatedBy: "",
 };
-
-const feeTypeOptions = Object.values(FeeType).map((feeType) => ({
-  value: feeType,
-  label: feeTypeLabels[feeType],
-}));
 
 export const clientLoader = createClientLoader({
   getRecord: getFee,
@@ -36,22 +32,26 @@ export const clientAction = createClientAction({
   updateRecord: updateFee,
   deleteRecord: deleteFee,
   listRouteUrl: routeUrls.fees,
-  arrayFields: ["productTypes"],
-  mapFormValuesToRequest: (formValues) =>
-    ({
-      ...formValues,
-      feeCode: (formValues.feeCode as string).toUpperCase(),
-      feeType: formValues.feeType as FeeType,
-      productTypes: formValues.productTypes as ProductType[],
-    }),
+  mapFormDataToRequest: (formData) => ({
+    ...Object.fromEntries(formData),
+    productTypes: formData.getAll("productTypes"),
+    feeCode: String(formData.get("feeCode")).toUpperCase(),
+    feeType: formData.get("feeType"),
+  }),
 });
 
 export default function FeePage() {
   const { operation, initialFormValues, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
+
+  const feeTypeOptions = Object.values(FeeType).map((feeType) => ({
+    value: feeType,
+    label: feeTypeLabels[feeType],
+  }));
 
   function addProductType(productType: ProductType) {
     updateField("productTypes", [...formValues.productTypes, productType]);

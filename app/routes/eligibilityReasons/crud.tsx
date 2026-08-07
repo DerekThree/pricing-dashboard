@@ -20,9 +20,9 @@ import {
   type AttributeType as AttributeTypeValue,
   type Id,
   type ReasonCondition,
-  type ReasonConditionValue,
   type ReasonDetail,
   ReasonOperator,
+  type ReasonOptions,
   type ReasonRequest,
 } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
@@ -30,36 +30,15 @@ import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
 
-const emptyFormValues: ReasonRequest = {
-  reasonCode: "",
-  reasonName: "",
-  conditions: [] as ReasonCondition[],
-  updatedBy: "",
-};
-
-function getOperatorOptions(attributeType?: AttributeTypeValue) {
-  const operators = attributeType === AttributeType.TEXT
-    ? [ReasonOperator["="], ReasonOperator["<>"]]
-    : Object.values(ReasonOperator) as ReasonOperator[];
-  
-  return operators.map(toDropdownOption);
-}
-
-function toFormValues(record: ReasonDetail):ReasonRequest {
-  return {
-    reasonCode: record.reasonCode,
-    reasonName: record.reasonName,
-    conditions: record.conditions.map((condition) => ({
-      attributeId: condition.attribute.id,
-      operator: condition.operator,
-      value: condition.value,
-    })),
-    updatedBy: record.updatedBy,
-  };
-}
-
 export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   const { operation, id } = validateCrudRouteParams(params);
+  const emptyFormValues: ReasonRequest = {
+    reasonCode: "",
+    reasonName: "",
+    conditions: [] as ReasonCondition[],
+    updatedBy: "",
+  };
+
   const needsRecord = operation !== crudOps.create;
   const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
   const [recordResponse, optionsResponse] = await Promise.all([
@@ -67,11 +46,21 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     needsOptionsEndpoint ? getReasonOptions() : null,
   ]);
 
+  function toFormValues(record: ReasonDetail):ReasonRequest {
+    return {
+      ...record,
+      conditions: record.conditions.map((condition) => ({
+        ...condition,
+        attributeId: condition.attribute.id,
+      })),
+    };
+  }
+
   if (recordResponse && recordResponse.status !== 200) {
     return {
       operation,
       initialFormValues: emptyFormValues,
-      options: { attributes: [] },
+      options: { attributes: [] } as ReasonOptions,
       loaderError: getErrorMessage(recordResponse.data, recordResponse.status),
     };
   }
@@ -80,7 +69,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     return {
       operation,
       initialFormValues: emptyFormValues,
-      options: { attributes: [] },
+      options: { attributes: [] } as ReasonOptions,
       loaderError: getErrorMessage(optionsResponse.data, optionsResponse.status),
     };
   }
@@ -97,15 +86,11 @@ export const clientAction = createClientAction({
   updateRecord: updateReason,
   deleteRecord: deleteReason,
   listRouteUrl: routeUrls.eligibilityReasons,
-  arrayFields: ["conditions"],
-  mapFormValuesToRequest: (formValues) =>
-    ({
-      reasonCode: (formValues.reasonCode as string).toUpperCase(),
-      reasonName: formValues.reasonName,
-      conditions: (formValues.conditions as string[]).map(
-        (condition) => JSON.parse(condition) as ReasonCondition,
-      ),
-      updatedBy: formValues.updatedBy,
+  mapFormDataToRequest: (formData) => ({
+      ...Object.fromEntries(formData),
+      reasonCode: String(formData.get("reasonCode")).toUpperCase(),
+      reasonName: formData.get("reasonName"),
+      conditions: formData.getAll("conditions").map((condition) => JSON.parse(String(condition))),
     }),
 });
 
@@ -113,13 +98,20 @@ export default function EligibilityReasonPage() {
   const { operation, initialFormValues, options, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+
   const [selectedCondition, setSelectedCondition] = useState<ReasonCondition | null>(null);
   const inputsDisabled = !!loaderError || operation === crudOps.view || operation === crudOps.delete;
+  const conditionDetailsDisabled = inputsDisabled || !selectedCondition;
+
   const attributeId = selectedCondition?.attributeId ?? NaN;
   const operator = selectedCondition?.operator ?? "" as ReasonOperator;
   const value = selectedCondition?.value ?? "";
-  const conditionDetailsDisabled = inputsDisabled || !selectedCondition;
+  
   const attributeType = options.attributes.find((attribute) => attribute.id === attributeId)?.type;
+  const attributeOptions = options.attributes.map(toDropdownOption);
+  const operatorOptions = attributeType === AttributeType.TEXT
+    ? [ReasonOperator["="], ReasonOperator["<>"]].map(toDropdownOption)
+    : Object.values(ReasonOperator).map(toDropdownOption);
 
   function addCondition() {
     const newCondition: ReasonCondition = {
@@ -230,7 +222,7 @@ export default function EligibilityReasonPage() {
                 disabled={conditionDetailsDisabled}
                 label="Attribute"
                 name="condition-widget-attribute"
-                options={options.attributes.map(toDropdownOption)}
+                options={attributeOptions}
                 placeholder={conditionDetailsDisabled ? "No condition selected" : undefined}
                 value={attributeId}
                 onChange={(attributeId: Id) => {
@@ -247,7 +239,7 @@ export default function EligibilityReasonPage() {
                   label="Operator"
                   name="condition-widget-operator"
                   noOptionsMessage="Choose attribute"
-                  options={getOperatorOptions(attributeType)}
+                  options={operatorOptions}
                   placeholder=""
                   value={operator}
                   onChange={(operator: ReasonOperator) => {

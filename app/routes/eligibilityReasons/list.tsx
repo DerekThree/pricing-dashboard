@@ -6,12 +6,12 @@ import { listReasons } from "../../generated/api/client";
 import type { ReasonListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
-import { formatDateTime } from "../../utils/dateTimeUtils";
+import { listFormatter, dateTimeFormatter } from "../../utils/valueFormatters";
 
 const columnDefs: ColDef<ReasonListItem>[] = [
   { field: "eligibilityReason", headerName: "Eligibility Reason" },
-  { field: "conditions", headerName: "Conditions", valueFormatter: ({ value }) => (value as string[]).join(", ") },
-  { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
+  { field: "conditions", headerName: "Conditions", valueFormatter: listFormatter },
+  { field: "updatedOn", headerName: "Updated On", valueFormatter: dateTimeFormatter },
   { field: "updatedBy", headerName: "Updated By" },
 ];
 

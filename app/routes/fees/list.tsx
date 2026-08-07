@@ -7,9 +7,9 @@ import { FeeType, ProductType } from "../../generated/api/models";
 import type { FeeListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
-import { formatDateTime } from "../../utils/dateTimeUtils";
-import { productTypeLabels } from "../../utils/formUtils";
-import { feeTypeLabels } from "./feeCalcMethodLabels";
+import { dateTimeFormatter } from "../../utils/valueFormatters";
+import { productTypeLabels } from "../products/productTypeLabels";
+import { feeTypeLabels } from "./feeTypeLabels";
 
 const columnDefs: ColDef<FeeListItem>[] = [
   { field: "fee", headerName: "Fee" },
@@ -21,13 +21,11 @@ const columnDefs: ColDef<FeeListItem>[] = [
   {
     field: "productTypes",
     headerName: "Product Types",
-    valueFormatter: ({ value }) => {
-      return (value as ProductType[])
-        .map((productType) => productTypeLabels[productType])
-        .join(", ");
-    },
+    valueFormatter: ({ value }) => (value as ProductType[])
+      .map((productType) => productTypeLabels[productType])
+      .join(", "),
   },
-  { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
+  { field: "updatedOn", headerName: "Updated On", valueFormatter: dateTimeFormatter },
   { field: "updatedBy", headerName: "Updated By" },
 ];
 

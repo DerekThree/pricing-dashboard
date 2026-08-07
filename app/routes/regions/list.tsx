@@ -6,14 +6,14 @@ import { listRegions } from "../../generated/api/client";
 import type { RegionListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
-import { formatDateTime } from "../../utils/dateTimeUtils";
+import { dateTimeFormatter } from "../../utils/valueFormatters";
 
 const columnDefs: ColDef<RegionListItem>[] = [
   { field: "region", headerName: "Region" },
   { field: "states", headerName: "States" },
   { field: "zipCodes", headerName: "Zip Codes" },
   { field: "branches", headerName: "Branches" },
-  { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
+  { field: "updatedOn", headerName: "Updated On", valueFormatter: dateTimeFormatter },
   { field: "updatedBy", headerName: "Updated By" },
 ];
 

@@ -9,7 +9,8 @@ import useFormValues from "../../hooks/useFormValues";
 import { createProduct, deleteProduct, getProduct, updateProduct, } from "../../generated/api/client";
 import { ProductType, type ProductRequest } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps, } from "../../utils/crudRouteUtils";
-import { preventEnterSubmit, productTypeOptions } from "../../utils/formUtils";
+import { preventEnterSubmit } from "../../utils/formUtils";
+import { productTypeOptions } from "./productTypeLabels";
 import { routeUrls } from "../../routes";
 
 const emptyFormValues: ProductRequest = {
@@ -29,18 +30,18 @@ export const clientAction = createClientAction({
   updateRecord: updateProduct,
   deleteRecord: deleteProduct,
   listRouteUrl: routeUrls.products,
-  mapFormValuesToRequest: (formValues) =>
-    ({
-      ...formValues,
-      productCode: (formValues.productCode as string).toUpperCase(),
-      productType: formValues.productType as ProductType,
-    }),
+  mapFormDataToRequest: (formData) => ({
+      ...Object.fromEntries(formData),
+      productCode: String(formData.get("productCode")).toUpperCase(),
+      productType: formData.get("productType"),
+    })
 });
 
 export default function ProductPage() {
   const { operation, initialFormValues, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+  
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 

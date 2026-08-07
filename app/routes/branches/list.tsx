@@ -6,13 +6,13 @@ import { listBranches } from "../../generated/api/client";
 import type { BranchListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
-import { formatDateTime } from "../../utils/dateTimeUtils";
+import { dateTimeFormatter } from "../../utils/valueFormatters";
 
 const columnDefs: ColDef<BranchListItem>[] = [
   { field: "branch", headerName: "Branch" },
   { field: "state", headerName: "State" },
   { field: "zipCode", headerName: "Zip Code" },
-  { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
+  { field: "updatedOn", headerName: "Updated On", valueFormatter: dateTimeFormatter },
   { field: "updatedBy", headerName: "Updated By" },
 ];
 

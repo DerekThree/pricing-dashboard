@@ -12,16 +12,17 @@ import {
   getAttribute,
   updateAttribute,
 } from "../../generated/api/client";
-import { AttributeType } from "../../generated/api/models";
+import { AttributeType, type AttributeRequest } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 import { attributeTypeLabels } from "./attributeTypeLabels";
 
-const emptyFormValues = {
+const emptyFormValues: AttributeRequest = {
   attributeCode: "",
   attributeName: "",
-  attributeType: "",
+  attributeType: "" as AttributeType,
+  updatedBy: "",
 };
 
 export const clientLoader = createClientLoader({
@@ -34,11 +35,10 @@ export const clientAction = createClientAction({
   updateRecord: updateAttribute,
   deleteRecord: deleteAttribute,
   listRouteUrl: routeUrls.accountAttributes,
-  mapFormValuesToRequest: (formValues) =>
-    ({
-      ...formValues,
-      attributeCode: (formValues.attributeCode as string).toUpperCase(),
-      attributeType: formValues.attributeType as AttributeType,
+  mapFormDataToRequest: (formData) => ({
+      ...Object.fromEntries(formData),
+      attributeCode: String(formData.get("attributeCode")).toUpperCase(),
+      attributeType: String(formData.get("attributeType")),
     }),
 });
 
@@ -46,6 +46,7 @@ export default function AccountAttributePage() {
   const { operation, initialFormValues, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+  
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 

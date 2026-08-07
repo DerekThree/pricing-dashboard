@@ -3,10 +3,10 @@ import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
 import { listAttributes } from "../../generated/api/client";
-import { type AttributeListItem } from "../../generated/api/models";
+import { AttributeType, type AttributeListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
-import { formatDateTime } from "../../utils/dateTimeUtils";
+import { dateTimeFormatter } from "../../utils/valueFormatters";
 import { attributeTypeLabels } from "./attributeTypeLabels";
 
 const columnDefs: ColDef<AttributeListItem>[] = [
@@ -14,9 +14,9 @@ const columnDefs: ColDef<AttributeListItem>[] = [
   {
     field: "type",
     headerName: "Attribute Type",
-    valueFormatter: ({ value }) => attributeTypeLabels[value as AttributeListItem["type"]],
+    valueFormatter: ({ value }) => attributeTypeLabels[value as AttributeType],
   },
-  { field: "updatedOn", headerName: "Updated On", valueFormatter: ({ value }) => formatDateTime(value) },
+  { field: "updatedOn", headerName: "Updated On", valueFormatter: dateTimeFormatter },
   { field: "updatedBy", headerName: "Updated By" },
 ];
 
