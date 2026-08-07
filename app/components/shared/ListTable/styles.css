@@ -33,7 +33,9 @@
 .selection-list-table-disabled .ag-row,
 .selection-list-table-disabled .ag-cell,
 .selection-list-table-disabled .ag-overlay-no-rows-wrapper,
-.selection-list-table-disabled .ag-overlay-no-rows-center {
+.selection-list-table-disabled .ag-overlay-no-rows-center,
+.selection-list--multi-select .selection-list-table .ag-row,
+.selection-list--multi-select .selection-list-table .ag-cell {
   background: rgb(232 240 255);
 }
 
@@ -66,12 +68,21 @@
 }
 
 .selection-list-remove-button {
-  background: transparent;
-  border: 0;
-  color: rgb(37 99 235);
+  background: rgb(255 255 255);
+  border: 1px solid rgb(209, 148, 148);
+  border-radius: 0.25rem;
+  color: rgb(209, 100, 100);
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 700;
-  height: 100%;
-  width: 100%;
+  height: 20px;
+  line-height: 1;
+  margin: auto;
+  padding: 0;
+  width: 20px;
+}
+
+.selection-list-remove-button:hover {
+  background: rgb(254 242 242);
+  border-color: rgb(220 38 38);
 }

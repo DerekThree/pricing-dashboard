@@ -52,7 +52,7 @@ export default function MultiSelectField({
   });
 
   return (
-    <div className="selection-list">
+    <div className="selection-list selection-list--multi-select">
       {disabled ? (
         <span className="selection-list-title">{title}</span>
       ) : (

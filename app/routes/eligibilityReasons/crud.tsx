@@ -45,7 +45,7 @@ function getOperatorOptions(attributeType?: AttributeTypeValue) {
   return operators.map(toDropdownOption);
 }
 
-function toFormValues(record: ReasonDetail) {
+function toFormValues(record: ReasonDetail):ReasonRequest {
   return {
     reasonCode: record.reasonCode,
     reasonName: record.reasonName,
@@ -54,6 +54,7 @@ function toFormValues(record: ReasonDetail) {
       operator: condition.operator,
       value: condition.value,
     })),
+    updatedBy: record.updatedBy,
   };
 }
 
@@ -70,7 +71,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     return {
       operation,
       initialFormValues: emptyFormValues,
-      options: { attributes: [], operators: [] },
+      options: { attributes: [] },
       loaderError: getErrorMessage(recordResponse.data, recordResponse.status),
     };
   }
@@ -79,21 +80,14 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     return {
       operation,
       initialFormValues: emptyFormValues,
-      options: { attributes: [], operators: [] },
+      options: { attributes: [] },
       loaderError: getErrorMessage(optionsResponse.data, optionsResponse.status),
     };
   }
 
   const initialFormValues = recordResponse?.data ? toFormValues(recordResponse.data) : emptyFormValues;
-  const options = optionsResponse
-    ? {
-        ...optionsResponse.data,
-        operators: Object.values(ReasonOperator) as ReasonOperator[],
-      }
-    : {
-        attributes: recordResponse!.data.conditions.map((condition) => condition.attribute),
-        operators: Object.values(ReasonOperator) as ReasonOperator[],
-      };
+  const options = optionsResponse?.data 
+    ?? { attributes: recordResponse!.data.conditions.map((condition) => condition.attribute) };
 
   return { operation, initialFormValues, options, loaderError: null };
 }

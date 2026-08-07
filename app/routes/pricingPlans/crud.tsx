@@ -2,15 +2,9 @@ import "./styles.css";
 
 import {
   AllCommunityModule,
-  type GridApi,
   ModuleRegistry,
-  themeQuartz,
-  type ColDef,
-  type ICellRendererParams,
-  type SelectionChangedEvent,
 } from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Form, useLoaderData } from "react-router";
 import { useActionData } from "react-router";
 import type { ClientLoaderFunctionArgs } from "react-router";
@@ -26,14 +20,10 @@ import {
   updatePricingPlan,
 } from "../../generated/api/client";
 import {
-  FeeType,
-  type FeeOption,
   type PricingPlanDetail,
-  type PricingPlanFeeDetail,
   type PricingPlanRequest,
   type PricingPlanFeeRequest,
   type PricingPlanOptions,
-  type ReasonOption,
 } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
@@ -43,36 +33,6 @@ import EditableListField from "~/app/components/EditableListField";
 import MultiSelectField from "~/app/components/MultiSelectField";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
-
-type FeeRow = {
-  name: string;
-};
-
-type RateRow = {
-  id: string;
-  name: string;
-  isAddRow?: boolean;
-};
-
-const depositFeeRows: FeeRow[] = [
-  { name: "Monthly" },
-  { name: "Annual" },
-  { name: "Overdraft" },
-  { name: "Extended Overdraft" },
-  { name: "Returned Payment" },
-  { name: "ATM" },
-  { name: "Foreign ATM" },
-  { name: "Foreign Transaction" },
-  { name: "Wire" },
-  { name: "Inactivity" },
-];
-
-const creditFeeRows: FeeRow[] = [
-  { name: "Origination" },
-  { name: "Processing" },
-  { name: "Late Payment" },
-  { name: "Returned Payment" },
-];
 
 function toFormValues(record: PricingPlanDetail): PricingPlanRequest {
   return {
@@ -313,6 +273,7 @@ export default function PricingPlanPage() {
                     <Dropdown
                       disabled={inputsDisabled || !selectedFee}
                       label="Fee Name"
+                      placeholder={!selectedFee ? "No fee selected" : undefined}
                       options={feeOptions}
                       value={selectedFee?.feeId}
                       onChange={(feeId) => updateSelectedFee({ feeId })}
@@ -324,6 +285,7 @@ export default function PricingPlanPage() {
                         id="pricing-plan-fee-amount"
                         type="number"
                         value={selectedFee?.amount || ""}
+                        placeholder={!selectedFee ? "No fee selected" : undefined}
                         onChange={(event) =>
                           updateSelectedFee({
                             amount: event.target.value === "" ? NaN : Number(event.target.value),
