@@ -7,6 +7,7 @@ import type { ColDef, IRowNode, RowDataUpdatedEvent, SelectionChangedEvent } fro
 import ListTable from "../shared/ListTable/ListTable";
 
 type EditableListFieldProps<TRow extends object> = {
+  addDisabled?: boolean;
   hideButtons?: boolean;
   columnDefs: ColDef<TRow>[];
   disabled?: boolean;
@@ -18,6 +19,7 @@ type EditableListFieldProps<TRow extends object> = {
 };
 
 export default function EditableListField<TRow extends object>({
+  addDisabled = false,
   hideButtons = false,
   columnDefs,
   disabled = false,
@@ -51,6 +53,7 @@ export default function EditableListField<TRow extends object>({
         <span className="selection-list-title">{title}</span>
         {!disabled && !hideButtons && <button
           className="selection-list-add-button"
+          disabled={addDisabled}
           type="button"
           onClick={handleAdd}
         >
