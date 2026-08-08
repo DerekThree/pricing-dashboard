@@ -1,15 +1,9 @@
-import { ProductType } from "../generated/api/models/productType";
+import type { DropdownOption } from "../components/shared/DropdownOption";
 
 type RecordOption = {
   id: number;
   name: string;
   code: string;
-};
-
-type DropdownOption = {
-  value: string | number;
-  label: string;
-  description?: string;
 };
 
 export function preventEnterSubmit(event: React.KeyboardEvent<HTMLFormElement>) {
@@ -27,8 +21,8 @@ export function preventEnterSubmit(event: React.KeyboardEvent<HTMLFormElement>) 
   }
 }
 
-export function toDropdownOption(option: RecordOption | string) {
+export function toDropdownOption(option: RecordOption | string): DropdownOption<string | number> {
   return typeof option === "string"
-    ? { value: option, label: option } as DropdownOption
-    : { value: option.id, label: option.name, description: option.code } as DropdownOption;
+    ? { value: option, label: option }
+    : { value: option.id, label: option.name, description: option.code };
 }

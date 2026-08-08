@@ -3,8 +3,7 @@ import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
 import { listFees } from "../../generated/api/client";
-import { FeeType, ProductType } from "../../generated/api/models";
-import type { FeeListItem } from "../../generated/api/models";
+import { FeeType, ProductType, type FeeListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { dateTimeFormatter } from "../../utils/valueFormatters";

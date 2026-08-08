@@ -30,7 +30,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     branches: [] as number[],
     updatedBy: "",
   };
-  
+
   const needsRecord = operation !== crudOps.create;
   const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
   const [recordResponse, optionsResponse] = await Promise.all([
@@ -97,7 +97,7 @@ export default function RegionPage() {
   const { operation, initialFormValues, options, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
-  
+
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
@@ -106,7 +106,7 @@ export default function RegionPage() {
   }
 
   function removeState(value: string | number) {
-    updateField("states", formValues.states.filter((currentValue: string) => currentValue !== value));
+    updateField("states", formValues.states.filter((currentValue) => currentValue !== value));
   }
 
   function addZipCode(value: string | number) {
@@ -114,7 +114,7 @@ export default function RegionPage() {
   }
 
   function removeZipCode(value: string | number) {
-    updateField("zipCodes", formValues.zipCodes.filter((currentValue: string) => currentValue !== value));
+    updateField("zipCodes", formValues.zipCodes.filter((currentValue) => currentValue !== value));
   }
 
   function addBranch(value: string | number) {
@@ -190,7 +190,7 @@ export default function RegionPage() {
               onAdd={addZipCode}
               onRemove={removeZipCode}
             />
-            {formValues.zipCodes.map((zipCode: string, index: number) => (
+            {formValues.zipCodes.map((zipCode, index) => (
               <input key={index} name="zipCodes" type="hidden" value={zipCode} />
             ))}
           </div>
@@ -203,7 +203,7 @@ export default function RegionPage() {
               onAdd={addState}
               onRemove={removeState}
             />
-            {formValues.states.map((state: string, index: number) => (
+            {formValues.states.map((state, index) => (
               <input key={index} name="states" type="hidden" value={state} />
             ))}
           </div>

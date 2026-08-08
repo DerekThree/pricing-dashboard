@@ -75,7 +75,7 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   }
 
   const initialFormValues = recordResponse?.data ? toFormValues(recordResponse.data) : emptyFormValues;
-  const options = optionsResponse?.data 
+  const options = optionsResponse?.data
     ?? { attributes: recordResponse!.data.conditions.map((condition) => condition.attribute) };
 
   return { operation, initialFormValues, options, loaderError: null };
@@ -106,7 +106,7 @@ export default function EligibilityReasonPage() {
   const attributeId = selectedCondition?.attributeId ?? NaN;
   const operator = selectedCondition?.operator ?? "" as ReasonOperator;
   const value = selectedCondition?.value ?? "";
-  
+
   const attributeType = options.attributes.find((attribute) => attribute.id === attributeId)?.type;
   const attributeOptions = options.attributes.map(toDropdownOption);
   const operatorOptions = attributeType === AttributeType.TEXT
@@ -205,7 +205,7 @@ export default function EligibilityReasonPage() {
               onRemove={removeCondition}
               onSelectionChanged={(condition) => setSelectedCondition(condition)}
             />
-            {formValues.conditions.map((condition, index: number) => (
+            {formValues.conditions.map((condition, index) => (
               <input key={index} name="conditions" type="hidden" value={JSON.stringify(condition)} />
             ))}
           </div>
@@ -228,8 +228,8 @@ export default function EligibilityReasonPage() {
                 onChange={(attributeId: Id) => {
                   const attribute = options.attributes.find((attr) => attr.id === attributeId);
                   const operator = attribute?.type === AttributeType.BOOLEAN
-                    ? ReasonOperator["="] 
-                    : ""  as ReasonOperator;
+                    ? ReasonOperator["="]
+                    : "" as ReasonOperator;
                   updateSelectedCondition({ attributeId, operator, value: "" });
                 }}
               />

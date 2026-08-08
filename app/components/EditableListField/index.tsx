@@ -2,7 +2,7 @@ import "./styles.css";
 import "../shared/ListTable/styles.css";
 
 import { useState } from "react";
-import type { ColDef, RowDataUpdatedEvent, SelectionChangedEvent } from "ag-grid-community";
+import type { ColDef, IRowNode, RowDataUpdatedEvent, SelectionChangedEvent } from "ag-grid-community";
 
 import ListTable from "../shared/ListTable/ListTable";
 
@@ -36,7 +36,7 @@ export default function EditableListField<TRow extends object>({
   }
 
   function handleRowDataUpdated(event: RowDataUpdatedEvent<TRow>) {
-    event.api.forEachNode((node: any) => node.setSelected(node.data === selectedRow));
+    event.api.forEachNode((node: IRowNode<TRow>) => node.setSelected(node.data === selectedRow));
   }
 
   function handleSelectionChanged(event: SelectionChangedEvent<TRow>) {

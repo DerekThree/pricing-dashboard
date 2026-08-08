@@ -25,7 +25,7 @@ export default function ErrorPage({
           {
             label: "Try again",
             onClick: () => window.location.reload(),
-          },                   
+          },
           {
             label: "Back",
             onClick: () => navigate(-1),

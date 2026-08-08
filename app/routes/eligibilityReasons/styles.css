@@ -26,10 +26,6 @@
   border-color: rgb(203 213 225);
 }
 
-.visibility-hidden {
-  visibility: hidden;
-}
-
 .eligibility-reason-operator-field .dropdown__value-container {
   justify-content: center;
 }

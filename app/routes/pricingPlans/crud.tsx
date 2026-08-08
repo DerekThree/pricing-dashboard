@@ -5,9 +5,7 @@ import {
   ModuleRegistry,
 } from "ag-grid-community";
 import { useState } from "react";
-import { Form, useLoaderData } from "react-router";
-import { useActionData } from "react-router";
-import type { ClientLoaderFunctionArgs } from "react-router";
+import { Form, useActionData, useLoaderData, type ClientLoaderFunctionArgs } from "react-router";
 
 import Dropdown from "../../components/Dropdown";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
@@ -102,10 +100,10 @@ export const clientAction = createClientAction({
   deleteRecord: deletePricingPlan,
   listRouteUrl: routeUrls.pricingPlans,
   mapFormDataToRequest: (formData) => ({
-      ...Object.fromEntries(formData),
-      planCode: String(formData.get("planCode")).toUpperCase(),
-      fees: formData.getAll("fees").map((fee) => JSON.parse(String(fee))),
-    }),
+    ...Object.fromEntries(formData),
+    planCode: String(formData.get("planCode")).toUpperCase(),
+    fees: formData.getAll("fees").map((fee) => JSON.parse(String(fee))),
+  }),
 });
 
 export default function PricingPlanPage() {
@@ -115,7 +113,7 @@ export default function PricingPlanPage() {
 
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
-    
+
   const selectedProduct = options.products.find((product) => product.id === formValues.productId);
   const [selectedFee, setSelectedFee] = useState<PricingPlanFeeRequest | null>(null);
   const feeOptions = selectedProduct
@@ -126,13 +124,13 @@ export default function PricingPlanPage() {
   const reasonOptions = options.reasons.map(toDropdownOption);
 
   function addFee() {
-    const newFee: PricingPlanFeeRequest = { 
+    const newFee: PricingPlanFeeRequest = {
       feeId: NaN,
       amount: NaN,
       reasons: [],
     };
 
-    updateField("fees", [...formValues.fees, newFee])
+    updateField("fees", [...formValues.fees, newFee]);
 
     return newFee;
   }
@@ -253,9 +251,9 @@ export default function PricingPlanPage() {
                   title="Fees"
                   onAdd={addFee}
                   onRemove={removeFee}
-                  onSelectionChanged={setSelectedFee}
+                  onSelectionChanged={(fee) => setSelectedFee(fee)}
                 />
-                {formValues.fees.map((fee, index: number) => (
+                {formValues.fees.map((fee, index) => (
                   <input key={index} name="fees" type="hidden" value={JSON.stringify(fee)} />
                 ))}
 

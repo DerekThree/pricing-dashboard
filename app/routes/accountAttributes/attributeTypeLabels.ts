@@ -7,3 +7,8 @@ export const attributeTypeLabels: Record<AttributeType, string> = {
   [AttributeType.DATE]: "Date",
   [AttributeType.BOOLEAN]: "Boolean",
 };
+
+export const attributeTypeOptions = Object.values(AttributeType).map((attributeType) => ({
+  value: attributeType,
+  label: attributeTypeLabels[attributeType],
+}));

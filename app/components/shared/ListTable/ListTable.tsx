@@ -38,11 +38,11 @@ export default function ListTable<TRow extends object>({
 }: ListTableProps<TRow>) {
   const isEmpty = rowData.length === 0;
   const removeButtonColumnDef: ColDef<TRow> = {
-        cellRenderer: (params: ICellRendererParams<TRow>) => (
-          <button
-            className="selection-list-remove-button"
-            type="button"
-            onClick={() => params.node.data && onRemove(params.node.data)}
+    cellRenderer: (params: ICellRendererParams<TRow>) => (
+      <button
+        className="selection-list-remove-button"
+        type="button"
+        onClick={() => onRemove(params.node.data!)}
       >
         X
       </button>

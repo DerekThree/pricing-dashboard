@@ -35,19 +35,19 @@ export default function ListPage<TRow extends { id: number }>({
           {
             label: "View",
             onClick: () =>
-              navigate(`${crudRouteUrl}/view/${selectedRow?.id}`),
+              navigate(`${crudRouteUrl}/view/${selectedRow!.id}`),
             disabled: !selectedRow,
           },
           {
             label: "Update",
             onClick: () =>
-              navigate(`${crudRouteUrl}/update/${selectedRow?.id}`),
+              navigate(`${crudRouteUrl}/update/${selectedRow!.id}`),
             disabled: !selectedRow,
           },
           {
             label: "Delete",
             onClick: () =>
-              navigate(`${crudRouteUrl}/delete/${selectedRow?.id}`),
+              navigate(`${crudRouteUrl}/delete/${selectedRow!.id}`),
             disabled: !selectedRow,
           },
         ]}

@@ -12,7 +12,7 @@ import { preventEnterSubmit } from "../../utils/formUtils";
 import { productTypeOptions } from "../products/productTypeLabels";
 import { routeUrls } from "../../routes";
 import MultiSelectField from "~/app/components/MultiSelectField";
-import { feeTypeLabels } from "./feeTypeLabels";
+import { feeTypeOptions } from "./feeTypeLabels";
 
 const emptyFormValues: FeeRequest = {
   feeCode: "",
@@ -47,11 +47,6 @@ export default function FeePage() {
 
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
-
-  const feeTypeOptions = Object.values(FeeType).map((feeType) => ({
-    value: feeType,
-    label: feeTypeLabels[feeType],
-  }));
 
   function addProductType(productType: ProductType) {
     updateField("productTypes", [...formValues.productTypes, productType]);
@@ -130,7 +125,7 @@ export default function FeePage() {
                 onAdd={addProductType}
                 onRemove={removeProductType}
               />
-              {formValues.productTypes.map((productType: ProductType, index: number) => (
+              {formValues.productTypes.map((productType, index) => (
                 <input key={index} name="productTypes" type="hidden" value={productType} />
               ))}
             </label>

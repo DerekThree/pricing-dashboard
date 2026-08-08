@@ -32,11 +32,8 @@
 .dropdown__control--is-disabled {
   background: transparent !important;
   border-color: rgb(203 213 225) !important;
-  pointer-events: auto !important;
-}
-
-.dropdown__control--is-disabled {
   color: rgb(15 23 42) !important;
+  pointer-events: auto !important;
 }
 
 .dropdown__value-container {

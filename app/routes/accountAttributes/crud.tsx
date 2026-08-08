@@ -1,7 +1,6 @@
 import "./styles.css";
 
-import { Form, useLoaderData } from "react-router";
-import { useActionData } from "react-router";
+import { Form, useActionData, useLoaderData } from "react-router";
 
 import Dropdown from "../../components/Dropdown";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
@@ -16,7 +15,7 @@ import { AttributeType, type AttributeRequest } from "../../generated/api/models
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
-import { attributeTypeLabels } from "./attributeTypeLabels";
+import { attributeTypeOptions } from "./attributeTypeLabels";
 
 const emptyFormValues: AttributeRequest = {
   attributeCode: "",
@@ -36,17 +35,17 @@ export const clientAction = createClientAction({
   deleteRecord: deleteAttribute,
   listRouteUrl: routeUrls.accountAttributes,
   mapFormDataToRequest: (formData) => ({
-      ...Object.fromEntries(formData),
-      attributeCode: String(formData.get("attributeCode")).toUpperCase(),
-      attributeType: String(formData.get("attributeType")),
-    }),
+    ...Object.fromEntries(formData),
+    attributeCode: String(formData.get("attributeCode")).toUpperCase(),
+    attributeType: String(formData.get("attributeType")),
+  }),
 });
 
 export default function AccountAttributePage() {
   const { operation, initialFormValues, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
-  
+
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
@@ -100,10 +99,7 @@ export default function AccountAttributePage() {
                 label="Attribute Type"
                 name="attributeType"
                 required
-                options={Object.values(AttributeType).map((attributeType) => ({
-                  value: attributeType,
-                  label: attributeTypeLabels[attributeType],
-                }))}
+                options={attributeTypeOptions}
                 value={formValues.attributeType}
                 onChange={(value) => updateField("attributeType", value)}
               />

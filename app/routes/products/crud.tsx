@@ -41,7 +41,7 @@ export default function ProductPage() {
   const { operation, initialFormValues, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
-  
+
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
