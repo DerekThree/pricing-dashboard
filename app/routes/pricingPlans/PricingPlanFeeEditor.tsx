@@ -103,9 +103,6 @@ export default function PricingPlanFeeEditor({
           onRemove={removeFee}
           onSelectionChanged={(fee) => setSelectedFee(fee)}
         />
-        {fees.map((fee, index) => (
-          <input key={index} name="fees" type="hidden" value={JSON.stringify(fee)} />
-        ))}
         <Dropdown
           label="Fee Name"
           value={selectedFee?.feeId}

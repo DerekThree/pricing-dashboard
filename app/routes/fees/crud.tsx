@@ -1,6 +1,7 @@
 import "./styles.css";
 
-import { Form, useActionData, useLoaderData } from "react-router";
+import { type FormEvent } from "react";
+import { useActionData, useLoaderData, useSubmit, type SubmitTarget } from "react-router";
 
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import Dropdown from "../../components/Dropdown";
@@ -32,21 +33,24 @@ export const clientAction = createClientAction({
   updateRecord: updateFee,
   deleteRecord: deleteFee,
   listRouteUrl: routeUrls.fees,
-  mapFormDataToRequest: (formData) => ({
-    ...Object.fromEntries(formData),
-    productTypes: formData.getAll("productTypes"),
-    feeCode: String(formData.get("feeCode")).toUpperCase(),
-    feeType: formData.get("feeType"),
-  }),
 });
 
 export default function FeePage() {
   const { operation, initialFormValues, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+  const submit = useSubmit();
 
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    submit(
+      { ...formValues, feeCode: formValues.feeCode.toUpperCase() } as unknown as SubmitTarget,
+      { method: "post", encType: "application/json" },
+    );
+  }
 
   function addProductType(productType: ProductType) {
     updateField("productTypes", [...formValues.productTypes, productType]);
@@ -61,7 +65,7 @@ export default function FeePage() {
 
   return (
     <section className="page">
-      <Form method="post" onKeyDown={preventEnterSubmit}>
+      <form onKeyDown={preventEnterSubmit} onSubmit={handleSubmit}>
         <CrudPageTopMenu
           operation={operation}
           entityTitle="Fee"
@@ -75,7 +79,6 @@ export default function FeePage() {
             <label className="crud-page-form-field fee-form-field--code">
               <span>Fee Code</span>
               <input
-                name="feeCode"
                 title="Fee code must be 1 to 25 letters or digits."
                 type="text"
                 value={formValues.feeCode}
@@ -89,7 +92,6 @@ export default function FeePage() {
             <label className="crud-page-form-field">
               <span>Fee Name</span>
               <input
-                name="feeName"
                 title={formValues.feeName}
                 type="text"
                 value={formValues.feeName}
@@ -106,7 +108,6 @@ export default function FeePage() {
             <label className="fee-form-field">
               <Dropdown
                 label="Fee Type"
-                name="feeType"
                 value={formValues.feeType}
                 disabled={inputsDisabled}
                 required
@@ -123,13 +124,10 @@ export default function FeePage() {
                 onAdd={addProductType}
                 onRemove={removeProductType}
               />
-              {formValues.productTypes.map((productType, index) => (
-                <input key={index} name="productTypes" type="hidden" value={productType} />
-              ))}
             </label>
           </div>
         </div>
-      </Form>
+      </form>
     </section>
   );
 }

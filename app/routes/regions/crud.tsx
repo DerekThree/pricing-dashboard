@@ -1,8 +1,13 @@
 import "./styles.css";
 
-import { Form, useLoaderData } from "react-router";
-import { useActionData } from "react-router";
-import type { ClientLoaderFunctionArgs } from "react-router";
+import { type FormEvent } from "react";
+import {
+  useActionData,
+  useLoaderData,
+  useSubmit,
+  type ClientLoaderFunctionArgs,
+  type SubmitTarget,
+} from "react-router";
 
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import MultiSelectField from "../../components/MultiSelectField";
@@ -84,22 +89,24 @@ export const clientAction = createClientAction({
   updateRecord: updateRegion,
   deleteRecord: deleteRegion,
   listRouteUrl: routeUrls.regions,
-  mapFormDataToRequest: (formData) => ({
-      ...Object.fromEntries(formData),
-      regionCode: String(formData.get("regionCode")).toUpperCase(),
-      states: formData.getAll("states"),
-      zipCodes: formData.getAll("zipCodes"),
-      branches: formData.getAll("branches").map((branchId) => Number(branchId)),
-    }),
 });
 
 export default function RegionPage() {
   const { operation, initialFormValues, options, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+  const submit = useSubmit();
 
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    submit(
+      { ...formValues, regionCode: formValues.regionCode.toUpperCase() } as unknown as SubmitTarget,
+      { method: "post", encType: "application/json" },
+    );
+  }
 
   function addState(value: string) {
     updateField("states", [...formValues.states, value]);
@@ -127,7 +134,7 @@ export default function RegionPage() {
 
   return (
     <section className="page">
-      <Form method="post" onKeyDown={preventEnterSubmit}>
+      <form onKeyDown={preventEnterSubmit} onSubmit={handleSubmit}>
         <CrudPageTopMenu
           operation={operation}
           entityTitle="Region"
@@ -141,7 +148,6 @@ export default function RegionPage() {
             <label className="crud-page-form-field region-form-field--code">
               <span>Region Code</span>
               <input
-                name="regionCode"
                 title="Region code must be 1 to 25 letters or digits."
                 type="text"
                 value={formValues.regionCode}
@@ -155,7 +161,6 @@ export default function RegionPage() {
             <label className="crud-page-form-field">
               <span>Region Name</span>
               <input
-                name="regionName"
                 title={formValues.regionName}
                 type="text"
                 value={formValues.regionName}
@@ -175,9 +180,6 @@ export default function RegionPage() {
               onAdd={addBranch}
               onRemove={removeBranch}
             />
-            {formValues.branches.map((branchId, index) => (
-              <input key={index} name="branches" type="hidden" value={branchId} />
-            ))}
           </div>
           <div className="crud-page-form-column">
             <MultiSelectField
@@ -188,9 +190,6 @@ export default function RegionPage() {
               onAdd={addZipCode}
               onRemove={removeZipCode}
             />
-            {formValues.zipCodes.map((zipCode, index) => (
-              <input key={index} name="zipCodes" type="hidden" value={zipCode} />
-            ))}
           </div>
           <div className="crud-page-form-column">
             <MultiSelectField
@@ -201,12 +200,9 @@ export default function RegionPage() {
               onAdd={addState}
               onRemove={removeState}
             />
-            {formValues.states.map((state, index) => (
-              <input key={index} name="states" type="hidden" value={state} />
-            ))}
           </div>
         </div>
-      </Form>
+      </form>
     </section>
   );
 }

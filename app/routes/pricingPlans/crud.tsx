@@ -1,6 +1,13 @@
 import "./styles.css";
 
-import { Form, useActionData, useLoaderData, type ClientLoaderFunctionArgs } from "react-router";
+import { type FormEvent } from "react";
+import {
+  useActionData,
+  useLoaderData,
+  useSubmit,
+  type ClientLoaderFunctionArgs,
+  type SubmitTarget as JsonValue,
+} from "react-router";
 
 import Dropdown from "../../components/Dropdown";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
@@ -92,26 +99,30 @@ export const clientAction = createClientAction({
   updateRecord: updatePricingPlan,
   deleteRecord: deletePricingPlan,
   listRouteUrl: routeUrls.pricingPlans,
-  mapFormDataToRequest: (formData) => ({
-    ...Object.fromEntries(formData),
-    planCode: String(formData.get("planCode")).toUpperCase(),
-    fees: formData.getAll("fees").map((fee) => JSON.parse(String(fee))),
-  }),
 });
 
 export default function PricingPlanPage() {
   const { operation, initialFormValues, options, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+  const submit = useSubmit();
 
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
   const selectedProduct = options.products.find((product) => product.id === formValues.productId);
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    submit(
+      { ...formValues, planCode: formValues.planCode.toUpperCase() } as unknown as JsonValue,
+      { method: "post", encType: "application/json" },
+    );
+  }
+
   return (
     <section className="page">
-      <Form method="post" onKeyDown={preventEnterSubmit}>
+      <form onKeyDown={preventEnterSubmit} onSubmit={handleSubmit}>
         <CrudPageTopMenu
           operation={operation}
           entityTitle="Pricing Plan"
@@ -125,7 +136,6 @@ export default function PricingPlanPage() {
             <label className="crud-page-form-field crud-page-form-field--code">
               <span>Plan Code</span>
               <input
-                name="planCode"
                 title="Plan code must be 1 to 25 letters or digits."
                 type="text"
                 value={formValues.planCode}
@@ -139,7 +149,6 @@ export default function PricingPlanPage() {
             <label className="crud-page-form-field">
               <span>Plan Name</span>
               <input
-                name="planName"
                 title={formValues.planName}
                 type="text"
                 value={formValues.planName}
@@ -155,7 +164,6 @@ export default function PricingPlanPage() {
           <div className="crud-page-form-column">
             <Dropdown
               label="Product"
-              name="productId"
               value={formValues.productId}
               disabled={inputsDisabled}
               required
@@ -164,7 +172,6 @@ export default function PricingPlanPage() {
             />
             <Dropdown
               label="Region"
-              name="regionId"
               value={formValues.regionId}
               disabled={inputsDisabled}
               required
@@ -174,7 +181,6 @@ export default function PricingPlanPage() {
             <label className="crud-page-form-field">
               <span>Active From</span>
               <input
-                name="activeFrom"
                 type="date"
                 value={formValues.activeFrom}
                 disabled={inputsDisabled}
@@ -187,7 +193,6 @@ export default function PricingPlanPage() {
             <label className="crud-page-form-field">
               <span>Active Through</span>
               <input
-                name="activeThrough"
                 type="date"
                 value={formValues.activeThrough}
                 disabled={inputsDisabled}
@@ -221,7 +226,7 @@ export default function PricingPlanPage() {
             </div>
           )}
         </div>
-      </Form>
+      </form>
     </section>
   );
 }

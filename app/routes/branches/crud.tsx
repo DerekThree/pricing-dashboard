@@ -1,7 +1,7 @@
 import "./styles.css";
 
-import { Form, useLoaderData } from "react-router";
-import { useActionData } from "react-router";
+import { type FormEvent } from "react";
+import { useActionData, useLoaderData, useSubmit, type SubmitTarget } from "react-router";
 
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
@@ -29,23 +29,28 @@ export const clientAction = createClientAction({
   updateRecord: updateBranch,
   deleteRecord: deleteBranch,
   listRouteUrl: routeUrls.branches,
-  mapFormDataToRequest: (formData) => ({
-      ...Object.fromEntries(formData),
-      branchCode: String(formData.get("branchCode")).toUpperCase(),
-    })
 });
 
 export default function BranchPage() {
   const { operation, initialFormValues, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+  const submit = useSubmit();
 
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    submit(
+      { ...formValues, branchCode: formValues.branchCode.toUpperCase() } as unknown as SubmitTarget,
+      { method: "post", encType: "application/json" },
+    );
+  }
+
   return (
     <section className="page">
-      <Form method="post" onKeyDown={preventEnterSubmit}>
+      <form onKeyDown={preventEnterSubmit} onSubmit={handleSubmit}>
         <CrudPageTopMenu
           operation={operation}
           entityTitle="Branch"
@@ -59,7 +64,6 @@ export default function BranchPage() {
             <label className="crud-page-form-field branch-form-field--code">
               <span>Branch Code</span>
               <input
-                name="branchCode"
                 title="Branch code must be 1 to 25 letters or digits."
                 type="text"
                 value={formValues.branchCode}
@@ -73,7 +77,6 @@ export default function BranchPage() {
             <label className="crud-page-form-field">
               <span>Branch Name</span>
               <input
-                name="branchName"
                 title={formValues.branchName}
                 type="text"
                 value={formValues.branchName}
@@ -88,7 +91,6 @@ export default function BranchPage() {
             <label className="crud-page-form-field branch-form-field--state">
               <span>State</span>
               <input
-                name="state"
                 type="text"
                 value={formValues.state}
                 disabled={inputsDisabled}
@@ -106,7 +108,6 @@ export default function BranchPage() {
             <label className="crud-page-form-field branch-form-field--zip">
               <span>Zip Code</span>
               <input
-                name="zipCode"
                 type="text"
                 value={formValues.zipCode}
                 disabled={inputsDisabled}
@@ -121,7 +122,7 @@ export default function BranchPage() {
             </label>
           </div>
         </div>
-      </Form>
+      </form>
     </section>
   );
 }

@@ -1,8 +1,14 @@
 import "./styles.css";
 
 import { type ColDef } from "ag-grid-community";
-import { useState } from "react";
-import { Form, type ClientLoaderFunctionArgs, useActionData, useLoaderData } from "react-router";
+import { type FormEvent, useState } from "react";
+import {
+  type ClientLoaderFunctionArgs,
+  useActionData,
+  useLoaderData,
+  useSubmit,
+  type SubmitTarget,
+} from "react-router";
 
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import Dropdown from "../../components/Dropdown";
@@ -86,18 +92,13 @@ export const clientAction = createClientAction({
   updateRecord: updateReason,
   deleteRecord: deleteReason,
   listRouteUrl: routeUrls.eligibilityReasons,
-  mapFormDataToRequest: (formData) => ({
-      ...Object.fromEntries(formData),
-      reasonCode: String(formData.get("reasonCode")).toUpperCase(),
-      reasonName: formData.get("reasonName"),
-      conditions: formData.getAll("conditions").map((condition) => JSON.parse(String(condition))),
-    }),
 });
 
 export default function EligibilityReasonPage() {
   const { operation, initialFormValues, options, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+  const submit = useSubmit();
 
   const [selectedCondition, setSelectedCondition] = useState<ReasonCondition | null>(null);
   const inputsDisabled = !!loaderError || operation === crudOps.view || operation === crudOps.delete;
@@ -112,6 +113,14 @@ export default function EligibilityReasonPage() {
   const operatorOptions = attributeType === AttributeType.TEXT
     ? [ReasonOperator["="], ReasonOperator["<>"]].map(toDropdownOption)
     : Object.values(ReasonOperator).map(toDropdownOption);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    submit(
+      { ...formValues, reasonCode: formValues.reasonCode.toUpperCase() } as unknown as SubmitTarget,
+      { method: "post", encType: "application/json" },
+    );
+  }
 
   function addCondition() {
     const newCondition: ReasonCondition = {
@@ -154,7 +163,7 @@ export default function EligibilityReasonPage() {
 
   return (
     <section className="page">
-      <Form method="post" onKeyDown={preventEnterSubmit}>
+      <form onKeyDown={preventEnterSubmit} onSubmit={handleSubmit}>
         <CrudPageTopMenu
           operation={operation}
           entityTitle="Eligibility Reason"
@@ -168,7 +177,6 @@ export default function EligibilityReasonPage() {
             <label className="crud-page-form-field eligibility-reason-form-field--code">
               <span>Reason Code</span>
               <input
-                name="reasonCode"
                 title="Code must be 1 to 25 letters or digits."
                 type="text"
                 value={formValues.reasonCode}
@@ -182,7 +190,6 @@ export default function EligibilityReasonPage() {
             <label className="crud-page-form-field">
               <span>Reason Name</span>
               <input
-                name="reasonName"
                 title={formValues.reasonName}
                 type="text"
                 value={formValues.reasonName}
@@ -203,9 +210,6 @@ export default function EligibilityReasonPage() {
               onRemove={removeCondition}
               onSelectionChanged={(condition) => setSelectedCondition(condition)}
             />
-            {formValues.conditions.map((condition, index) => (
-              <input key={index} name="conditions" type="hidden" value={JSON.stringify(condition)} />
-            ))}
           </div>
           {!inputsDisabled && <div className="crud-page-form-column">
             <div className="selection-list-header">
@@ -218,7 +222,6 @@ export default function EligibilityReasonPage() {
             >
               <Dropdown
                 label="Attribute"
-                name="condition-widget-attribute"
                 value={attributeId}
                 disabled={conditionDetailsDisabled}
                 options={attributeOptions}
@@ -234,7 +237,6 @@ export default function EligibilityReasonPage() {
               <div className="eligibility-reason-operator-field">
                 <Dropdown
                   label="Operator"
-                  name="condition-widget-operator"
                   value={operator}
                   disabled={conditionDetailsDisabled || !attributeId || attributeType === AttributeType.BOOLEAN}
                   options={operatorOptions}
@@ -249,7 +251,6 @@ export default function EligibilityReasonPage() {
                 <div className="crud-page-form-field">
                   <Dropdown
                     label="Value"
-                    name="condition-widget-value"
                     value={typeof value === "boolean" ? String(value) : ""}
                     disabled={conditionDetailsDisabled || !attributeId}
                     options={[
@@ -290,7 +291,7 @@ export default function EligibilityReasonPage() {
             </div>
           </div>}
         </div>
-      </Form>
+      </form>
     </section>
   );
 }

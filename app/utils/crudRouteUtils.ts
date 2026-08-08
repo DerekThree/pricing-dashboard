@@ -6,6 +6,7 @@ import {
 
 import { getErrorMessage } from "./apiUtils";
 import { toastSearchParam } from "../routes/layout/index";
+import { OperationCanceledException } from "typescript";
 
 export const crudOps = {
   create: "create",
@@ -55,7 +56,7 @@ type CrudLoaderConfig<TRequest, TResponse extends ApiResponse> = {
   emptyFormValues: TRequest;
 };
 
-type CrudActionConfig<TRequest> = {
+type CrudActionConfig<TRequest extends object> = {
   createRecord(record: TRequest): Promise<ApiResponse>;
   updateRecord(id: number, record: TRequest): Promise<ApiResponse>;
   deleteRecord(id: number): Promise<ApiResponse>;
@@ -86,40 +87,26 @@ export function createClientLoader<TRequest, TResponse extends ApiResponse>({
   };
 }
 
-export function createClientAction<TRequest>({
+export function createClientAction<TRequest extends object>({
   createRecord,
   updateRecord,
   deleteRecord,
   listRouteUrl,
-  mapFormDataToRequest,
 }: CrudActionConfig<TRequest>) {
   return async function clientAction({ request, params }: ClientActionFunctionArgs) {
     const { operation, id } = validateCrudRouteParams(params);
-    let response: ApiResponse;
-    let success: boolean;
-
-    if (operation === crudOps.create || operation === crudOps.update) {
-      const formData = await request.formData();
-      formData.set("updatedBy", "user");
-      const apiRequest = mapFormDataToRequest
-        ? mapFormDataToRequest(formData)
-        : (Object.fromEntries(formData) as TRequest);
-
-      if (operation === crudOps.create) {
-        response = await createRecord(apiRequest);
-        success = response.status === 201;
-      } else {
-        response = await updateRecord(id, apiRequest);
-        success = response.status === 200;
-      }
-    } else if (operation === crudOps.delete) {
-      response = await deleteRecord(id);
-      success = response.status === 204;
-    } else {
-      return { actionError: "View pages cannot submit changes." };
+    const requestedOp = {
+      create: { sendRequest: (apiRequest: TRequest) => createRecord(apiRequest), successCode: 201 },
+      update: { sendRequest: (apiRequest: TRequest) => updateRecord(id, apiRequest), successCode: 200 },
+      delete: { sendRequest: () => deleteRecord(id), successCode: 204 },
+      view: { sendRequest: () => { throw OperationCanceledException }, successCode: NaN },
     }
 
-    return success
+    const apiRequest = await request.json() as TRequest;
+    Object.assign(apiRequest, { updatedBy: "user" });
+    const response = await requestedOp[operation].sendRequest(apiRequest);
+
+    return requestedOp[operation].successCode === response.status
       ? redirect(`${listRouteUrl}?${toastSearchParam}=Success`)
       : { actionError: getErrorMessage(response.data, response.status) };
   };

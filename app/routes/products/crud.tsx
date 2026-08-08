@@ -1,7 +1,7 @@
 import "./styles.css";
 
-import { Form, useLoaderData } from "react-router";
-import { useActionData } from "react-router";
+import { type FormEvent } from "react";
+import { useActionData, useLoaderData, useSubmit, type SubmitTarget } from "react-router";
 
 import Dropdown from "../../components/Dropdown";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
@@ -30,24 +30,28 @@ export const clientAction = createClientAction({
   updateRecord: updateProduct,
   deleteRecord: deleteProduct,
   listRouteUrl: routeUrls.products,
-  mapFormDataToRequest: (formData) => ({
-      ...Object.fromEntries(formData),
-      productCode: String(formData.get("productCode")).toUpperCase(),
-      productType: formData.get("productType"),
-    })
 });
 
 export default function ProductPage() {
   const { operation, initialFormValues, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+  const submit = useSubmit();
 
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    submit(
+      { ...formValues, productCode: formValues.productCode.toUpperCase() } as unknown as SubmitTarget,
+      { method: "post", encType: "application/json" },
+    );
+  }
+
   return (
     <section className="page">
-      <Form method="post" onKeyDown={preventEnterSubmit}>
+      <form onKeyDown={preventEnterSubmit} onSubmit={handleSubmit}>
         <CrudPageTopMenu
           operation={operation}
           entityTitle="Product"
@@ -61,7 +65,6 @@ export default function ProductPage() {
             <label className="crud-page-form-field product-form-field--code">
               <span>Product Code</span>
               <input
-                name="productCode"
                 title="Product code must be 1 to 25 letters or digits."
                 type="text"
                 value={formValues.productCode}
@@ -75,7 +78,6 @@ export default function ProductPage() {
             <label className="crud-page-form-field">
               <span>Product Name</span>
               <input
-                name="productName"
                 title={formValues.productName}
                 type="text"
                 value={formValues.productName}
@@ -92,7 +94,6 @@ export default function ProductPage() {
             <div className="product-form-field--product-type">
               <Dropdown
                 label="Product Type"
-                name="productType"
                 value={formValues.productType}
                 disabled={inputsDisabled}
                 required
@@ -102,7 +103,7 @@ export default function ProductPage() {
             </div>
           </div>
         </div>
-      </Form>
+      </form>
     </section>
   );
 }

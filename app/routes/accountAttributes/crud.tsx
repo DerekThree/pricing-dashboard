@@ -1,6 +1,7 @@
 import "./styles.css";
 
-import { Form, useActionData, useLoaderData } from "react-router";
+import { type FormEvent } from "react";
+import { useActionData, useLoaderData, useSubmit, type SubmitTarget } from "react-router";
 
 import Dropdown from "../../components/Dropdown";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
@@ -34,24 +35,28 @@ export const clientAction = createClientAction({
   updateRecord: updateAttribute,
   deleteRecord: deleteAttribute,
   listRouteUrl: routeUrls.accountAttributes,
-  mapFormDataToRequest: (formData) => ({
-    ...Object.fromEntries(formData),
-    attributeCode: String(formData.get("attributeCode")).toUpperCase(),
-    attributeType: String(formData.get("attributeType")),
-  }),
 });
 
 export default function AccountAttributePage() {
   const { operation, initialFormValues, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
+  const submit = useSubmit();
 
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    submit(
+      { ...formValues, attributeCode: formValues.attributeCode.toUpperCase() } as unknown as SubmitTarget,
+      { method: "post", encType: "application/json" },
+    );
+  }
+
   return (
     <section className="page">
-      <Form method="post" onKeyDown={preventEnterSubmit}>
+      <form onKeyDown={preventEnterSubmit} onSubmit={handleSubmit}>
         <CrudPageTopMenu
           operation={operation}
           entityTitle="Account Attribute"
@@ -65,7 +70,6 @@ export default function AccountAttributePage() {
             <label className="crud-page-form-field account-attribute-form-field--code">
               <span>Attribute Code</span>
               <input
-                name="attributeCode"
                 title="Attribute code must be 1 to 25 letters or digits."
                 type="text"
                 value={formValues.attributeCode}
@@ -79,7 +83,6 @@ export default function AccountAttributePage() {
             <label className="crud-page-form-field">
               <span>Attribute Name</span>
               <input
-                name="attributeName"
                 title={formValues.attributeName}
                 type="text"
                 value={formValues.attributeName}
@@ -94,7 +97,6 @@ export default function AccountAttributePage() {
             <div className="account-attribute-form-field--type">
               <Dropdown
                 label="Attribute Type"
-                name="attributeType"
                 value={formValues.attributeType}
                 disabled={inputsDisabled}
                 required
@@ -104,7 +106,7 @@ export default function AccountAttributePage() {
             </div>
           </div>
         </div>
-      </Form>
+      </form>
     </section>
   );
 }
