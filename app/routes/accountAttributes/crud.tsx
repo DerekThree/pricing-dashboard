@@ -62,32 +62,30 @@ export default function AccountAttributePage() {
         {actionError && <p className="page-error">{actionError}</p>}
         <div className="form-grid">
           <div className="crud-page-form-column">
-            <label className="crud-page-form-field account-attribute-form-field--code" htmlFor="attribute-code">
+            <label className="crud-page-form-field account-attribute-form-field--code">
               <span>Attribute Code</span>
               <input
-                disabled={inputsDisabled}
-                id="attribute-code"
-                maxLength={25}
                 name="attributeCode"
-                pattern="[A-Za-z0-9]{1,25}"
                 title="Attribute code must be 1 to 25 letters or digits."
-                required
                 type="text"
                 value={formValues.attributeCode}
+                disabled={inputsDisabled}
+                maxLength={25}
+                pattern="[A-Za-z0-9]{1,25}"
+                required
                 onChange={(event) => updateField("attributeCode", event.target.value)}
               />
             </label>
-            <label className="crud-page-form-field" htmlFor="attribute-name">
+            <label className="crud-page-form-field">
               <span>Attribute Name</span>
               <input
-                disabled={inputsDisabled}
-                id="attribute-name"
-                maxLength={100}
                 name="attributeName"
-                required
                 title={formValues.attributeName}
                 type="text"
                 value={formValues.attributeName}
+                disabled={inputsDisabled}
+                maxLength={100}
+                required
                 onChange={(event) => updateField("attributeName", event.target.value)}
               />
             </label>
@@ -95,12 +93,12 @@ export default function AccountAttributePage() {
           <div className="crud-page-form-column">
             <div className="account-attribute-form-field--type">
               <Dropdown
-                disabled={inputsDisabled}
                 label="Attribute Type"
                 name="attributeType"
+                value={formValues.attributeType}
+                disabled={inputsDisabled}
                 required
                 options={attributeTypeOptions}
-                value={formValues.attributeType}
                 onChange={(value) => updateField("attributeType", value)}
               />
             </div>

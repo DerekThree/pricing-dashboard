@@ -12,39 +12,39 @@ import {
 import { toDropdownOption } from "../../utils/formUtils";
 
 type PricingPlanFeeEditorProps = {
-  availableFees: FeeOption[];
-  disabled: boolean;
   fees: PricingPlanFeeRequest[];
+  options: FeeOption[];
   reasons: ReasonOption[];
+  disabled: boolean;
   onChange(fees: PricingPlanFeeRequest[]): void;
 };
 
 export default function PricingPlanFeeEditor({
-  availableFees,
-  disabled,
   fees,
+  options,
   reasons,
+  disabled,
   onChange,
 }: PricingPlanFeeEditorProps) {
   const [selectedFee, setSelectedFee] = useState<PricingPlanFeeRequest | null>(null);
   const hasIncompleteFee = fees.some(
     (fee) => Number.isNaN(fee.feeId) || Number.isNaN(fee.amount) || fee.amount <= 0,
   );
-  const hasAvailableFee = availableFees.some(
+  const hasAvailableFee = options.some(
     (fee) => !fees.some((pricingPlanFee) => pricingPlanFee.feeId === fee.id),
   );
-  const feeOptions = availableFees
+  const feeOptions = options
     .filter((fee) =>
       fee.id === selectedFee?.feeId ||
       !fees.some((pricingPlanFee) => pricingPlanFee.feeId === fee.id),
     )
     .map(toDropdownOption);
-  const selectedFeeType = availableFees.find((fee) => fee.id === selectedFee?.feeId)?.type;
+  const selectedFeeType = options.find((fee) => fee.id === selectedFee?.feeId)?.type;
   const reasonOptions = reasons.map(toDropdownOption);
 
   useEffect(() => {
     const nextFees = fees.filter(
-      (fee) => Number.isNaN(fee.feeId) || availableFees.some((availableFee) => availableFee.id === fee.feeId),
+      (fee) => Number.isNaN(fee.feeId) || options.some((availableFee) => availableFee.id === fee.feeId),
     );
 
     if (nextFees.length !== fees.length) {
@@ -56,7 +56,7 @@ export default function PricingPlanFeeEditor({
     if (!selectedFee || !fees.includes(selectedFee)) {
       setSelectedFee(fees[0] ?? null);
     }
-  }, [availableFees, fees, onChange, selectedFee]);
+  }, [options, fees, onChange, selectedFee]);
 
   function addFee() {
     const fee: PricingPlanFeeRequest = { feeId: NaN, amount: NaN, reasons: [] };
@@ -93,7 +93,7 @@ export default function PricingPlanFeeEditor({
                 return "Incomplete";
               }
 
-              return availableFees.find((fee) => fee.id === data.feeId)?.name || "";
+              return options.find((fee) => fee.id === data.feeId)?.name || "";
             },
           }]}
           hideButtons={disabled}
@@ -107,21 +107,20 @@ export default function PricingPlanFeeEditor({
           <input key={index} name="fees" type="hidden" value={JSON.stringify(fee)} />
         ))}
         <Dropdown
-          disabled={disabled || !selectedFee}
           label="Fee Name"
-          placeholder={!selectedFee ? "No fee selected" : undefined}
-          options={feeOptions}
           value={selectedFee?.feeId}
+          disabled={disabled || !selectedFee}
+          options={feeOptions}
+          placeholder={!selectedFee ? "No fee selected" : undefined}
           onChange={(feeId) => updateSelectedFee({ feeId: Number(feeId) })}
         />
-        <label className="crud-page-form-field" htmlFor="pricing-plan-fee-amount">
+        <label className="crud-page-form-field">
           <span>Fee Amount{selectedFeeType === FeeType.PERCENT ? " (%)" : " ($)"}</span>
           <input
-            disabled={disabled || !selectedFee}
-            id="pricing-plan-fee-amount"
-            placeholder={!selectedFee ? "No fee selected" : undefined}
             type="number"
             value={selectedFee?.amount || ""}
+            disabled={disabled || !selectedFee}
+            placeholder={!selectedFee ? "No fee selected" : undefined}
             onChange={(event) => updateSelectedFee({ amount: Number(event.target.value) })}
           />
         </label>

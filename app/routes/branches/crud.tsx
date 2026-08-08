@@ -56,48 +56,45 @@ export default function BranchPage() {
         {actionError && <p className="page-error">{actionError}</p>}
         <div className="form-grid">
           <div className="crud-page-form-column">
-            <label className="crud-page-form-field branch-form-field--code" htmlFor="branch-code">
+            <label className="crud-page-form-field branch-form-field--code">
               <span>Branch Code</span>
               <input
-                disabled={inputsDisabled}
-                id="branch-code"
-                maxLength={25}
                 name="branchCode"
-                pattern="[A-Za-z0-9]{1,25}"
                 title="Branch code must be 1 to 25 letters or digits."
-                required
                 type="text"
                 value={formValues.branchCode}
+                disabled={inputsDisabled}
+                maxLength={25}
+                pattern="[A-Za-z0-9]{1,25}"
+                required
                 onChange={(event) => updateField("branchCode", event.target.value)}
               />
             </label>
-            <label className="crud-page-form-field" htmlFor="branch-name">
+            <label className="crud-page-form-field">
               <span>Branch Name</span>
               <input
-                disabled={inputsDisabled}
-                id="branch-name"
-                maxLength={100}
                 name="branchName"
-                required
                 title={formValues.branchName}
                 type="text"
                 value={formValues.branchName}
+                disabled={inputsDisabled}
+                maxLength={100}
+                required
                 onChange={(event) => updateField("branchName", event.target.value)}
               />
             </label>
           </div>
           <div className="crud-page-form-column">
-            <label className="crud-page-form-field branch-form-field--state" htmlFor="state">
+            <label className="crud-page-form-field branch-form-field--state">
               <span>State</span>
               <input
-                disabled={inputsDisabled}
-                id="state"
-                maxLength={2}
                 name="state"
-                pattern="[A-Z]{2}"
-                required
                 type="text"
                 value={formValues.state}
+                disabled={inputsDisabled}
+                maxLength={2}
+                pattern="[A-Z]{2}"
+                required
                 onChange={(event) =>
                   updateField(
                     "state",
@@ -106,18 +103,17 @@ export default function BranchPage() {
                 }
               />
             </label>
-            <label className="crud-page-form-field branch-form-field--zip" htmlFor="zip-code">
+            <label className="crud-page-form-field branch-form-field--zip">
               <span>Zip Code</span>
               <input
-                disabled={inputsDisabled}
-                id="zip-code"
-                inputMode="numeric"
-                maxLength={5}
                 name="zipCode"
-                pattern="[0-9]{5}"
-                required
                 type="text"
                 value={formValues.zipCode}
+                disabled={inputsDisabled}
+                maxLength={5}
+                pattern="[0-9]{5}"
+                inputMode="numeric"
+                required
                 onChange={(event) =>
                   updateField("zipCode", event.target.value.replace(/\D/g, "").slice(0, 5))
                 }

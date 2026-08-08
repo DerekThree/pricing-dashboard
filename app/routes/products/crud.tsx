@@ -58,32 +58,30 @@ export default function ProductPage() {
         {actionError && <p className="page-error">{actionError}</p>}
         <div className="form-grid">
           <div className="crud-page-form-column">
-            <label className="crud-page-form-field product-form-field--code" htmlFor="product-code">
+            <label className="crud-page-form-field product-form-field--code">
               <span>Product Code</span>
               <input
-                disabled={inputsDisabled}
-                id="product-code"
-                maxLength={25}
                 name="productCode"
-                pattern="[A-Za-z0-9]{1,25}"
                 title="Product code must be 1 to 25 letters or digits."
-                required
                 type="text"
                 value={formValues.productCode}
+                disabled={inputsDisabled}
+                maxLength={25}
+                pattern="[A-Za-z0-9]{1,25}"
+                required
                 onChange={(event) => updateField("productCode", event.target.value)}
               />
             </label>
-            <label className="crud-page-form-field" htmlFor="product-name">
+            <label className="crud-page-form-field">
               <span>Product Name</span>
               <input
-                disabled={inputsDisabled}
-                id="product-name"
-                maxLength={100}
                 name="productName"
-                required
                 title={formValues.productName}
                 type="text"
                 value={formValues.productName}
+                disabled={inputsDisabled}
+                maxLength={100}
+                required
                 onChange={(event) =>
                   updateField("productName", event.target.value)
                 }
@@ -93,12 +91,12 @@ export default function ProductPage() {
           <div className="crud-page-form-column">
             <div className="product-form-field--product-type">
               <Dropdown
-                disabled={inputsDisabled}
                 label="Product Type"
                 name="productType"
+                value={formValues.productType}
+                disabled={inputsDisabled}
                 required
                 options={productTypeOptions}
-                value={formValues.productType}
                 onChange={(value) => updateField("productType", value)}
               />
             </div>

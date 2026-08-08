@@ -122,32 +122,30 @@ export default function PricingPlanPage() {
         {actionError && <p className="page-error">{actionError}</p>}
         <div className={`form-grid ${selectedProduct ? "pricing-plan-form-grid" : ""}`}>
           <div className="crud-page-form-column">
-            <label className="crud-page-form-field crud-page-form-field--code" htmlFor="plan-code">
+            <label className="crud-page-form-field crud-page-form-field--code">
               <span>Plan Code</span>
               <input
-                disabled={inputsDisabled}
-                id="plan-code"
-                maxLength={25}
                 name="planCode"
-                pattern="[A-Za-z0-9]{1,25}"
                 title="Plan code must be 1 to 25 letters or digits."
-                required
                 type="text"
                 value={formValues.planCode}
+                disabled={inputsDisabled}
+                maxLength={25}
+                pattern="[A-Za-z0-9]{1,25}"
+                required
                 onChange={(event) => updateField("planCode", event.target.value)}
               />
             </label>
-            <label className="crud-page-form-field" htmlFor="plan-name">
+            <label className="crud-page-form-field">
               <span>Plan Name</span>
               <input
-                disabled={inputsDisabled}
-                id="plan-name"
-                maxLength={100}
                 name="planName"
-                required
                 title={formValues.planName}
                 type="text"
                 value={formValues.planName}
+                disabled={inputsDisabled}
+                maxLength={100}
+                required
                 onChange={(event) =>
                   updateField("planName", event.target.value)
                 }
@@ -156,46 +154,44 @@ export default function PricingPlanPage() {
           </div>
           <div className="crud-page-form-column">
             <Dropdown
-              disabled={inputsDisabled}
               label="Product"
               name="productId"
+              value={formValues.productId}
+              disabled={inputsDisabled}
               required
               options={options.products.map(toDropdownOption)}
-              value={formValues.productId}
               onChange={(value) => updateField("productId", value)}
             />
             <Dropdown
-              disabled={inputsDisabled}
               label="Region"
               name="regionId"
+              value={formValues.regionId}
+              disabled={inputsDisabled}
               required
               options={options.regions.map(toDropdownOption)}
-              value={formValues.regionId}
               onChange={(value) => updateField("regionId", value)}
             />
-            <label className="crud-page-form-field" htmlFor="active-from">
+            <label className="crud-page-form-field">
               <span>Active From</span>
               <input
-                disabled={inputsDisabled}
-                id="active-from"
                 name="activeFrom"
-                required
                 type="date"
                 value={formValues.activeFrom}
+                disabled={inputsDisabled}
+                required
                 onChange={(event) =>
                   updateField("activeFrom", event.target.value)
                 }
               />
             </label>
-            <label className="crud-page-form-field" htmlFor="active-through">
+            <label className="crud-page-form-field">
               <span>Active Through</span>
               <input
-                disabled={inputsDisabled}
-                id="active-through"
                 name="activeThrough"
-                required
                 type="date"
                 value={formValues.activeThrough}
+                disabled={inputsDisabled}
+                required
                 onChange={(event) =>
                   updateField("activeThrough", event.target.value)
                 }
@@ -204,20 +200,20 @@ export default function PricingPlanPage() {
           </div>
           {selectedProduct && (
             <PricingPlanFeeEditor
-              availableFees={options.fees.filter((fee) => fee.productTypes.includes(selectedProduct.type))}
-              disabled={inputsDisabled}
               fees={formValues.fees}
+              options={options.fees.filter((fee) => fee.productTypes.includes(selectedProduct.type))}
               reasons={options.reasons}
+              disabled={inputsDisabled}
               onChange={(fees) => updateField("fees", fees)}
             />
           )}
           {selectedProduct && (
             <div className="crud-page-form-column">
                 <EditableListField
-                  columnDefs={[{ field: "name" }]}
-                  disabled={inputsDisabled}
-                  rowData={[]}
                   title="Rates"
+                  columnDefs={[{ field: "name" }]}
+                  rowData={[]}
+                  disabled={inputsDisabled}
                   onAdd={() => ({ name: "new"})}
                   onRemove={() => {}}
                   onSelectionChanged={() => {}}

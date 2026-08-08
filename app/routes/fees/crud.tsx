@@ -72,32 +72,30 @@ export default function FeePage() {
         {actionError && <p className="page-error">{actionError}</p>}
         <div className="form-grid">
           <div className="crud-page-form-column">
-            <label className="crud-page-form-field fee-form-field--code" htmlFor="fee-code">
+            <label className="crud-page-form-field fee-form-field--code">
               <span>Fee Code</span>
               <input
-                disabled={inputsDisabled}
-                id="fee-code"
-                maxLength={25}
                 name="feeCode"
-                pattern="[A-Za-z0-9]{1,25}"
                 title="Fee code must be 1 to 25 letters or digits."
-                required
                 type="text"
                 value={formValues.feeCode}
+                disabled={inputsDisabled}
+                maxLength={25}
+                pattern="[A-Za-z0-9]{1,25}"
+                required
                 onChange={(event) => updateField("feeCode", event.target.value)}
               />
             </label>
-            <label className="crud-page-form-field" htmlFor="fee-name">
+            <label className="crud-page-form-field">
               <span>Fee Name</span>
               <input
-                disabled={inputsDisabled}
-                id="fee-name"
-                maxLength={100}
                 name="feeName"
-                required
                 title={formValues.feeName}
                 type="text"
                 value={formValues.feeName}
+                disabled={inputsDisabled}
+                maxLength={100}
+                required
                 onChange={(event) =>
                   updateField("feeName", event.target.value)
                 }
@@ -107,12 +105,12 @@ export default function FeePage() {
           <div className="crud-page-form-column">
             <label className="fee-form-field">
               <Dropdown
-                disabled={inputsDisabled}
                 label="Fee Type"
                 name="feeType"
-                options={feeTypeOptions}
-                required
                 value={formValues.feeType}
+                disabled={inputsDisabled}
+                required
+                options={feeTypeOptions}
                 onChange={(feeType: FeeType) => updateField("feeType", feeType)}
               />
             </label>

@@ -57,11 +57,11 @@ export default function MultiSelectField({
         <span className="selection-list-title">{title}</span>
       ) : (
         <Dropdown
-          disabled={availableOptions.length === 0}
           label={title}
-          placeholder={availableOptions.length === 0 ? `No available ${title.toLowerCase()}` : `Add ${title.toLowerCase()}`}
-          options={availableOptions}
           value=""
+          disabled={availableOptions.length === 0}
+          options={availableOptions}
+          placeholder={availableOptions.length === 0 ? `No available ${title.toLowerCase()}` : `Add ${title.toLowerCase()}`}
           onChange={onAdd}
         />
       )}

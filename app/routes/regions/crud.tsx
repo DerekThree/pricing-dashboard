@@ -138,32 +138,30 @@ export default function RegionPage() {
         {actionError && <p className="page-error">{actionError}</p>}
         <div className="form-grid region-form-grid">
           <div className="crud-page-form-column">
-            <label className="crud-page-form-field region-form-field--code" htmlFor="region-code">
+            <label className="crud-page-form-field region-form-field--code">
               <span>Region Code</span>
               <input
-                disabled={inputsDisabled}
-                id="region-code"
-                maxLength={25}
                 name="regionCode"
-                pattern="[A-Za-z0-9]{1,25}"
                 title="Region code must be 1 to 25 letters or digits."
-                required
                 type="text"
                 value={formValues.regionCode}
+                disabled={inputsDisabled}
+                maxLength={25}
+                pattern="[A-Za-z0-9]{1,25}"
+                required
                 onChange={(event) => updateField("regionCode", event.target.value)}
               />
             </label>
-            <label className="crud-page-form-field" htmlFor="region-name">
+            <label className="crud-page-form-field">
               <span>Region Name</span>
               <input
-                disabled={inputsDisabled}
-                id="region-name"
-                maxLength={100}
                 name="regionName"
-                required
                 title={formValues.regionName}
                 type="text"
                 value={formValues.regionName}
+                disabled={inputsDisabled}
+                maxLength={100}
+                required
                 onChange={(event) => updateField("regionName", event.target.value)}
               />
             </label>

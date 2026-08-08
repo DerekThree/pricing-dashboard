@@ -165,32 +165,30 @@ export default function EligibilityReasonPage() {
         {actionError && <p className="page-error">{actionError}</p>}
         <div className="form-grid eligibility-reason-form-grid">
           <div className="crud-page-form-column">
-            <label className="crud-page-form-field eligibility-reason-form-field--code" htmlFor="reason-code">
+            <label className="crud-page-form-field eligibility-reason-form-field--code">
               <span>Reason Code</span>
               <input
-                disabled={inputsDisabled}
-                id="reason-code"
-                maxLength={25}
                 name="reasonCode"
-                pattern="[A-Za-z0-9]{1,25}"
-                required
                 title="Code must be 1 to 25 letters or digits."
                 type="text"
                 value={formValues.reasonCode}
+                disabled={inputsDisabled}
+                maxLength={25}
+                pattern="[A-Za-z0-9]{1,25}"
+                required
                 onChange={(event) => updateField("reasonCode", event.target.value)}
               />
             </label>
-            <label className="crud-page-form-field" htmlFor="reason-name">
+            <label className="crud-page-form-field">
               <span>Reason Name</span>
               <input
-                disabled={inputsDisabled}
-                id="reason-name"
-                maxLength={100}
                 name="reasonName"
-                required
                 title={formValues.reasonName}
                 type="text"
                 value={formValues.reasonName}
+                disabled={inputsDisabled}
+                maxLength={100}
+                required
                 onChange={(event) => updateField("reasonName", event.target.value)}
               />
             </label>
@@ -219,12 +217,12 @@ export default function EligibilityReasonPage() {
               }`}
             >
               <Dropdown
-                disabled={conditionDetailsDisabled}
                 label="Attribute"
                 name="condition-widget-attribute"
+                value={attributeId}
+                disabled={conditionDetailsDisabled}
                 options={attributeOptions}
                 placeholder={conditionDetailsDisabled ? "No condition selected" : undefined}
-                value={attributeId}
                 onChange={(attributeId: Id) => {
                   const attribute = options.attributes.find((attr) => attr.id === attributeId);
                   const operator = attribute?.type === AttributeType.BOOLEAN
@@ -235,13 +233,13 @@ export default function EligibilityReasonPage() {
               />
               <div className="eligibility-reason-operator-field">
                 <Dropdown
-                  disabled={conditionDetailsDisabled || !attributeId || attributeType === AttributeType.BOOLEAN}
                   label="Operator"
                   name="condition-widget-operator"
-                  noOptionsMessage="Choose attribute"
+                  value={operator}
+                  disabled={conditionDetailsDisabled || !attributeId || attributeType === AttributeType.BOOLEAN}
                   options={operatorOptions}
                   placeholder=""
-                  value={operator}
+                  noOptionsMessage="Choose attribute"
                   onChange={(operator: ReasonOperator) => {
                     updateSelectedCondition({ attributeId, operator, value });
                   }}
@@ -250,28 +248,24 @@ export default function EligibilityReasonPage() {
               {attributeType === AttributeType.BOOLEAN ? (
                 <div className="crud-page-form-field">
                   <Dropdown
-                    disabled={conditionDetailsDisabled || !attributeId}
                     label="Value"
                     name="condition-widget-value"
+                    value={typeof value === "boolean" ? String(value) : ""}
+                    disabled={conditionDetailsDisabled || !attributeId}
                     options={[
                       { value: "true", label: "True" },
                       { value: "false", label: "False" },
                     ]}
                     placeholder={!attributeId ? "No attribute selected" : undefined}
-                    value={typeof value === "boolean" ? String(value) : ""}
                     onChange={(value) => {
                       updateSelectedCondition({ attributeId, operator, value });
                     }}
                   />
                 </div>
               ) : (
-                <label className="crud-page-form-field" htmlFor="condition-widget-value">
+                <label className="crud-page-form-field">
                   <span>Value</span>
                   <input
-                    disabled={conditionDetailsDisabled || !attributeId}
-                    id="condition-widget-value"
-                    placeholder={!attributeId ? "No attribute selected" : undefined}
-                    step={attributeType === AttributeType.DECIMAL ? "any" : undefined}
                     type={
                       attributeType === AttributeType.DATE
                         ? "date"
@@ -280,6 +274,9 @@ export default function EligibilityReasonPage() {
                           : "text"
                     }
                     value={String(value)}
+                    disabled={conditionDetailsDisabled || !attributeId}
+                    placeholder={!attributeId ? "No attribute selected" : undefined}
+                    step={attributeType === AttributeType.DECIMAL ? "any" : undefined}
                     onChange={(event) => {
                       const value =
                         attributeType === AttributeType.DECIMAL || attributeType === AttributeType.INTEGER
