@@ -52,19 +52,6 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     needsOptionsEndpoint ? getPricingPlanOptions() : null,
   ]);
 
-  function toFormValues(record: PricingPlanDetail): PricingPlanRequest {
-    return {
-      ...record,
-      productId: record.product.id,
-      regionId: record.region.id,
-      fees: record.fees.map((fee) => ({
-        feeId: fee.fee.id,
-        amount: fee.amount,
-        reasons: fee.reasons.map((reason) => reason.id),
-      })),
-    };
-  }
-
   if (recordResponse && recordResponse.status !== 200) {
     return {
       operation,
@@ -84,14 +71,9 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   }
 
   const initialFormValues = recordResponse?.data 
-    ? toFormValues(recordResponse.data) 
+    ? recordResponse.data 
     : emptyFormValues;
-  const options = optionsResponse?.data ?? {
-    fees: recordResponse!.data.fees.map((fee) => fee.fee),
-    products: [recordResponse!.data.product],
-    regions: [recordResponse!.data.region],
-    reasons: recordResponse!.data.fees.flatMap((fee) => fee.reasons),
-  };
+  const options = optionsResponse?.data ?? recordResponse!.data.recordOptions;
 
   return { operation, initialFormValues, options, loaderError: null };
 }
@@ -208,9 +190,9 @@ export default function PricingPlanPage() {
           {selectedProduct && (
             <PricingPlanFeeEditor
               rows={formValues.fees}
-              fees={options.fees
+              feeOptions={options.fees
                 .filter((fee) => fee.productTypes.includes(selectedProduct.type))}
-              reasons={options.reasons}
+              reasonOptions={options.reasons}
               disabled={inputsDisabled}
               onChange={(fees) => updateField("fees", fees)}
             />

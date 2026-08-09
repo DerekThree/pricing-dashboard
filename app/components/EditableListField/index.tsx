@@ -29,7 +29,7 @@ export default function EditableListField<TRow extends object>({
   rowData,
   title,
 }: EditableListFieldProps<TRow>) {
-  const [selectedRow, setSelectedRow] = useState<TRow | null>(null);
+  const [selectedRow, setSelectedRow] = useState<TRow | null>(rowData[0] ?? null);
   const selectable = !!onSelectionChanged && !disabled;
 
   function handleAdd() {

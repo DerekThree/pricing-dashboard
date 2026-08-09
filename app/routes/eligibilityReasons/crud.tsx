@@ -52,16 +52,6 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     needsOptionsEndpoint ? getReasonOptions() : null,
   ]);
 
-  function toFormValues(record: ReasonDetail):ReasonRequest {
-    return {
-      ...record,
-      conditions: record.conditions.map((condition) => ({
-        ...condition,
-        attributeId: condition.attribute.id,
-      })),
-    };
-  }
-
   if (recordResponse && recordResponse.status !== 200) {
     return {
       operation,
@@ -80,9 +70,8 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     };
   }
 
-  const initialFormValues = recordResponse?.data ? toFormValues(recordResponse.data) : emptyFormValues;
-  const options = optionsResponse?.data
-    ?? { attributes: recordResponse!.data.conditions.map((condition) => condition.attribute) };
+  const initialFormValues = recordResponse?.data ? recordResponse.data : emptyFormValues;
+  const options = optionsResponse?.data ?? recordResponse!.data.recordOptions;
 
   return { operation, initialFormValues, options, loaderError: null };
 }
@@ -109,8 +98,8 @@ export default function EligibilityReasonPage() {
   const value = selectedCondition?.value ?? "";
 
   const attributeType = options.attributes.find((attribute) => attribute.id === attributeId)?.type;
-  const attributeOptions = options.attributes.map(toDropdownOption);
-  const operatorOptions = attributeType === AttributeType.TEXT
+  const attributeDropdownOptions = options.attributes.map(toDropdownOption);
+  const operatorDropdownOptions = attributeType === AttributeType.TEXT
     ? [ReasonOperator["="], ReasonOperator["<>"]].map(toDropdownOption)
     : Object.values(ReasonOperator).map(toDropdownOption);
 
@@ -224,7 +213,7 @@ export default function EligibilityReasonPage() {
                 label="Attribute"
                 value={attributeId}
                 disabled={conditionDetailsDisabled}
-                options={attributeOptions}
+                options={attributeDropdownOptions}
                 placeholder={conditionDetailsDisabled ? "No condition selected" : undefined}
                 onChange={(attributeId: Id) => {
                   const attribute = options.attributes.find((attr) => attr.id === attributeId);
@@ -239,7 +228,7 @@ export default function EligibilityReasonPage() {
                   label="Operator"
                   value={operator}
                   disabled={conditionDetailsDisabled || !attributeId || attributeType === AttributeType.BOOLEAN}
-                  options={operatorOptions}
+                  options={operatorDropdownOptions}
                   placeholder=""
                   noOptionsMessage="Choose attribute"
                   onChange={(operator: ReasonOperator) => {

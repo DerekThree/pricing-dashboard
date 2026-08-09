@@ -43,13 +43,6 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     needsOptionsEndpoint ? getRegionOptions() : null,
   ]);
 
-  function toFormValues(record: RegionDetail): RegionRequest {
-    return {
-      ...record,
-      branches: record.branches.map((branch) => branch.id),
-    };
-  }
-
   if (recordResponse && recordResponse.status !== 200) {
     return {
       operation,
@@ -68,18 +61,8 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     };
   }
 
-  const initialFormValues = recordResponse?.data ? toFormValues(recordResponse.data) : emptyFormValues;
-  const options = recordResponse && optionsResponse
-    ? {
-        states: [...recordResponse.data.states, ...optionsResponse.data.states],
-        zipCodes: [...recordResponse.data.zipCodes, ...optionsResponse.data.zipCodes],
-        branches: [...recordResponse.data.branches, ...optionsResponse.data.branches],
-      }
-    : optionsResponse?.data ?? {
-        states: recordResponse!.data.states,
-        zipCodes: recordResponse!.data.zipCodes,
-        branches: recordResponse!.data.branches,
-      };
+  const initialFormValues = recordResponse?.data ? recordResponse.data : emptyFormValues;
+  const options = optionsResponse?.data ?? recordResponse!.data.recordOptions;
 
   return { operation, initialFormValues, options, loaderError: null };
 }

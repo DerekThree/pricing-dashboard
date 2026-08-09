@@ -6,9 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { Id } from './id';
+import type { DateTime } from './dateTime';
+import type { ReasonOptions } from './reasonOptions';
 
-export interface PricingPlanFeeRequest {
-  feeId: Id;
-  amount: number;
-  reasonIds?: Id[];
-}
+export type ReasonDetailAllOf = {
+  id: Id;
+  updatedOn: DateTime;
+  recordOptions: ReasonOptions;
+};

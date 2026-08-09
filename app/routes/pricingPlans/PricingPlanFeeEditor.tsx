@@ -13,16 +13,16 @@ import { toDropdownOption } from "../../utils/formUtils";
 
 type PricingPlanFeeEditorProps = {
   rows: PricingPlanFeeRequest[];
-  fees: FeeOption[];
-  reasons: ReasonOption[];
+  feeOptions: FeeOption[];
+  reasonOptions: ReasonOption[];
   disabled: boolean;
   onChange(fees: PricingPlanFeeRequest[]): void;
 };
 
 export default function PricingPlanFeeEditor({
   rows,
-  fees,
-  reasons,
+  feeOptions,
+  reasonOptions,
   disabled,
   onChange,
 }: PricingPlanFeeEditorProps) {
@@ -30,21 +30,21 @@ export default function PricingPlanFeeEditor({
   const hasIncompleteFee = rows.some(
     (fee) => Number.isNaN(fee.feeId) || Number.isNaN(fee.amount) || fee.amount <= 0,
   );
-  const hasAvailableFee = fees.some(
+  const hasAvailableFee = feeOptions.some(
     (fee) => !rows.some((pricingPlanFee) => pricingPlanFee.feeId === fee.id),
   );
-  const feeOptions = fees
+  const feeDropdownOptions = feeOptions
     .filter((fee) =>
       fee.id === selectedFee?.feeId ||
       !rows.some((pricingPlanFee) => pricingPlanFee.feeId === fee.id),
     )
     .map(toDropdownOption);
-  const selectedFeeType = fees.find((fee) => fee.id === selectedFee?.feeId)?.type;
-  const reasonOptions = reasons.map(toDropdownOption);
+  const selectedFeeType = feeOptions.find((fee) => fee.id === selectedFee?.feeId)?.type;
+  const reasonDropdownOptions = reasonOptions.map(toDropdownOption);
 
   useEffect(() => {
     const nextFees = rows.filter(
-      (fee) => Number.isNaN(fee.feeId) || fees.some((availableFee) => availableFee.id === fee.feeId),
+      (fee) => Number.isNaN(fee.feeId) || feeOptions.some((availableFee) => availableFee.id === fee.feeId),
     );
 
     if (nextFees.length !== rows.length) {
@@ -56,10 +56,10 @@ export default function PricingPlanFeeEditor({
     if (!selectedFee || !rows.includes(selectedFee)) {
       setSelectedFee(rows[0] ?? null);
     }
-  }, [fees, rows, onChange, selectedFee]);
+  }, [feeOptions, rows, onChange, selectedFee]);
 
   function addFee() {
-    const fee: PricingPlanFeeRequest = { feeId: NaN, amount: NaN, reasons: [] };
+    const fee: PricingPlanFeeRequest = { feeId: NaN, amount: NaN, reasonIds: [] };
 
     onChange([...rows, fee]);
     setSelectedFee(fee);
@@ -91,7 +91,7 @@ export default function PricingPlanFeeEditor({
             valueFormatter: ({ data }) => 
               !data || Number.isNaN(data.feeId) || Number.isNaN(data.amount) || data.amount <= 0
                 ? "Incomplete"
-                : fees.find((fee) => fee.id === data.feeId)?.name || "",
+                : feeOptions.find((fee) => fee.id === data.feeId)?.name || "",
           }]}
           hideButtons={disabled}
           rowData={rows}
@@ -104,7 +104,7 @@ export default function PricingPlanFeeEditor({
           label="Fee Name"
           value={selectedFee?.feeId}
           disabled={disabled || !selectedFee}
-          options={feeOptions}
+          options={feeDropdownOptions}
           placeholder={!selectedFee ? "No fee selected" : undefined}
           onChange={(feeId) => updateSelectedFee({ feeId: Number(feeId) })}
         />
@@ -120,14 +120,14 @@ export default function PricingPlanFeeEditor({
         </label>
         <MultiSelectField
           disabled={disabled || !selectedFee}
-          options={reasonOptions}
-          selectedValues={selectedFee?.reasons ?? []}
+          options={reasonDropdownOptions}
+          selectedValues={selectedFee?.reasonIds ?? []}
           title="Reasons to waive"
           onAdd={(reasonId) =>
-            updateSelectedFee({ reasons: [...selectedFee!.reasons, Number(reasonId)] })
+            updateSelectedFee({ reasonIds: [...(selectedFee!.reasonIds ?? []), Number(reasonId)] })
           }
           onRemove={(reasonId) =>
-            updateSelectedFee({ reasons: selectedFee!.reasons.filter((reason) => reason !== reasonId) })
+            updateSelectedFee({ reasonIds: (selectedFee!.reasonIds ?? []).filter((reason) => reason !== reasonId) })
           }
         />
       </div>
