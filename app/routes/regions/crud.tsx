@@ -62,7 +62,13 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
   }
 
   const initialFormValues = recordResponse?.data ? recordResponse.data : emptyFormValues;
-  const options = optionsResponse?.data ?? recordResponse!.data.recordOptions;
+  const options = recordResponse && optionsResponse
+    ? {
+        states: [...recordResponse.data.recordOptions.states, ...optionsResponse.data.states],
+        zipCodes: [...recordResponse.data.recordOptions.zipCodes, ...optionsResponse.data.zipCodes],
+        branches: [...recordResponse.data.recordOptions.branches, ...optionsResponse.data.branches],
+      }
+    : optionsResponse?.data ?? recordResponse!.data.recordOptions;
 
   return { operation, initialFormValues, options, loaderError: null };
 }
