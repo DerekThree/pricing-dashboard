@@ -2,6 +2,7 @@
 .env
 /node_modules/
 AGENTS.md
+CONTEXT.md
 
 # React Router
 /.react-router/

@@ -83,12 +83,14 @@ export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     };
   }
 
-  const initialFormValues = recordResponse?.data ? toFormValues(recordResponse.data) : emptyFormValues;
+  const initialFormValues = recordResponse?.data 
+    ? toFormValues(recordResponse.data) 
+    : emptyFormValues;
   const options = optionsResponse?.data ?? {
     fees: recordResponse!.data.fees.map((fee) => fee.fee),
     products: [recordResponse!.data.product],
     regions: [recordResponse!.data.region],
-    reasons: [],
+    reasons: recordResponse!.data.fees.flatMap((fee) => fee.reasons),
   };
 
   return { operation, initialFormValues, options, loaderError: null };
@@ -205,8 +207,9 @@ export default function PricingPlanPage() {
           </div>
           {selectedProduct && (
             <PricingPlanFeeEditor
-              fees={formValues.fees}
-              options={options.fees.filter((fee) => fee.productTypes.includes(selectedProduct.type))}
+              rows={formValues.fees}
+              fees={options.fees
+                .filter((fee) => fee.productTypes.includes(selectedProduct.type))}
               reasons={options.reasons}
               disabled={inputsDisabled}
               onChange={(fees) => updateField("fees", fees)}

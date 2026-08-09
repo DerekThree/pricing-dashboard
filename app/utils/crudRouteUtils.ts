@@ -96,8 +96,8 @@ export function createClientAction<TRequest extends object>({
   return async function clientAction({ request, params }: ClientActionFunctionArgs) {
     const { operation, id } = validateCrudRouteParams(params);
     const requestedOp = {
-      create: { sendRequest: (apiRequest: TRequest) => createRecord(apiRequest), successCode: 201 },
-      update: { sendRequest: (apiRequest: TRequest) => updateRecord(id, apiRequest), successCode: 200 },
+      create: { sendRequest: (req: TRequest) => createRecord(req), successCode: 201 },
+      update: { sendRequest: (req: TRequest) => updateRecord(id, req), successCode: 200 },
       delete: { sendRequest: () => deleteRecord(id), successCode: 204 },
       view: { sendRequest: () => { throw OperationCanceledException }, successCode: NaN },
     }
