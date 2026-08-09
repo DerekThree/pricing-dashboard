@@ -3,7 +3,6 @@ import "./styles.css";
 import { type ColDef } from "ag-grid-community";
 import { type FormEvent, useState } from "react";
 import {
-  type ClientLoaderFunctionArgs,
   useActionData,
   useLoaderData,
   useSubmit,
@@ -32,49 +31,26 @@ import {
   type ReasonRequest,
 } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
-import { getErrorMessage } from "../../utils/apiUtils";
-import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
+import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
 
-export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
-  const { operation, id } = validateCrudRouteParams(params);
-  const emptyFormValues: ReasonRequest = {
-    reasonCode: "",
-    reasonName: "",
-    conditions: [] as ReasonCondition[],
-    updatedBy: "",
-  };
+const emptyFormValues: ReasonRequest = {
+  reasonCode: "",
+  reasonName: "",
+  conditions: [] as ReasonCondition[],
+  updatedBy: "",
+};
 
-  const needsRecord = operation !== crudOps.create;
-  const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
-  const [recordResponse, optionsResponse] = await Promise.all([
-    needsRecord ? getReason(id) : null,
-    needsOptionsEndpoint ? getReasonOptions() : null,
-  ]);
+const emptyOptions: ReasonOptions = { attributes: [] };
 
-  if (recordResponse && recordResponse.status !== 200) {
-    return {
-      operation,
-      initialFormValues: emptyFormValues,
-      options: { attributes: [] } as ReasonOptions,
-      loaderError: getErrorMessage(recordResponse.data, recordResponse.status),
-    };
-  }
-
-  if (optionsResponse && optionsResponse.status !== 200) {
-    return {
-      operation,
-      initialFormValues: emptyFormValues,
-      options: { attributes: [] } as ReasonOptions,
-      loaderError: getErrorMessage(optionsResponse.data, optionsResponse.status),
-    };
-  }
-
-  const initialFormValues = recordResponse?.data ? recordResponse.data : emptyFormValues;
-  const options = optionsResponse?.data ?? recordResponse!.data.recordOptions;
-
-  return { operation, initialFormValues, options, loaderError: null };
-}
+export const clientLoader = createClientLoader({
+  getRecord: getReason,
+  emptyFormValues,
+  options: {
+    getOptions: getReasonOptions,
+    emptyOptions,
+  },
+});
 
 export const clientAction = createClientAction({
   createRecord: createReason,

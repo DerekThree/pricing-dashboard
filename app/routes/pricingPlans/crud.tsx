@@ -26,57 +26,38 @@ import {
   type PricingPlanOptions,
 } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
-import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
+import { createClientAction, createClientLoader, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 import PricingPlanFeeEditor from "./PricingPlanFeeEditor";
 import EditableListField from "~/app/components/EditableListField";
 
-export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
-  const { operation, id } = validateCrudRouteParams(params);
-  const emptyFormValues: PricingPlanRequest = {
-    planCode: "",
-    planName: "",
-    productId: NaN,
-    regionId: NaN,
-    activeFrom: "",
-    activeThrough: "",
-    fees: [] as PricingPlanFeeRequest[],
-    updatedBy: "",
-  };
+const emptyFormValues: PricingPlanRequest = {
+  planCode: "",
+  planName: "",
+  productId: NaN,
+  regionId: NaN,
+  activeFrom: "",
+  activeThrough: "",
+  fees: [] as PricingPlanFeeRequest[],
+  updatedBy: "",
+};
 
-  const needsRecord = operation !== crudOps.create;
-  const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
-  const [recordResponse, optionsResponse] = await Promise.all([
-    needsRecord ? getPricingPlan(id) : null,
-    needsOptionsEndpoint ? getPricingPlanOptions() : null,
-  ]);
-
-  if (recordResponse && recordResponse.status !== 200) {
-    return {
-      operation,
-      initialFormValues: emptyFormValues,
-      options: { fees: [], products: [], regions: [], reasons: [] } as PricingPlanOptions,
-      loaderError: getErrorMessage(recordResponse.data, recordResponse.status),
-    };
-  }
-
-  if (optionsResponse && optionsResponse.status !== 200) {
-    return {
-      operation,
-      initialFormValues: emptyFormValues,
-      options: { fees: [], products: [], regions: [], reasons: [] } as PricingPlanOptions,
-      loaderError: getErrorMessage(optionsResponse.data, optionsResponse.status),
-    };
-  }
-
-  const initialFormValues = recordResponse?.data 
-    ? recordResponse.data 
-    : emptyFormValues;
-  const options = optionsResponse?.data ?? recordResponse!.data.recordOptions;
-
-  return { operation, initialFormValues, options, loaderError: null };
+const emptyOptions: PricingPlanOptions = {
+  products: [],
+  regions: [],
+  fees: [],
+  reasons: [],
 }
+
+export const clientLoader = createClientLoader({
+  getRecord: getPricingPlan,
+  emptyFormValues,
+  options: {
+    getOptions: getPricingPlanOptions,
+    emptyOptions,
+  }
+})
 
 export const clientAction = createClientAction({
   createRecord: createPricingPlan,

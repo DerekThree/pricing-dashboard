@@ -5,7 +5,6 @@ import {
   useActionData,
   useLoaderData,
   useSubmit,
-  type ClientLoaderFunctionArgs,
   type SubmitTarget,
 } from "react-router";
 
@@ -20,58 +19,34 @@ import {
   deleteRegion,
 } from "../../generated/api/client";
 import type { RegionDetail, RegionOptions, RegionRequest } from "../../generated/api/models";
-import { getErrorMessage } from "../../utils/apiUtils";
-import { createClientAction, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
+import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
 
-export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
-  const { operation, id } = validateCrudRouteParams(params);
-  const emptyFormValues: RegionRequest = {
-    regionCode: "",
-    regionName: "",
-    states: [],
-    zipCodes: [],
-    branches: [] as number[],
-    updatedBy: "",
-  };
+const emptyFormValues: RegionRequest = {
+  regionCode: "",
+  regionName: "",
+  states: [],
+  zipCodes: [],
+  branches: [] as number[],
+  updatedBy: "",
+};
 
-  const needsRecord = operation !== crudOps.create;
-  const needsOptionsEndpoint = operation === crudOps.create || operation === crudOps.update;
-  const [recordResponse, optionsResponse] = await Promise.all([
-    needsRecord ? getRegion(id) : null,
-    needsOptionsEndpoint ? getRegionOptions() : null,
-  ]);
+const emptyOptions: RegionOptions = { states: [], zipCodes: [], branches: [] };
 
-  if (recordResponse && recordResponse.status !== 200) {
-    return {
-      operation,
-      initialFormValues: emptyFormValues,
-      options: { states: [], zipCodes: [], branches: [] } as RegionOptions,
-      loaderError: getErrorMessage(recordResponse.data, recordResponse.status),
-    };
-  }
-
-  if (optionsResponse && optionsResponse.status !== 200) {
-    return {
-      operation,
-      initialFormValues: emptyFormValues,
-      options: { states: [], zipCodes: [], branches: [] } as RegionOptions,
-      loaderError: getErrorMessage(optionsResponse.data, optionsResponse.status),
-    };
-  }
-
-  const initialFormValues = recordResponse?.data ? recordResponse.data : emptyFormValues;
-  const options = recordResponse && optionsResponse
-    ? {
-        states: [...recordResponse.data.recordOptions.states, ...optionsResponse.data.states],
-        zipCodes: [...recordResponse.data.recordOptions.zipCodes, ...optionsResponse.data.zipCodes],
-        branches: [...recordResponse.data.recordOptions.branches, ...optionsResponse.data.branches],
-      }
-    : optionsResponse?.data ?? recordResponse!.data.recordOptions;
-
-  return { operation, initialFormValues, options, loaderError: null };
-}
+export const clientLoader = createClientLoader({
+  getRecord: getRegion,
+  emptyFormValues,
+  options: {
+    getOptions: getRegionOptions,
+    emptyOptions,
+    mapOptions: (recordOptions, options) => ({
+      states: [...recordOptions.states, ...options.states],
+      zipCodes: [...recordOptions.zipCodes, ...options.zipCodes],
+      branches: [...recordOptions.branches, ...options.branches],
+    }),
+  },
+});
 
 export const clientAction = createClientAction({
   createRecord: createRegion,

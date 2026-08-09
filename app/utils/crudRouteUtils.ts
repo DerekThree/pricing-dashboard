@@ -45,15 +45,26 @@ export function validateCrudRouteParams(params: ClientLoaderFunctionArgs["params
   );
 }
 
-type ApiResponse = {
+type ApiResponse<TData = unknown> = {
   status: number;
-  data: unknown;
+  data: TData;
   headers: Headers;
 };
 
-type CrudLoaderConfig<TRequest, TResponse extends ApiResponse> = {
+type CrudLoaderOptions<TOptions extends object> = {
+  getOptions(): Promise<ApiResponse>;
+  emptyOptions: TOptions;
+  mapOptions?(recordOptions: TOptions, options: TOptions): TOptions;
+};
+
+type CrudLoaderConfig<
+  TRequest,
+  TResponse extends ApiResponse,
+  TOptions extends object = never,
+> = {
   getRecord(id: number): Promise<TResponse>;
   emptyFormValues: TRequest;
+  options?: CrudLoaderOptions<TOptions>;
 };
 
 type CrudActionConfig<TRequest extends object> = {
@@ -64,26 +75,55 @@ type CrudActionConfig<TRequest extends object> = {
   mapFormDataToRequest?: (formData: FormData) => TRequest;
 };
 
-export function createClientLoader<TRequest, TResponse extends ApiResponse>({
+export function createClientLoader<
+  TRequest,
+  TResponse extends ApiResponse,
+  TOptions extends object = never,
+>({
   getRecord,
   emptyFormValues,
-}: CrudLoaderConfig<TRequest, TResponse>) {
+  options: optionsConfig,
+}: CrudLoaderConfig<TRequest, TResponse, TOptions>) {
   return async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     const { operation, id } = validateCrudRouteParams(params);
+    const needsOptionsEndpoint =
+      !!optionsConfig && (operation === crudOps.create || operation === crudOps.update);
+    const [recordResponse, optionsResponse] = await Promise.all([
+      operation !== crudOps.create ? getRecord(id) : null,
+      needsOptionsEndpoint ? optionsConfig!.getOptions() : null,
+    ]);
+
     let initialFormValues: TRequest = emptyFormValues;
+    let recordOptions = null;
     let loaderError: string | null = null;
 
-    if (operation !== crudOps.create) {
-      const response = await getRecord(id);
-
-      if (response.status === 200) {
-        initialFormValues = response.data as TRequest;
-      } else {
-        loaderError = getErrorMessage(response.data, response.status);
-      }
+    if (recordResponse && recordResponse.status !== 200) {
+      loaderError = getErrorMessage(recordResponse.data, recordResponse.status);
+    } else if (recordResponse) {
+      recordOptions = (recordResponse.data as { recordOptions?: TOptions }).recordOptions;
+      initialFormValues = recordResponse.data as TRequest;
     }
 
-    return { operation, initialFormValues, loaderError };
+    if (!loaderError && optionsResponse && optionsResponse.status !== 200) {
+      loaderError = getErrorMessage(optionsResponse.data, optionsResponse.status);
+    }
+
+    if (!optionsConfig) {
+      const options = recordOptions as TOptions;
+      return { operation, initialFormValues, options, loaderError };
+    }
+
+    if (optionsResponse?.status !== 200) {
+      const options = recordOptions ?? optionsConfig.emptyOptions;
+      return { operation, initialFormValues, options, loaderError };
+    } else {
+      const optionsData = optionsResponse.data as TOptions;
+      const mapOptions = optionsConfig.mapOptions;
+      const options = recordOptions && mapOptions
+        ? mapOptions(recordOptions, optionsData)
+        : optionsData;
+      return { operation, initialFormValues, options, loaderError };
+    }
   };
 }
 
