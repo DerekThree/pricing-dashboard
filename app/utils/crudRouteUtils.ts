@@ -119,7 +119,7 @@ export function createClientLoader<
     } else {
       const optionsData = optionsResponse.data as TOptions;
       const mapOptions = optionsConfig.mapOptions;
-      const options = recordOptions && mapOptions
+      const options = mapOptions && recordOptions
         ? mapOptions(recordOptions, optionsData)
         : optionsData;
       return { operation, initialFormValues, options, loaderError };

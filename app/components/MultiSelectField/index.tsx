@@ -2,21 +2,15 @@ import "../shared/ListTable/styles.css";
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import Dropdown from "../Dropdown";
 import ListTable from "../shared/ListTable/ListTable";
-import type { DropdownOption } from "../shared/DropdownOption";
+import type { DropdownOption, DropdownValue } from "../Dropdown";
 
 type MultiSelectFieldProps = {
   disabled?: boolean;
-  onAdd(value: string | number): void;
-  onRemove(value: string | number): void;
-  options: DropdownOption<string | number>[];
-  selectedValues: Array<string | number>;
+  onAdd(value: DropdownValue): void;
+  onRemove(value: DropdownValue): void;
+  options: DropdownOption[];
+  selectedValues: Array<DropdownValue>;
   title: string;
-};
-
-type MultiSelectRow = {
-  description?: string;
-  label: string;
-  value: string | number;
 };
 
 export default function MultiSelectField({
@@ -29,10 +23,10 @@ export default function MultiSelectField({
 }: MultiSelectFieldProps) {
   const availableOptions = options.filter((option) => !selectedValues.includes(option.value));
 
-  const columnDefs: ColDef<MultiSelectRow>[] = [
+  const columnDefs: ColDef<DropdownOption>[] = [
     {
       field: "label",
-      cellRenderer: ({ data }: ICellRendererParams<MultiSelectRow>) =>
+      cellRenderer: ({ data }: ICellRendererParams<DropdownOption>) =>
         (
           <div style={{ height: "100%", width: "100%" }} title={data!.description ?? data!.label}>
             {data!.label}
@@ -41,7 +35,7 @@ export default function MultiSelectField({
     },
   ];
 
-  const rowData: MultiSelectRow[] = selectedValues.map((value) => {
+  const rowData: DropdownOption[] = selectedValues.map((value) => {
     const option = options.find((currentOption) => currentOption.value === value)!;
 
     return {

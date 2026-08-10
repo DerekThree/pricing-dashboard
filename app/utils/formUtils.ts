@@ -21,8 +21,8 @@ export function preventEnterSubmit(event: React.KeyboardEvent<HTMLFormElement>) 
   }
 }
 
-export function toDropdownOption(option: RecordOption | string): DropdownOption<string | number> {
-  return typeof option === "string"
-    ? { value: option, label: option }
+export function toDropdownOption(option: string | boolean | RecordOption): DropdownOption {
+  return typeof option === "string" || typeof option === "boolean"
+    ? { value: option, label: String(option) }
     : { value: option.id, label: option.name, description: option.code };
 }

@@ -216,11 +216,11 @@ export default function EligibilityReasonPage() {
                 <div className="crud-page-form-field">
                   <Dropdown
                     label="Value"
-                    value={typeof value === "boolean" ? String(value) : ""}
+                    value={value}
                     disabled={conditionDetailsDisabled || !attributeId}
                     options={[
-                      { value: "true", label: "True" },
-                      { value: "false", label: "False" },
+                      { value: true, label: "True" },
+                      { value: false, label: "False" },
                     ]}
                     placeholder={!attributeId ? "No attribute selected" : undefined}
                     onChange={(value) => {

@@ -3,6 +3,7 @@
 /node_modules/
 AGENTS.md
 CONTEXT.md
+.scratch
 
 # React Router
 /.react-router/
