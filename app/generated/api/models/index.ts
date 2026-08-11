@@ -38,6 +38,7 @@ export * from './feeName';
 export * from './feeOption';
 export * from './feeRequest';
 export * from './feeType';
+export * from './getRegionOptionsParams';
 export * from './id';
 export * from './pricingPlanCode';
 export * from './pricingPlanCodeAndName';

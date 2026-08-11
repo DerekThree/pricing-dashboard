@@ -40,11 +40,6 @@ export const clientLoader = createClientLoader({
   options: {
     getOptions: getRegionOptions,
     emptyOptions,
-    mapOptions: (recordOptions, optionsData) => ({
-      states: [...recordOptions.states, ...optionsData.states],
-      zipCodes: [...recordOptions.zipCodes, ...optionsData.zipCodes],
-      branches: [...recordOptions.branches, ...optionsData.branches],
-    }),
   },
 });
 

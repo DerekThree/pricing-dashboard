@@ -16,6 +16,7 @@ import type {
   FeeDetailResponse,
   FeeListItem,
   FeeRequest,
+  GetRegionOptionsParams,
   PricingPlanDetailResponse,
   PricingPlanListItem,
   PricingPlanOptions,
@@ -433,17 +434,24 @@ export type getRegionOptionsResponseError = (getRegionOptionsResponse500 | getRe
 
 export type getRegionOptionsResponse = (getRegionOptionsResponseSuccess | getRegionOptionsResponseError)
 
-export const getGetRegionOptionsUrl = () => {
+export const getGetRegionOptionsUrl = (params?: GetRegionOptionsParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
-  
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
-  return `http://localhost:8080/regions/options`
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `http://localhost:8080/regions/options?${stringifiedParams}` : `http://localhost:8080/regions/options`
 }
 
-export const getRegionOptions = async ( options?: RequestInit): Promise<getRegionOptionsResponse> => {
+export const getRegionOptions = async (params?: GetRegionOptionsParams, options?: RequestInit): Promise<getRegionOptionsResponse> => {
   
-  return apiMutator<getRegionOptionsResponse>(getGetRegionOptionsUrl(),
+  return apiMutator<getRegionOptionsResponse>(getGetRegionOptionsUrl(params),
   {      
     ...options,
     method: 'GET'

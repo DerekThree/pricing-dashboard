@@ -45,7 +45,7 @@ export const clientLoader = createClientLoader({
   getRecord: getReason,
   emptyFormValues,
   options: {
-    getOptions: getReasonOptions,
+    getOptions: (_recordId) => getReasonOptions(),
     emptyOptions,
   },
 });

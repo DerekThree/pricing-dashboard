@@ -52,45 +52,71 @@ type ApiResponse<TData = unknown> = {
 };
 
 type CrudLoaderOptions<TOptions extends object> = {
-  getOptions(): Promise<ApiResponse>;
+  getOptions(id?: { recordId?: number }): Promise<ApiResponse>;
   emptyOptions: TOptions;
-  mapOptions?(recordOptions: TOptions, optionsData: TOptions): TOptions;
 };
 
-type CrudLoaderConfig<
-  TRequest,
-  TResponse extends ApiResponse,
-  TOptions extends object = never,
-> = {
+type CrudLoaderConfig<TRequest, TResponse extends ApiResponse> = {
   getRecord(id: number): Promise<TResponse>;
   emptyFormValues: TRequest;
-  options?: CrudLoaderOptions<TOptions>;
 };
+
+type CrudLoaderWithOptionsConfig<
+  TRequest,
+  TResponse extends ApiResponse,
+  TOptions extends object,
+> =
+  CrudLoaderConfig<TRequest, TResponse> & {
+    options: CrudLoaderOptions<TOptions>;
+  };
+
+type CrudLoaderResult<TRequest> = {
+  operation: CrudOperation;
+  initialFormValues: TRequest;
+  loaderError: string | null;
+};
+
+type CrudLoaderResultWithOptions<TRequest, TOptions extends object> =
+  CrudLoaderResult<TRequest> & { options: TOptions };
 
 type CrudActionConfig<TRequest extends object> = {
   createRecord(record: TRequest): Promise<ApiResponse>;
   updateRecord(id: number, record: TRequest): Promise<ApiResponse>;
   deleteRecord(id: number): Promise<ApiResponse>;
   listRouteUrl: string;
-  mapFormDataToRequest?: (formData: FormData) => TRequest;
 };
 
 export function createClientLoader<
   TRequest,
   TResponse extends ApiResponse,
-  TOptions extends object = never,
+  TOptions extends object,
+>(config: CrudLoaderWithOptionsConfig<TRequest, TResponse, TOptions>):
+  ({ params }: ClientLoaderFunctionArgs) => Promise<CrudLoaderResultWithOptions<
+    TRequest,
+    TOptions
+  >>;
+export function createClientLoader<TRequest, TResponse extends ApiResponse>(
+  config: CrudLoaderConfig<TRequest, TResponse>,
+): ({ params }: ClientLoaderFunctionArgs) => Promise<CrudLoaderResult<TRequest>>;
+export function createClientLoader<
+  TRequest,
+  TResponse extends ApiResponse,
+  TOptions extends object,
 >({
   getRecord,
   emptyFormValues,
   options: optionsConfig,
-}: CrudLoaderConfig<TRequest, TResponse, TOptions>) {
+}: CrudLoaderConfig<TRequest, TResponse> & {
+  options?: CrudLoaderOptions<TOptions>;
+}) {
   return async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     const { operation, id } = validateCrudRouteParams(params);
     const needsOptionsEndpoint =
       !!optionsConfig && (operation === crudOps.create || operation === crudOps.update);
+    const optionsParam = operation === crudOps.update ? { recordId: id } : undefined;
     const [recordResponse, optionsResponse] = await Promise.all([
       operation !== crudOps.create ? getRecord(id) : null,
-      needsOptionsEndpoint ? optionsConfig!.getOptions() : null,
+      needsOptionsEndpoint ? optionsConfig!.getOptions(optionsParam) : null,
     ]);
 
     let initialFormValues: TRequest = emptyFormValues;
@@ -109,19 +135,14 @@ export function createClientLoader<
     }
 
     if (!optionsConfig) {
-      const options = recordOptions as TOptions;
-      return { operation, initialFormValues, options, loaderError };
+      return { operation, initialFormValues, loaderError };
     }
 
     if (optionsResponse?.status !== 200) {
       const options = recordOptions ?? optionsConfig.emptyOptions;
       return { operation, initialFormValues, options, loaderError };
     } else {
-      const optionsData = optionsResponse.data as TOptions;
-      const mapOptions = optionsConfig.mapOptions;
-      const options = mapOptions && recordOptions
-        ? mapOptions(recordOptions, optionsData)
-        : optionsData;
+      const options = optionsResponse.data as TOptions;
       return { operation, initialFormValues, options, loaderError };
     }
   };

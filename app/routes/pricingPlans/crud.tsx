@@ -54,7 +54,7 @@ export const clientLoader = createClientLoader({
   getRecord: getPricingPlan,
   emptyFormValues,
   options: {
-    getOptions: getPricingPlanOptions,
+    getOptions: (_recordId) => getPricingPlanOptions(),
     emptyOptions,
   }
 })
