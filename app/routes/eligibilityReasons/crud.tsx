@@ -22,10 +22,8 @@ import {
 } from "../../generated/api/client";
 import {
   AttributeType,
-  type AttributeType as AttributeTypeValue,
   type Id,
   type ReasonCondition,
-  type ReasonDetail,
   ReasonOperator,
   type ReasonOptions,
   type ReasonRequest,
@@ -37,7 +35,7 @@ import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
 const emptyFormValues: ReasonRequest = {
   reasonCode: "",
   reasonName: "",
-  conditions: [] as ReasonCondition[],
+  conditions: [],
   updatedBy: "",
 };
 

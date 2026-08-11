@@ -19,7 +19,7 @@ const emptyFormValues: FeeRequest = {
   feeCode: "",
   feeName: "",
   feeType: "" as FeeType,
-  productTypes: [] as ProductType[],
+  productTypes: [],
   updatedBy: "",
 };
 

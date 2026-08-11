@@ -39,7 +39,7 @@ const emptyFormValues: PricingPlanRequest = {
   regionId: NaN,
   activeFrom: "",
   activeThrough: "",
-  fees: [] as PricingPlanFeeRequest[],
+  fees: [],
   updatedBy: "",
 };
 

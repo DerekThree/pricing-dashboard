@@ -54,7 +54,7 @@ type ApiResponse<TData = unknown> = {
 type CrudLoaderOptions<TOptions extends object> = {
   getOptions(): Promise<ApiResponse>;
   emptyOptions: TOptions;
-  mapOptions?(recordOptions: TOptions, options: TOptions): TOptions;
+  mapOptions?(recordOptions: TOptions, optionsData: TOptions): TOptions;
 };
 
 type CrudLoaderConfig<

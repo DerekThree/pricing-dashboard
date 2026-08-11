@@ -18,7 +18,7 @@ import {
   updateRegion,
   deleteRegion,
 } from "../../generated/api/client";
-import type { RegionDetail, RegionOptions, RegionRequest } from "../../generated/api/models";
+import type { RegionOptions, RegionRequest } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
@@ -28,7 +28,7 @@ const emptyFormValues: RegionRequest = {
   regionName: "",
   states: [],
   zipCodes: [],
-  branches: [] as number[],
+  branches: [],
   updatedBy: "",
 };
 
@@ -40,10 +40,10 @@ export const clientLoader = createClientLoader({
   options: {
     getOptions: getRegionOptions,
     emptyOptions,
-    mapOptions: (recordOptions, options) => ({
-      states: [...recordOptions.states, ...options.states],
-      zipCodes: [...recordOptions.zipCodes, ...options.zipCodes],
-      branches: [...recordOptions.branches, ...options.branches],
+    mapOptions: (recordOptions, optionsData) => ({
+      states: [...recordOptions.states, ...optionsData.states],
+      zipCodes: [...recordOptions.zipCodes, ...optionsData.zipCodes],
+      branches: [...recordOptions.branches, ...optionsData.branches],
     }),
   },
 });
