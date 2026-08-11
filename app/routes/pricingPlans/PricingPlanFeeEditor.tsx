@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Dropdown from "../../components/Dropdown";
 import EditableListField from "../../components/EditableListField";
@@ -10,9 +10,11 @@ import {
   type ReasonOption,
 } from "../../generated/api/models";
 import { toDropdownOption } from "../../utils/formUtils";
+import { isIncompleteFee, reconcileFees } from "./pricingPlanFeeUtils";
 
 type PricingPlanFeeEditorProps = {
   rows: PricingPlanFeeRequest[];
+  productId: number;
   feeOptions: FeeOption[];
   reasonOptions: ReasonOption[];
   disabled: boolean;
@@ -21,15 +23,15 @@ type PricingPlanFeeEditorProps = {
 
 export default function PricingPlanFeeEditor({
   rows,
+  productId,
   feeOptions,
   reasonOptions,
   disabled,
   onChange,
 }: PricingPlanFeeEditorProps) {
   const [selectedFee, setSelectedFee] = useState<PricingPlanFeeRequest | null>(null);
-  const hasIncompleteFee = rows.some(
-    (fee) => Number.isNaN(fee.feeId) || Number.isNaN(fee.amount) || fee.amount <= 0,
-  );
+  const previousProductId = useRef(productId);
+  const hasIncompleteFee = rows.some(isIncompleteFee);
   const hasAvailableFee = feeOptions.some(
     (fee) => !rows.some((pricingPlanFee) => pricingPlanFee.feeId === fee.id),
   );
@@ -43,9 +45,10 @@ export default function PricingPlanFeeEditor({
   const reasonDropdownOptions = reasonOptions.map(toDropdownOption);
 
   useEffect(() => {
-    const nextFees = rows.filter(
-      (fee) => Number.isNaN(fee.feeId) || feeOptions.some((availableFee) => availableFee.id === fee.feeId),
-    );
+    const productChanged = previousProductId.current !== productId;
+    const nextFees = reconcileFees(rows, feeOptions, productChanged);
+
+    previousProductId.current = productId;
 
     if (nextFees.length !== rows.length) {
       onChange(nextFees);
@@ -56,7 +59,7 @@ export default function PricingPlanFeeEditor({
     if (!selectedFee || !rows.includes(selectedFee)) {
       setSelectedFee(rows[0] ?? null);
     }
-  }, [feeOptions, rows, onChange, selectedFee]);
+  }, [productId, feeOptions, rows, onChange, selectedFee]);
 
   function addFee() {
     const fee: PricingPlanFeeRequest = { feeId: NaN, amount: NaN, reasonIds: [] };
@@ -89,7 +92,7 @@ export default function PricingPlanFeeEditor({
           columnDefs={[{
             field: "feeId",
             valueFormatter: ({ data }) => 
-              !data || Number.isNaN(data.feeId) || Number.isNaN(data.amount) || data.amount <= 0
+              !data || isIncompleteFee(data)
                 ? "Incomplete"
                 : feeOptions.find((fee) => fee.id === data.feeId)?.name || "",
           }]}

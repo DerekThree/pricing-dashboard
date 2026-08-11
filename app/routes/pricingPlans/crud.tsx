@@ -171,6 +171,7 @@ export default function PricingPlanPage() {
           {selectedProduct && (
             <PricingPlanFeeEditor
               rows={formValues.fees}
+              productId={formValues.productId}
               feeOptions={options.fees
                 .filter((fee) => fee.productTypes.includes(selectedProduct.type))}
               reasonOptions={options.reasons}
