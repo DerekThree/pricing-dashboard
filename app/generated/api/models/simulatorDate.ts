@@ -5,14 +5,7 @@
  * REST API for managing branches, regions, products, and pricing plans.
  * OpenAPI spec version: 1.0.0
  */
-import type { Id } from './id';
 
-export interface PricingPlanFeeRequest {
-  feeId: Id;
-  /**
-   * @minimum 0
-   * @exclusiveMinimum
-   */
-  amount: number;
-  reasonIds?: Id[];
+export interface SimulatorDate {
+  currentDate: string;
 }

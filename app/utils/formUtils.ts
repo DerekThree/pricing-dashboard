@@ -1,4 +1,4 @@
-import type { DropdownOption } from "../components/shared/DropdownOption";
+import type { DropdownOption } from "../components/Dropdown";
 
 type RecordOption = {
   id: number;

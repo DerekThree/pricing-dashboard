@@ -31,6 +31,7 @@ import type {
   RegionListItem,
   RegionOptions,
   RegionRequest,
+  SimulatorDate,
   SyntheticServiceUnavailableResponse
 } from './models';
 
@@ -1734,6 +1735,86 @@ export const deleteAttribute = async (id: number, options?: RequestInit): Promis
     method: 'DELETE'
     
     
+  }
+);}
+
+
+
+/**
+ * @summary Get the current application date
+ */
+export type getSimulatorDateResponse200 = {
+  data: SimulatorDate
+  status: 200
+}
+    
+export type getSimulatorDateResponseSuccess = (getSimulatorDateResponse200) & {
+  headers: Headers;
+};
+;
+
+export type getSimulatorDateResponse = (getSimulatorDateResponseSuccess)
+
+export const getGetSimulatorDateUrl = () => {
+
+
+  
+
+  return `http://localhost:8080/simulator/date`
+}
+
+export const getSimulatorDate = async ( options?: RequestInit): Promise<getSimulatorDateResponse> => {
+  
+  return apiMutator<getSimulatorDateResponse>(getGetSimulatorDateUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+/**
+ * @summary Set the current application date
+ */
+export type setSimulatorDateResponse200 = {
+  data: SimulatorDate
+  status: 200
+}
+
+export type setSimulatorDateResponse400 = {
+  data: ErrorResponse
+  status: 400
+}
+    
+export type setSimulatorDateResponseSuccess = (setSimulatorDateResponse200) & {
+  headers: Headers;
+};
+export type setSimulatorDateResponseError = (setSimulatorDateResponse400) & {
+  headers: Headers;
+};
+
+export type setSimulatorDateResponse = (setSimulatorDateResponseSuccess | setSimulatorDateResponseError)
+
+export const getSetSimulatorDateUrl = () => {
+
+
+  
+
+  return `http://localhost:8080/simulator/date`
+}
+
+export const setSimulatorDate = async (simulatorDate: SimulatorDate, options?: RequestInit): Promise<setSimulatorDateResponse> => {
+  
+  return apiMutator<setSimulatorDateResponse>(getSetSimulatorDateUrl(),
+  {      
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      simulatorDate,)
   }
 );}
 

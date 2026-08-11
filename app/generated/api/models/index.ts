@@ -84,6 +84,7 @@ export * from './regionName';
 export * from './regionOption';
 export * from './regionOptions';
 export * from './regionRequest';
+export * from './simulatorDate';
 export * from './state';
 export * from './syntheticServiceUnavailableResponse';
 export * from './updatedBy';

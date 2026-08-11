@@ -10,6 +10,10 @@ import type { ReasonOption } from './reasonOption';
 
 export interface PricingPlanFeeDetail {
   fee: FeeOption;
+  /**
+   * @minimum 0
+   * @exclusiveMinimum
+   */
   amount: number;
   reasons: ReasonOption[];
 }
