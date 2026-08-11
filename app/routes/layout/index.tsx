@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useSyncExternalStore } from "react";
 import { Outlet, useLocation, useNavigate, useNavigation } from "react-router";
 import { isRouteErrorResponse } from "react-router";
 import "./styles.css";
 import ErrorPage from "../../components/ErrorPage";
 import { routeUrls } from "../../routes";
+import { clearToast, getToast, subscribeToast } from "../../utils/toast";
 import type { Route } from "./+types";
 
 type SidebarLink = {
@@ -53,49 +54,26 @@ function Sidebar() {
   );
 }
 
-export const toastSearchParam = "toast";
-
 export function Layout({ children }: { children?: React.ReactNode }) {
-  const navigate = useNavigate();
-  const location = useLocation();
   const navigation = useNavigation();
   const isLoading = navigation.state === "loading";
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toast = useSyncExternalStore(subscribeToast, getToast, () => null);
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const nextToastMessage = searchParams.get(toastSearchParam);
-
-    if (!nextToastMessage) {
+    if (!toast) {
       return;
     }
 
-    setToastMessage(nextToastMessage);
-    searchParams.delete(toastSearchParam);
-    navigate(
-      {
-        pathname: location.pathname,
-        search: searchParams.toString() ? `?${searchParams.toString()}` : "",
-      },
-      { replace: true },
-    );
-  }, [location.pathname, location.search, navigate]);
-
-  useEffect(() => {
-    if (!toastMessage) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => setToastMessage(null), 3000);
+    const timeoutId = window.setTimeout(() => clearToast(toast.id), 3000);
     return () => window.clearTimeout(timeoutId);
-  }, [toastMessage]);
+  }, [toast]);
 
   return (
     <div className="layout">
       <Sidebar />
       <main className="layout-main">
         {isLoading && <div className="layout-loading-bar" />}
-        {toastMessage && <div className="layout-toast">{toastMessage}</div>}
+        {toast && <div className="layout-toast">{toast.message}</div>}
         <div className="layout-content">
           {children ?? <Outlet />}
         </div>

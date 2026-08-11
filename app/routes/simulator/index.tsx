@@ -1,12 +1,12 @@
 import "./styles.css";
 
 import { useState, type FormEvent } from "react";
-import { useLoaderData, useNavigate } from "react-router";
+import { useLoaderData } from "react-router";
 
 import PageTopMenu from "../../components/PageTopMenu";
 import { getSimulatorDate, setSimulatorDate } from "../../generated/api/client";
 import { getErrorMessage } from "../../utils/apiUtils";
-import { toastSearchParam } from "../layout";
+import { showToast } from "../../utils/toast";
 
 export async function clientLoader() {
   const response = await getSimulatorDate();
@@ -17,9 +17,8 @@ export async function clientLoader() {
 }
 
 export default function SimulatorPage() {
-  const { currentDate: loadedDate, loaderError } = useLoaderData<typeof clientLoader>();
-  const navigate = useNavigate();
-  const [applicationDate, setApplicationDate] = useState(loadedDate);
+  const { currentDate, loaderError } = useLoaderData<typeof clientLoader>();
+  const [applicationDate, setApplicationDate] = useState(currentDate);
   const [error, setError] = useState(loaderError);
 
   async function submitDate(currentDate: string) {
@@ -28,7 +27,7 @@ export default function SimulatorPage() {
     const response = await setSimulatorDate({ currentDate });
     if (response.status === 200) {
       setApplicationDate(response.data.currentDate);
-      navigate(`?${toastSearchParam}=Success`);
+      showToast("Success");
     } else {
       setError(getErrorMessage(response.data, response.status));
     }

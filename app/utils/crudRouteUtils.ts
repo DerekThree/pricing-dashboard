@@ -5,7 +5,7 @@ import {
 } from "react-router";
 
 import { getErrorMessage } from "./apiUtils";
-import { toastSearchParam } from "../routes/layout/index";
+import { showToast } from "./toast";
 import { OperationCanceledException } from "typescript";
 
 export const crudOps = {
@@ -146,8 +146,11 @@ export function createClientAction<TRequest extends object>({
     Object.assign(apiRequest, { updatedBy: "user" });
     const response = await requestedOp[operation].sendRequest(apiRequest);
 
-    return requestedOp[operation].successCode === response.status
-      ? redirect(`${listRouteUrl}?${toastSearchParam}=Success`)
-      : { actionError: getErrorMessage(response.data, response.status) };
+    if (requestedOp[operation].successCode === response.status) {
+      showToast("Success");
+      return redirect(listRouteUrl);
+    }
+
+    return { actionError: getErrorMessage(response.data, response.status) };
   };
 }
