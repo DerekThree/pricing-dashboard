@@ -1,16 +1,6 @@
-.pricing-plan-form-grid {
-  grid-template-columns: repeat(4, minmax(0, 24rem));
-}
-
 .pricing-plan-side-column {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   width: 100%;
-}
-
-@media (max-width: 84rem) {
-  .pricing-plan-form-grid {
-    grid-template-columns: minmax(0, 24rem);
-  }
 }

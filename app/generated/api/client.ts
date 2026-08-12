@@ -16,6 +16,8 @@ import type {
   FeeDetailResponse,
   FeeListItem,
   FeeRequest,
+  GetPricingPlanOptionsParams,
+  GetPricingPlanSecondaryOptionsParams,
   GetRegionOptionsParams,
   PricingPlanDetailResponse,
   PricingPlanListItem,
@@ -438,7 +440,7 @@ export const getGetRegionOptionsUrl = (params?: GetRegionOptionsParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
-
+    
     if (value !== undefined) {
       normalizedParams.append(key, value === null ? 'null' : value.toString())
     }
@@ -1293,17 +1295,89 @@ export type getPricingPlanOptionsResponseError = (getPricingPlanOptionsResponse5
 
 export type getPricingPlanOptionsResponse = (getPricingPlanOptionsResponseSuccess | getPricingPlanOptionsResponseError)
 
-export const getGetPricingPlanOptionsUrl = () => {
+export const getGetPricingPlanOptionsUrl = (params?: GetPricingPlanOptionsParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
-  
+  const stringifiedParams = normalizedParams.toString();
 
-  return `http://localhost:8080/pricing-plans/options`
+  return stringifiedParams.length > 0 ? `http://localhost:8080/pricing-plans/options?${stringifiedParams}` : `http://localhost:8080/pricing-plans/options`
 }
 
-export const getPricingPlanOptions = async ( options?: RequestInit): Promise<getPricingPlanOptionsResponse> => {
+export const getPricingPlanOptions = async (params?: GetPricingPlanOptionsParams, options?: RequestInit): Promise<getPricingPlanOptionsResponse> => {
   
-  return apiMutator<getPricingPlanOptionsResponse>(getGetPricingPlanOptionsUrl(),
+  return apiMutator<getPricingPlanOptionsResponse>(getGetPricingPlanOptionsUrl(params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+/**
+ * @summary Get available pricing plan options for a product and region
+ */
+export type getPricingPlanSecondaryOptionsResponse200 = {
+  data: PricingPlanOptions
+  status: 200
+}
+
+export type getPricingPlanSecondaryOptionsResponse400 = {
+  data: ErrorResponse
+  status: 400
+}
+
+export type getPricingPlanSecondaryOptionsResponse404 = {
+  data: ErrorResponse
+  status: 404
+}
+
+export type getPricingPlanSecondaryOptionsResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type getPricingPlanSecondaryOptionsResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type getPricingPlanSecondaryOptionsResponseSuccess = (getPricingPlanSecondaryOptionsResponse200) & {
+  headers: Headers;
+};
+export type getPricingPlanSecondaryOptionsResponseError = (getPricingPlanSecondaryOptionsResponse400 | getPricingPlanSecondaryOptionsResponse404 | getPricingPlanSecondaryOptionsResponse500 | getPricingPlanSecondaryOptionsResponse503) & {
+  headers: Headers;
+};
+
+export type getPricingPlanSecondaryOptionsResponse = (getPricingPlanSecondaryOptionsResponseSuccess | getPricingPlanSecondaryOptionsResponseError)
+
+export const getGetPricingPlanSecondaryOptionsUrl = (params: GetPricingPlanSecondaryOptionsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `http://localhost:8080/pricing-plans/options/secondary?${stringifiedParams}` : `http://localhost:8080/pricing-plans/options/secondary`
+}
+
+export const getPricingPlanSecondaryOptions = async (params: GetPricingPlanSecondaryOptionsParams, options?: RequestInit): Promise<getPricingPlanSecondaryOptionsResponse> => {
+  
+  return apiMutator<getPricingPlanSecondaryOptionsResponse>(getGetPricingPlanSecondaryOptionsUrl(params),
   {      
     ...options,
     method: 'GET'

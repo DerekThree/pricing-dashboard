@@ -15,8 +15,8 @@ import { isIncompleteFee, reconcileFees } from "./pricingPlanFeeUtils";
 type PricingPlanFeeEditorProps = {
   rows: PricingPlanFeeRequest[];
   productId: number;
-  feeOptions: FeeOption[];
-  reasonOptions: ReasonOption[];
+  feeOptions?: FeeOption[];
+  reasonOptions?: ReasonOption[];
   disabled: boolean;
   onChange(fees: PricingPlanFeeRequest[]): void;
 };
@@ -32,19 +32,25 @@ export default function PricingPlanFeeEditor({
   const [selectedFee, setSelectedFee] = useState<PricingPlanFeeRequest | null>(null);
   const previousProductId = useRef(productId);
   const hasIncompleteFee = rows.some(isIncompleteFee);
-  const hasAvailableFee = feeOptions.some(
+  const hasAvailableFee = feeOptions?.some(
     (fee) => !rows.some((pricingPlanFee) => pricingPlanFee.feeId === fee.id),
   );
   const feeDropdownOptions = feeOptions
-    .filter((fee) =>
-      fee.id === selectedFee?.feeId ||
-      !rows.some((pricingPlanFee) => pricingPlanFee.feeId === fee.id),
-    )
-    .map(toDropdownOption);
-  const selectedFeeType = feeOptions.find((fee) => fee.id === selectedFee?.feeId)?.type;
-  const reasonDropdownOptions = reasonOptions.map(toDropdownOption);
+    ? feeOptions
+      .filter((fee) =>
+        fee.id === selectedFee?.feeId ||
+        !rows.some((pricingPlanFee) => pricingPlanFee.feeId === fee.id),
+      )
+      .map(toDropdownOption)
+    : [];
+  const selectedFeeType = feeOptions?.find((fee) => fee.id === selectedFee?.feeId)?.type;
+  const reasonDropdownOptions = reasonOptions ? reasonOptions.map(toDropdownOption) : [];
 
   useEffect(() => {
+    if (disabled || !feeOptions) {
+      return;
+    }
+
     const productChanged = previousProductId.current !== productId;
     const nextFees = reconcileFees(rows, feeOptions, productChanged);
 
@@ -59,7 +65,7 @@ export default function PricingPlanFeeEditor({
     if (!selectedFee || !rows.includes(selectedFee)) {
       setSelectedFee(rows[0] ?? null);
     }
-  }, [productId, feeOptions, rows, onChange, selectedFee]);
+  }, [productId, feeOptions, rows, disabled, onChange, selectedFee]);
 
   function addFee() {
     const fee: PricingPlanFeeRequest = { feeId: NaN, amount: NaN, reasonIds: [] };
@@ -88,13 +94,13 @@ export default function PricingPlanFeeEditor({
     <div className="pricing-plan-side-column">
       <div className="crud-page-form-column">
         <EditableListField
-          addDisabled={hasIncompleteFee || !hasAvailableFee}
+          addDisabled={disabled || hasIncompleteFee || !hasAvailableFee}
           columnDefs={[{
             field: "feeId",
             valueFormatter: ({ data }) => 
               !data || isIncompleteFee(data)
                 ? "Incomplete"
-                : feeOptions.find((fee) => fee.id === data.feeId)?.name || "",
+                : feeOptions?.find((fee) => fee.id === data.feeId)?.name ?? "Unavailable",
           }]}
           hideButtons={disabled}
           rowData={rows}

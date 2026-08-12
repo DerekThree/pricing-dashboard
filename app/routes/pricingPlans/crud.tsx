@@ -1,6 +1,6 @@
 import "./styles.css";
 
-import { type FormEvent } from "react";
+import { useCallback, useRef, useState, type FormEvent } from "react";
 import {
   useActionData,
   useLoaderData,
@@ -17,6 +17,7 @@ import {
   deletePricingPlan,
   getPricingPlan,
   getPricingPlanOptions,
+  getPricingPlanSecondaryOptions,
   updatePricingPlan,
 } from "../../generated/api/client";
 import {
@@ -46,15 +47,42 @@ const emptyFormValues: PricingPlanRequest = {
 const emptyOptions: PricingPlanOptions = {
   products: [],
   regions: [],
-  fees: [],
-  reasons: [],
+};
+
+type PricingPlanSecondaryOptions = PricingPlanOptions & Required<Pick<PricingPlanOptions,
+  "productId" | "regionId" | "fees" | "reasons" | "intervals"
+>>;
+
+type PricingPlanRecordOptions = PricingPlanOptions & Required<Pick<PricingPlanOptions,
+  "fees" | "reasons"
+>>;
+
+function isPricingPlanSecondaryOptions(
+  options: PricingPlanOptions,
+): options is PricingPlanSecondaryOptions {
+  return options.productId !== undefined && options.regionId !== undefined &&
+    options.fees !== undefined && options.reasons !== undefined && options.intervals !== undefined;
+}
+
+function matchesSelectedContext(
+  options: PricingPlanSecondaryOptions,
+  productId: number,
+  regionId: number,
+) {
+  return options.productId === productId && options.regionId === regionId;
+}
+
+function isPricingPlanRecordOptions(
+  options: PricingPlanOptions,
+): options is PricingPlanRecordOptions {
+  return options.fees !== undefined && options.reasons !== undefined;
 }
 
 export const clientLoader = createClientLoader({
   getRecord: getPricingPlan,
   emptyFormValues,
   options: {
-    getOptions: (_recordId) => getPricingPlanOptions(),
+    getOptions: getPricingPlanOptions,
     emptyOptions,
   }
 })
@@ -71,14 +99,64 @@ export default function PricingPlanPage() {
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
   const submit = useSubmit();
+  const selectedContext = useRef({
+    productId: formValues.productId,
+    regionId: formValues.regionId,
+  });
+  selectedContext.current = {
+    productId: formValues.productId,
+    regionId: formValues.regionId,
+  };
+  const [secondaryOptions, setSecondaryOptions] = useState<PricingPlanSecondaryOptions | null>(() =>
+    isPricingPlanSecondaryOptions(options) &&
+    matchesSelectedContext(options, formValues.productId, formValues.regionId)
+      ? options
+      : null,
+  );
+  const [secondaryError, setSecondaryError] = useState<string | null>(null);
 
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
+  const contextualInputsDisabled = inputsDisabled || !secondaryOptions;
+  const recordOptions = inputsDisabled && isPricingPlanRecordOptions(options) ? options : null;
+  const displayedOptions = secondaryOptions ?? recordOptions;
 
-  const selectedProduct = options.products.find((product) => product.id === formValues.productId);
+  const loadSecondaryOptions = useCallback(async (productId: number, regionId: number) => {
+    setSecondaryOptions(null);
+    setSecondaryError(null);
+    if (Number.isNaN(productId) || Number.isNaN(regionId)) {
+      return;
+    }
+
+    const response = await getPricingPlanSecondaryOptions({ productId, regionId });
+    const { productId: currentProductId, regionId: currentRegionId } = selectedContext.current;
+    if (response.status !== 200) {
+      if (productId === currentProductId && regionId === currentRegionId) {
+        setSecondaryError(getErrorMessage(response.data, response.status));
+      }
+      return;
+    }
+
+    if (isPricingPlanSecondaryOptions(response.data) &&
+      matchesSelectedContext(response.data, currentProductId, currentRegionId)) {
+      setSecondaryOptions(response.data);
+    }
+  }, []);
+
+  function selectContext(productId: number, regionId: number) {
+    selectedContext.current = { productId, regionId };
+    updateField("productId", productId);
+    updateField("regionId", regionId);
+    updateField("activeFrom", "");
+    updateField("activeThrough", "");
+    void loadSecondaryOptions(productId, regionId);
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if ((operation === crudOps.create || operation === crudOps.update) && !secondaryOptions) {
+      return;
+    }
     submit(
       { ...formValues, planCode: formValues.planCode.toUpperCase() } as unknown as JsonValue,
       { method: "post", encType: "application/json" },
@@ -96,7 +174,8 @@ export default function PricingPlanPage() {
         />
         {loaderError && <p className="page-error">{loaderError}</p>}
         {actionError && <p className="page-error">{actionError}</p>}
-        <div className={`form-grid ${selectedProduct ? "pricing-plan-form-grid" : ""}`}>
+        {secondaryError && <p className="page-error">{secondaryError}</p>}
+        <div className="form-grid">
           <div className="crud-page-form-column">
             <label className="crud-page-form-field crud-page-form-field--code">
               <span>Plan Code</span>
@@ -133,7 +212,7 @@ export default function PricingPlanPage() {
               disabled={inputsDisabled}
               required
               options={options.products.map(toDropdownOption)}
-              onChange={(value) => updateField("productId", value)}
+              onChange={(value) => selectContext(Number(value), formValues.regionId)}
             />
             <Dropdown
               label="Region"
@@ -141,14 +220,14 @@ export default function PricingPlanPage() {
               disabled={inputsDisabled}
               required
               options={options.regions.map(toDropdownOption)}
-              onChange={(value) => updateField("regionId", value)}
+              onChange={(value) => selectContext(formValues.productId, Number(value))}
             />
             <label className="crud-page-form-field">
               <span>Active From</span>
               <input
                 type="date"
                 value={formValues.activeFrom}
-                disabled={inputsDisabled}
+                disabled={contextualInputsDisabled}
                 required
                 onChange={(event) =>
                   updateField("activeFrom", event.target.value)
@@ -160,7 +239,7 @@ export default function PricingPlanPage() {
               <input
                 type="date"
                 value={formValues.activeThrough}
-                disabled={inputsDisabled}
+                disabled={contextualInputsDisabled}
                 required
                 onChange={(event) =>
                   updateField("activeThrough", event.target.value)
@@ -168,18 +247,14 @@ export default function PricingPlanPage() {
               />
             </label>
           </div>
-          {selectedProduct && (
             <PricingPlanFeeEditor
               rows={formValues.fees}
               productId={formValues.productId}
-              feeOptions={options.fees
-                .filter((fee) => fee.productTypes.includes(selectedProduct.type))}
-              reasonOptions={options.reasons}
-              disabled={inputsDisabled}
+              feeOptions={displayedOptions?.fees}
+              reasonOptions={displayedOptions?.reasons}
+              disabled={contextualInputsDisabled}
               onChange={(fees) => updateField("fees", fees)}
             />
-          )}
-          {selectedProduct && (
             <div className="crud-page-form-column">
                 <EditableListField
                   title="Rates"
@@ -191,7 +266,6 @@ export default function PricingPlanPage() {
                   onSelectionChanged={() => {}}
                 />
             </div>
-          )}
         </div>
       </form>
     </section>

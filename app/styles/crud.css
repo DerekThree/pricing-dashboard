@@ -2,7 +2,7 @@
   align-items: start;
   display: grid;
   gap: 1.5rem;
-  grid-template-columns: repeat(2, minmax(0, 24rem));
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
 }
 
 .crud-page-form-column {
@@ -86,10 +86,4 @@
   font-size: inherit;
   font-weight: inherit;
   line-height: 1.5;
-}
-
-@media (max-width: 56rem) {
-  .form-grid {
-    grid-template-columns: minmax(0, 24rem);
-  }
 }
