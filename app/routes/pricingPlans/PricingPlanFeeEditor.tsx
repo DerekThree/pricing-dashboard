@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 
 import Dropdown from "../../components/Dropdown";
 import EditableListField from "../../components/EditableListField";
@@ -10,7 +10,6 @@ import {
   type ReasonOption,
 } from "../../generated/api/models";
 import { toDropdownOption } from "../../utils/formUtils";
-import { isIncompleteFee, reconcileFees } from "./pricingPlanFeeUtils";
 
 type PricingPlanFeeEditorProps = {
   rows: PricingPlanFeeRequest[];
@@ -29,6 +28,23 @@ export default function PricingPlanFeeEditor({
   disabled,
   onChange,
 }: PricingPlanFeeEditorProps) {
+  function isIncompleteFee(fee: PricingPlanFeeRequest) {
+    return Number.isNaN(fee.feeId) || Number.isNaN(fee.amount) || fee.amount <= 0;
+  }
+
+  function reconcileFees(
+    rows: PricingPlanFeeRequest[],
+    feeOptions: FeeOption[],
+    productChanged: boolean,
+  ) {
+    return rows.filter(
+      (fee) =>
+        (!productChanged && Number.isNaN(fee.feeId)) ||
+        (feeOptions.some((availableFee) => availableFee.id === fee.feeId) &&
+          (!productChanged || !isIncompleteFee(fee))),
+    );
+  }
+
   const [selectedFee, setSelectedFee] = useState<PricingPlanFeeRequest | null>(null);
   const previousProductId = useRef(productId);
   const hasIncompleteFee = rows.some(isIncompleteFee);
@@ -91,8 +107,7 @@ export default function PricingPlanFeeEditor({
   }
 
   return (
-    <div className="pricing-plan-side-column">
-      <div className="crud-page-form-column">
+      <Fragment>
         <EditableListField
           addDisabled={disabled || hasIncompleteFee || !hasAvailableFee}
           columnDefs={[{
@@ -139,7 +154,6 @@ export default function PricingPlanFeeEditor({
             updateSelectedFee({ reasonIds: (selectedFee!.reasonIds ?? []).filter((reason) => reason !== reasonId) })
           }
         />
-      </div>
-    </div>
+      </Fragment>
   );
 }

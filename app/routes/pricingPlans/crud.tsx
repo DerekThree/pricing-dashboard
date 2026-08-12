@@ -247,6 +247,7 @@ export default function PricingPlanPage() {
               />
             </label>
           </div>
+          <div className="crud-page-form-column">
             <PricingPlanFeeEditor
               rows={formValues.fees}
               productId={formValues.productId}
@@ -255,17 +256,18 @@ export default function PricingPlanPage() {
               disabled={contextualInputsDisabled}
               onChange={(fees) => updateField("fees", fees)}
             />
-            <div className="crud-page-form-column">
-                <EditableListField
-                  title="Rates"
-                  columnDefs={[{ field: "name" }]}
-                  rowData={[]}
-                  disabled={inputsDisabled}
-                  onAdd={() => ({ name: "new"})}
-                  onRemove={() => {}}
-                  onSelectionChanged={() => {}}
-                />
-            </div>
+          </div>
+          <div className="crud-page-form-column">
+              <EditableListField
+                title="Rates"
+                columnDefs={[{ field: "name" }]}
+                rowData={[]}
+                disabled={inputsDisabled}
+                onAdd={() => ({ name: "new"})}
+                onRemove={() => {}}
+                onSelectionChanged={() => {}}
+              />
+          </div>
         </div>
       </form>
     </section>
