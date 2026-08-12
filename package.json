@@ -8,6 +8,7 @@
     "dev": "react-router dev",
     "generate:api": "npm run clean:api && orval",
     "start": "react-router-serve ./build/server/index.js",
+    "test:browser": "playwright test",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
@@ -22,6 +23,7 @@
     "react-select": "^5.10.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@react-router/dev": "7.14.0",
     "@tailwindcss/vite": "^4.2.2",
     "@types/node": "^22",
