@@ -1,6 +1,8 @@
+import "react-datepicker/dist/react-datepicker.css";
 import "./styles.css";
 
-import { useCallback, useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
+import DatePicker from "react-datepicker";
 import {
   useActionData,
   useLoaderData,
@@ -53,10 +55,6 @@ type PricingPlanSecondaryOptions = PricingPlanOptions & Required<Pick<PricingPla
   "productId" | "regionId" | "fees" | "reasons" | "intervals"
 >>;
 
-type PricingPlanRecordOptions = PricingPlanOptions & Required<Pick<PricingPlanOptions,
-  "fees" | "reasons"
->>;
-
 function isPricingPlanSecondaryOptions(
   options: PricingPlanOptions,
 ): options is PricingPlanSecondaryOptions {
@@ -72,10 +70,23 @@ function matchesSelectedContext(
   return options.productId === productId && options.regionId === regionId;
 }
 
-function isPricingPlanRecordOptions(
-  options: PricingPlanOptions,
-): options is PricingPlanRecordOptions {
-  return options.fees !== undefined && options.reasons !== undefined;
+function toPickerDate(value: string | undefined) {
+  if (!value) {
+    return undefined;
+  }
+  const [year, month, day] = value.split("-").map(Number);
+
+  return new Date(year, month - 1, day);
+}
+
+function toRequestDate(value: Date | null) {
+  if (!value) {
+    return "";
+  }
+
+  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(
+    value.getDate(),
+  ).padStart(2, "0")}`;
 }
 
 export const clientLoader = createClientLoader({
@@ -117,11 +128,13 @@ export default function PricingPlanPage() {
 
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
-  const contextualInputsDisabled = inputsDisabled || !secondaryOptions;
-  const recordOptions = inputsDisabled && isPricingPlanRecordOptions(options) ? options : null;
-  const displayedOptions = secondaryOptions ?? recordOptions;
+  const excludeDateIntervals = secondaryOptions?.intervals
+    .map(({ activeFrom, activeThrough }) => ({
+      start: toPickerDate(activeFrom)!,
+      end: toPickerDate(activeThrough)!,
+    }));
 
-  const loadSecondaryOptions = useCallback(async (productId: number, regionId: number) => {
+  async function loadSecondaryOptions(productId: number, regionId: number) {
     setSecondaryOptions(null);
     setSecondaryError(null);
     if (Number.isNaN(productId) || Number.isNaN(regionId)) {
@@ -141,7 +154,7 @@ export default function PricingPlanPage() {
       matchesSelectedContext(response.data, currentProductId, currentRegionId)) {
       setSecondaryOptions(response.data);
     }
-  }, []);
+  }
 
   function selectContext(productId: number, regionId: number) {
     selectedContext.current = { productId, regionId };
@@ -222,28 +235,24 @@ export default function PricingPlanPage() {
               options={options.regions.map(toDropdownOption)}
               onChange={(value) => selectContext(formValues.productId, Number(value))}
             />
-            <label className="crud-page-form-field">
-              <span>Active From</span>
-              <input
-                type="date"
-                value={formValues.activeFrom}
-                disabled={contextualInputsDisabled}
+            <label className="crud-page-form-field pricing-plan-active-period">
+              <span>Active Period</span>
+              <DatePicker
+                allowSameDay
+                dateFormat="MM/dd/yyy"
+                disabled={!secondaryOptions || inputsDisabled}
+                endDate={toPickerDate(formValues.activeThrough)}
+                excludeDateIntervals={excludeDateIntervals}
+                minDate={toPickerDate(secondaryOptions?.currentDate ?? options.currentDate)}
+                placeholderText="Select active period"
                 required
-                onChange={(event) =>
-                  updateField("activeFrom", event.target.value)
-                }
-              />
-            </label>
-            <label className="crud-page-form-field">
-              <span>Active Through</span>
-              <input
-                type="date"
-                value={formValues.activeThrough}
-                disabled={contextualInputsDisabled}
-                required
-                onChange={(event) =>
-                  updateField("activeThrough", event.target.value)
-                }
+                selectsDisabledDaysInRange={false}
+                selectsRange
+                startDate={toPickerDate(formValues.activeFrom)}
+                onChange={([activeFrom, activeThrough]) => {
+                  updateField("activeFrom", toRequestDate(activeFrom));
+                  updateField("activeThrough", toRequestDate(activeThrough));
+                }}
               />
             </label>
           </div>
@@ -251,9 +260,9 @@ export default function PricingPlanPage() {
             <PricingPlanFeeEditor
               rows={formValues.fees}
               productId={formValues.productId}
-              feeOptions={displayedOptions?.fees}
-              reasonOptions={displayedOptions?.reasons}
-              disabled={contextualInputsDisabled}
+              feeOptions={secondaryOptions?.fees ?? options.fees}
+              reasonOptions={secondaryOptions?.reasons ?? options.reasons}
+              disabled={!secondaryOptions || inputsDisabled}
               onChange={(fees) => updateField("fees", fees)}
             />
           </div>

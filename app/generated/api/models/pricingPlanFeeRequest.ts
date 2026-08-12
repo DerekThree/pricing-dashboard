@@ -14,5 +14,5 @@ export interface PricingPlanFeeRequest {
    * @exclusiveMinimum
    */
   amount: number;
-  reasonIds?: Id[];
+  reasonIds: Id[];
 }
