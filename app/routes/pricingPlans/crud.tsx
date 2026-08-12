@@ -89,6 +89,17 @@ function toRequestDate(value: Date | null) {
   ).padStart(2, "0")}`;
 }
 
+function getLifecycle(currentDate: string, activeFrom: string, activeThrough: string) {
+  if (currentDate < activeFrom) {
+    return "scheduled";
+  }
+  if (currentDate > activeThrough) {
+    return "past";
+  }
+
+  return "active";
+}
+
 export const clientLoader = createClientLoader({
   getRecord: getPricingPlan,
   emptyFormValues,
@@ -125,9 +136,12 @@ export default function PricingPlanPage() {
       : null,
   );
   const [secondaryError, setSecondaryError] = useState<string | null>(null);
-
-  const inputsDisabled =
-    !!loaderError || operation === crudOps.view || operation === crudOps.delete;
+  const lifecycle = operation === crudOps.update
+    ? getLifecycle(options.currentDate!, initialFormValues.activeFrom, initialFormValues.activeThrough)
+    : null;
+  const inputsDisabled = !!loaderError || operation === crudOps.view || operation === crudOps.delete;
+  const configurationDisabled = inputsDisabled || lifecycle === "active" || lifecycle === "past";
+  const activePeriodDisabled = inputsDisabled || lifecycle === "past" || !secondaryOptions;
   const excludeDateIntervals = secondaryOptions?.intervals
     .map(({ activeFrom, activeThrough }) => ({
       start: toPickerDate(activeFrom)!,
@@ -196,7 +210,7 @@ export default function PricingPlanPage() {
                 title="Plan code must be 1 to 25 letters or digits."
                 type="text"
                 value={formValues.planCode}
-                disabled={inputsDisabled}
+                disabled={configurationDisabled}
                 maxLength={25}
                 pattern="[A-Za-z0-9]{1,25}"
                 required
@@ -222,7 +236,7 @@ export default function PricingPlanPage() {
             <Dropdown
               label="Product"
               value={formValues.productId}
-              disabled={inputsDisabled}
+              disabled={configurationDisabled}
               required
               options={options.products.map(toDropdownOption)}
               onChange={(value) => selectContext(Number(value), formValues.regionId)}
@@ -230,30 +244,43 @@ export default function PricingPlanPage() {
             <Dropdown
               label="Region"
               value={formValues.regionId}
-              disabled={inputsDisabled}
+              disabled={configurationDisabled}
               required
               options={options.regions.map(toDropdownOption)}
               onChange={(value) => selectContext(formValues.productId, Number(value))}
             />
             <label className="crud-page-form-field pricing-plan-active-period">
-              <span>Active Period</span>
-              <DatePicker
-                allowSameDay
-                dateFormat="MM/dd/yyy"
-                disabled={!secondaryOptions || inputsDisabled}
-                endDate={toPickerDate(formValues.activeThrough)}
-                excludeDateIntervals={excludeDateIntervals}
-                minDate={toPickerDate(secondaryOptions?.currentDate ?? options.currentDate)}
-                placeholderText="Select active period"
-                required
-                selectsDisabledDaysInRange={false}
-                selectsRange
-                startDate={toPickerDate(formValues.activeFrom)}
-                onChange={([activeFrom, activeThrough]) => {
-                  updateField("activeFrom", toRequestDate(activeFrom));
-                  updateField("activeThrough", toRequestDate(activeThrough));
-                }}
-              />
+              <span>{lifecycle === "active" ? "Active Through" : "Active Period"}</span>
+              {lifecycle === "active" ? (
+                <DatePicker
+                  dateFormat="MM/dd/yyy"
+                  disabled={activePeriodDisabled}
+                  excludeDateIntervals={excludeDateIntervals}
+                  minDate={toPickerDate(options.currentDate)}
+                  required
+                  selected={toPickerDate(formValues.activeThrough)}
+                  onChange={(activeThrough: Date | null) =>
+                    updateField("activeThrough", toRequestDate(activeThrough))}
+                />
+              ) : (
+                <DatePicker
+                  allowSameDay
+                  dateFormat="MM/dd/yyy"
+                  disabled={activePeriodDisabled}
+                  endDate={toPickerDate(formValues.activeThrough)}
+                  excludeDateIntervals={excludeDateIntervals}
+                  minDate={toPickerDate(secondaryOptions?.currentDate ?? options.currentDate)}
+                  placeholderText="Select active period"
+                  required
+                  selectsDisabledDaysInRange={false}
+                  selectsRange
+                  startDate={toPickerDate(formValues.activeFrom)}
+                  onChange={([activeFrom, activeThrough]) => {
+                    updateField("activeFrom", toRequestDate(activeFrom));
+                    updateField("activeThrough", toRequestDate(activeThrough));
+                  }}
+                />
+              )}
             </label>
           </div>
           <div className="crud-page-form-column">
@@ -262,7 +289,7 @@ export default function PricingPlanPage() {
               productId={formValues.productId}
               feeOptions={secondaryOptions?.fees ?? options.fees}
               reasonOptions={secondaryOptions?.reasons ?? options.reasons}
-              disabled={!secondaryOptions || inputsDisabled}
+              disabled={configurationDisabled || !secondaryOptions}
               onChange={(fees) => updateField("fees", fees)}
             />
           </div>
