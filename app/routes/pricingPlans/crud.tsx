@@ -148,6 +148,17 @@ export default function PricingPlanPage() {
       end: toPickerDate(activeThrough)!,
     }));
 
+  function isActivePeriodAvailable(date: Date, otherDate: Date | undefined) {
+    if (!otherDate) {
+      return true;
+    }
+
+    const activeFrom = date < otherDate ? date : otherDate;
+    const activeThrough = date < otherDate ? otherDate : date;
+    return !excludeDateIntervals?.some(({ start, end }) =>
+      activeFrom <= end && start <= activeThrough);
+  }
+
   async function loadSecondaryOptions(productId: number, regionId: number) {
     setSecondaryOptions(null);
     setSecondaryError(null);
@@ -177,6 +188,18 @@ export default function PricingPlanPage() {
     updateField("activeFrom", "");
     updateField("activeThrough", "");
     void loadSecondaryOptions(productId, regionId);
+  }
+
+  function updateActiveFrom(activeFrom: Date | null) {
+    const activeThrough = toPickerDate(formValues.activeThrough);
+    const keepsActiveThrough = activeFrom && activeThrough &&
+      activeFrom <= activeThrough &&
+      isActivePeriodAvailable(activeFrom, activeThrough);
+
+    updateField("activeFrom", toRequestDate(activeFrom));
+    if (!keepsActiveThrough) {
+      updateField("activeThrough", "");
+    }
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -249,39 +272,50 @@ export default function PricingPlanPage() {
               options={options.regions.map(toDropdownOption)}
               onChange={(value) => selectContext(formValues.productId, Number(value))}
             />
-            <label className="crud-page-form-field pricing-plan-active-period">
-              <span>{lifecycle === "active" ? "Active Through" : "Active Period"}</span>
-              {lifecycle === "active" ? (
-                <DatePicker
-                  dateFormat="MM/dd/yyy"
-                  disabled={activePeriodDisabled}
-                  excludeDateIntervals={excludeDateIntervals}
-                  minDate={toPickerDate(options.currentDate)}
-                  required
-                  selected={toPickerDate(formValues.activeThrough)}
-                  onChange={(activeThrough: Date | null) =>
-                    updateField("activeThrough", toRequestDate(activeThrough))}
-                />
-              ) : (
-                <DatePicker
-                  allowSameDay
-                  dateFormat="MM/dd/yyy"
-                  disabled={activePeriodDisabled}
-                  endDate={toPickerDate(formValues.activeThrough)}
-                  excludeDateIntervals={excludeDateIntervals}
-                  minDate={toPickerDate(secondaryOptions?.currentDate ?? options.currentDate)}
-                  placeholderText="Select active period"
-                  required
-                  selectsDisabledDaysInRange={false}
-                  selectsRange
-                  startDate={toPickerDate(formValues.activeFrom)}
-                  onChange={([activeFrom, activeThrough]) => {
-                    updateField("activeFrom", toRequestDate(activeFrom));
-                    updateField("activeThrough", toRequestDate(activeThrough));
-                  }}
-                />
-              )}
-            </label>
+            <div className="crud-page-form-field pricing-plan-active-period">
+              <label htmlFor="active-from">Active From</label>
+              <DatePicker
+                autoComplete="off"
+                dateFormat="MM/dd/yyy"
+                disabled={configurationDisabled || activePeriodDisabled}
+                endDate={toPickerDate(formValues.activeThrough)}
+                excludeDateIntervals={excludeDateIntervals}
+                // filterDate={(date) =>
+                //   isActivePeriodAvailable(date, toPickerDate(formValues.activeThrough))}
+                id="active-from"
+                // maxDate={toPickerDate(formValues.activeThrough)}
+                minDate={toPickerDate(secondaryOptions?.currentDate ?? options.currentDate)}
+                required
+                selected={toPickerDate(formValues.activeFrom)}
+                selectsStart
+                shouldCloseOnSelect
+                startDate={toPickerDate(formValues.activeFrom)}
+                onChange={updateActiveFrom}
+              />
+            </div>
+            <div className="crud-page-form-field pricing-plan-active-period">
+              <label htmlFor="active-through">Active Through</label>
+              <DatePicker
+                autoComplete="off"
+                dateFormat="MM/dd/yyy"
+                disabled={activePeriodDisabled}
+                endDate={toPickerDate(formValues.activeThrough)}
+                excludeDateIntervals={excludeDateIntervals}
+                filterDate={(date) =>
+                  isActivePeriodAvailable(date, toPickerDate(formValues.activeFrom))}
+                id="active-through"
+                minDate={lifecycle === "active"
+                  ? toPickerDate(secondaryOptions?.currentDate ?? options.currentDate)
+                  : toPickerDate(formValues.activeFrom)}
+                required
+                selected={toPickerDate(formValues.activeThrough)}
+                selectsEnd
+                shouldCloseOnSelect
+                startDate={toPickerDate(formValues.activeFrom)}
+                onChange={(activeThrough: Date | null) =>
+                  updateField("activeThrough", toRequestDate(activeThrough))}
+              />
+            </div>
           </div>
           <div className="crud-page-form-column">
             <PricingPlanFeeEditor
