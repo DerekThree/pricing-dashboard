@@ -3,13 +3,14 @@ import { useNavigate } from "react-router";
 import type { ColDef } from "ag-grid-community";
 
 import DataTable from "../DataTable";
-import PageTopMenu from "../PageTopMenu";
+import PageTopMenu, { type PageTopMenuAction } from "../PageTopMenu";
 
 type ListPageProps<TRow extends { id: number }> = {
   title: string;
   columnDefs: ColDef<TRow>[];
   rowData: TRow[];
   crudRouteUrl: string;
+  actions?: PageTopMenuAction[];
   loaderError?: string | null;
 };
 
@@ -18,6 +19,7 @@ export default function ListPage<TRow extends { id: number }>({
   columnDefs,
   rowData,
   crudRouteUrl,
+  actions,
   loaderError,
 }: ListPageProps<TRow>) {
   const navigate = useNavigate();
@@ -27,7 +29,7 @@ export default function ListPage<TRow extends { id: number }>({
     <section className="page">
       <PageTopMenu
         title={title}
-        actions={[
+        actions={actions ?? [
           {
             label: "Create",
             onClick: () => navigate(`${crudRouteUrl}/create`),

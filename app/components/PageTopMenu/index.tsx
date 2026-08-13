@@ -9,7 +9,7 @@ export type PageTopMenuAction = {
   label: string;
   onClick?: () => void;
   disabled?: boolean;
-  type?: "button" | "submit" | "reset";
+  type?: "submit";
   variant?: "cancel";
 };
 

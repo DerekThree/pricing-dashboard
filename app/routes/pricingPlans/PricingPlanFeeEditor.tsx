@@ -32,19 +32,6 @@ export default function PricingPlanFeeEditor({
     return Number.isNaN(fee.feeId) || Number.isNaN(fee.amount) || fee.amount <= 0;
   }
 
-  function reconcileFees(
-    rows: PricingPlanFeeRequest[],
-    feeOptions: FeeOption[],
-    productChanged: boolean,
-  ) {
-    return rows.filter(
-      (fee) =>
-        (!productChanged && Number.isNaN(fee.feeId)) ||
-        (feeOptions.some((availableFee) => availableFee.id === fee.feeId) &&
-          (!productChanged || !isIncompleteFee(fee))),
-    );
-  }
-
   const [selectedFee, setSelectedFee] = useState<PricingPlanFeeRequest | null>(null);
   const previousProductId = useRef(productId);
   const hasIncompleteFee = rows.some(isIncompleteFee);
@@ -68,7 +55,11 @@ export default function PricingPlanFeeEditor({
     }
 
     const productChanged = previousProductId.current !== productId;
-    const nextFees = reconcileFees(rows, feeOptions, productChanged);
+    const nextFees = rows.filter((fee) =>
+        (!productChanged && Number.isNaN(fee.feeId)) ||
+        (feeOptions.some((availableFee) => availableFee.id === fee.feeId) &&
+          (!productChanged || !isIncompleteFee(fee))),
+    );
 
     previousProductId.current = productId;
 

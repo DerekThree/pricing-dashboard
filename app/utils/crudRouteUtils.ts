@@ -111,11 +111,15 @@ export function createClientLoader<
 }) {
   return async function clientLoader({ params }: ClientLoaderFunctionArgs) {
     const { operation, id } = validateCrudRouteParams(params);
-    const needsOptionsEndpoint =
-      !!optionsConfig && (operation === crudOps.create || operation === crudOps.update);
-    const optionsParam = operation === crudOps.update ? { recordId: id } : undefined;
+
+    const isCreateOp = operation === crudOps.create;
+    const isDuplicateOp = operation === crudOps.create && !Number.isNaN(id);
+    const isUpdateOp = operation === crudOps.update;
+
+    const needsOptionsEndpoint = !!optionsConfig && (isCreateOp || isUpdateOp);
+    const optionsParam = isDuplicateOp || isUpdateOp ? { recordId: id } : undefined;
     const [recordResponse, optionsResponse] = await Promise.all([
-      operation !== crudOps.create ? getRecord(id) : null,
+      !Number.isNaN(id) ? getRecord(id) : null,
       needsOptionsEndpoint ? optionsConfig!.getOptions(optionsParam) : null,
     ]);
 

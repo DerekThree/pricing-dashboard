@@ -119,7 +119,17 @@ export const clientAction = createClientAction({
 export default function PricingPlanPage() {
   const { operation, initialFormValues, options, loaderError } = useLoaderData<typeof clientLoader>();
   const { actionError } = useActionData<typeof clientAction>() ?? {};
-  const { formValues, updateField } = useFormValues(initialFormValues);
+  const { formValues, updateField } = useFormValues(
+    operation === crudOps.create
+      ? {
+          ...initialFormValues,
+          planCode: "",
+          planName: "",
+          activeFrom: "",
+          activeThrough: "",
+        }
+      : initialFormValues,
+    );
   const submit = useSubmit();
   const selectedContext = useRef({
     productId: formValues.productId,
@@ -142,12 +152,18 @@ export default function PricingPlanPage() {
   const inputsDisabled = !!loaderError || operation === crudOps.view || operation === crudOps.delete;
   const configurationDisabled = inputsDisabled || lifecycle === "active" || lifecycle === "past";
   const activePeriodDisabled = inputsDisabled || lifecycle === "past" || !secondaryOptions;
-  const excludeDateIntervals = secondaryOptions?.intervals
-    .map(({ activeFrom, activeThrough }) => ({
+  const excludeDateIntervals = secondaryOptions?.intervals.map(({ activeFrom, activeThrough }) => ({
       start: toPickerDate(activeFrom)!,
       end: toPickerDate(activeThrough)!,
     }));
-
+  if (operation === crudOps.create &&
+    formValues.productId === initialFormValues.productId &&
+    formValues.regionId === initialFormValues.regionId) {
+    excludeDateIntervals?.push({
+      start: toPickerDate(initialFormValues.activeFrom)!,
+      end: toPickerDate(initialFormValues.activeThrough)!,
+    });
+  }
   function isActivePeriodAvailable(date: Date, otherDate: Date | undefined) {
     if (!otherDate) {
       return true;
