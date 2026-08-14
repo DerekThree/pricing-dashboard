@@ -6,18 +6,18 @@ import MultiSelectField from "../../components/MultiSelectField";
 import {
   FeeType,
   type FeeOption,
-  type PricingPlanFeeRequest,
+  type PricingPlanFee,
   type ReasonOption,
 } from "../../generated/api/models";
 import { toDropdownOption } from "../../utils/formUtils";
 
 type PricingPlanFeeEditorProps = {
-  rows: PricingPlanFeeRequest[];
+  rows: PricingPlanFee[];
   productId: number;
   feeOptions?: FeeOption[];
   reasonOptions?: ReasonOption[];
   disabled: boolean;
-  onChange(fees: PricingPlanFeeRequest[]): void;
+  onChange(fees: PricingPlanFee[]): void;
 };
 
 export default function PricingPlanFeeEditor({
@@ -28,11 +28,11 @@ export default function PricingPlanFeeEditor({
   disabled,
   onChange,
 }: PricingPlanFeeEditorProps) {
-  function isIncompleteFee(fee: PricingPlanFeeRequest) {
+  function isIncompleteFee(fee: PricingPlanFee) {
     return Number.isNaN(fee.feeId) || Number.isNaN(fee.amount) || fee.amount <= 0;
   }
 
-  const [selectedFee, setSelectedFee] = useState<PricingPlanFeeRequest | null>(null);
+  const [selectedFee, setSelectedFee] = useState<PricingPlanFee | null>(null);
   const previousProductId = useRef(productId);
   const hasIncompleteFee = rows.some(isIncompleteFee);
   const hasAvailableFee = feeOptions?.some(
@@ -75,7 +75,7 @@ export default function PricingPlanFeeEditor({
   }, [productId, feeOptions, rows, disabled, onChange, selectedFee]);
 
   function addFee() {
-    const fee: PricingPlanFeeRequest = { feeId: NaN, amount: NaN, reasonIds: [] };
+    const fee: PricingPlanFee = { feeId: NaN, amount: NaN, reasonIds: [] };
 
     onChange([...rows, fee]);
     setSelectedFee(fee);
@@ -83,7 +83,7 @@ export default function PricingPlanFeeEditor({
     return fee;
   }
 
-  function removeFee(fee: PricingPlanFeeRequest) {
+  function removeFee(fee: PricingPlanFee) {
     const nextFees = rows.filter((currentFee) => currentFee !== fee);
 
     onChange(nextFees);
@@ -92,7 +92,7 @@ export default function PricingPlanFeeEditor({
     }
   }
 
-  function updateSelectedFee(updatedFee: Partial<PricingPlanFeeRequest>) {
+  function updateSelectedFee(updatedFee: Partial<PricingPlanFee>) {
     Object.assign(selectedFee!, updatedFee);
     onChange([...rows]);
   }

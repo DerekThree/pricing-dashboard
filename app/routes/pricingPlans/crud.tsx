@@ -25,7 +25,6 @@ import {
 import {
   type PricingPlanDetail,
   type PricingPlanRequest,
-  type PricingPlanFeeRequest,
   type PricingPlanOptions,
 } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";

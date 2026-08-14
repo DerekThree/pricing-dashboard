@@ -7,7 +7,7 @@
  */
 import type { Id } from './id';
 
-export interface PricingPlanFeeRequest {
+export interface PricingPlanFee {
   feeId: Id;
   /**
    * @minimum 0

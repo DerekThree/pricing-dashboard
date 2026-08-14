@@ -47,7 +47,7 @@ export * from './pricingPlanCodeAndName';
 export * from './pricingPlanDetail';
 export * from './pricingPlanDetailAllOf';
 export * from './pricingPlanDetailResponse';
-export * from './pricingPlanFeeRequest';
+export * from './pricingPlanFee';
 export * from './pricingPlanInterval';
 export * from './pricingPlanListItem';
 export * from './pricingPlanName';
