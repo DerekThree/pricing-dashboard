@@ -29,7 +29,7 @@ export default function PricingPlanFeeEditor({
   onChange,
 }: PricingPlanFeeEditorProps) {
   function isIncompleteFee(fee: PricingPlanFee) {
-    return Number.isNaN(fee.feeId) || Number.isNaN(fee.amount) || fee.amount <= 0;
+    return Number.isNaN(fee.feeId) || Number.isNaN(fee.amount) || fee.amount < 0;
   }
 
   const [selectedFee, setSelectedFee] = useState<PricingPlanFee | null>(null);
@@ -127,10 +127,11 @@ export default function PricingPlanFeeEditor({
           <span>Fee Amount{selectedFeeType === FeeType.PERCENT ? " (%)" : " ($)"}</span>
           <input
             type="number"
-            value={selectedFee?.amount || ""}
+            value={selectedFee?.amount ?? ""}
+            min={0}
             disabled={disabled || !selectedFee}
             placeholder={!selectedFee ? "No fee selected" : undefined}
-            onChange={(event) => updateSelectedFee({ amount: Number(event.target.value) })}
+            onChange={(event) => updateSelectedFee({ amount: event.target.value === "" ? NaN : Number(event.target.value) })}
           />
         </label>
         <MultiSelectField

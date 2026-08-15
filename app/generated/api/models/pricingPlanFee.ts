@@ -9,10 +9,7 @@ import type { Id } from './id';
 
 export interface PricingPlanFee {
   feeId: Id;
-  /**
-   * @minimum 0
-   * @exclusiveMinimum
-   */
+  /** @minimum 0 */
   amount: number;
   reasonIds: Id[];
 }
