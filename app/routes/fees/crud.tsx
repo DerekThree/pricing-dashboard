@@ -1,6 +1,6 @@
 import "./styles.css";
 
-import { useState, type FormEvent } from "react";
+import { type FormEvent } from "react";
 import { useActionData, useLoaderData, useSubmit, type SubmitTarget } from "react-router";
 
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
@@ -40,18 +40,12 @@ export default function FeePage() {
   const { actionError } = useActionData<typeof clientAction>() ?? {};
   const { formValues, updateField } = useFormValues(initialFormValues);
   const submit = useSubmit();
-  const [productTypesError, setProductTypesError] = useState<string | null>(null);
 
   const inputsDisabled =
     !!loaderError || operation === crudOps.view || operation === crudOps.delete;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (formValues.productTypes.length === 0) {
-      setProductTypesError("Select at least one Product Type.");
-      return;
-    }
-
     submit(
       { ...formValues, feeCode: formValues.feeCode.toUpperCase() } as unknown as SubmitTarget,
       { method: "post", encType: "application/json" },
@@ -60,7 +54,6 @@ export default function FeePage() {
 
   function addProductType(productType: ProductType) {
     updateField("productTypes", [...formValues.productTypes, productType]);
-    setProductTypesError(null);
   }
 
   function removeProductType(productType: ProductType) {
@@ -81,7 +74,6 @@ export default function FeePage() {
         />
         {loaderError && <p className="page-error">{loaderError}</p>}
         {actionError && <p className="page-error">{actionError}</p>}
-        {productTypesError && <p className="page-error">{productTypesError}</p>}
         <div className="form-grid">
           <div className="crud-page-form-column">
             <label className="crud-page-form-field fee-form-field--code">
