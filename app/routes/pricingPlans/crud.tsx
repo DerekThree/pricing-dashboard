@@ -337,7 +337,8 @@ export default function PricingPlanPage() {
               rows={formValues.fees}
               productId={formValues.productId}
               feeOptions={secondaryOptions?.fees ?? options.fees}
-              reasonOptions={secondaryOptions?.reasons ?? options.reasons}
+              reasonOptions={(secondaryOptions?.reasons ?? options.reasons)?.filter(({ productTypes }) =>
+                productTypes.includes(options.products.find(({ id }) => id === formValues.productId)!.type))}
               disabled={configurationDisabled || !secondaryOptions}
               onChange={(fees) => updateField("fees", fees)}
             />

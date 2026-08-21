@@ -8,9 +8,11 @@
 import type { Id } from './id';
 import type { ReasonCode } from './reasonCode';
 import type { ReasonName } from './reasonName';
+import type { ProductType } from './productType';
 
 export interface ReasonOption {
   id: Id;
   code: ReasonCode;
   name: ReasonName;
+  productTypes: ProductType[];
 }
