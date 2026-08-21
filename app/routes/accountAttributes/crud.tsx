@@ -123,7 +123,7 @@ export default function AccountAttributePage() {
                 disabled={inputsDisabled}
                 options={productTypeOptions}
                 selectedValues={formValues.productTypes}
-                title="Product Types"
+                title="Applicable Product Types"
                 onAdd={addProductType}
                 onRemove={removeProductType}
               />

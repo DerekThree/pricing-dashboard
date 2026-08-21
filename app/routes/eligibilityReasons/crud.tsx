@@ -12,6 +12,7 @@ import {
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import Dropdown from "../../components/Dropdown";
 import EditableListField from "../../components/EditableListField";
+import MultiSelectField from "../../components/MultiSelectField";
 import useFormValues from "../../hooks/useFormValues";
 import {
   createReason,
@@ -31,6 +32,7 @@ import {
 import { routeUrls } from "../../routes";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
+import { productTypeOptions } from "../products/productTypeLabels";
 
 const emptyFormValues: ReasonRequest = {
   reasonCode: "",
@@ -73,6 +75,11 @@ export default function EligibilityReasonPage() {
 
   const attributeType = options.attributes.find((attribute) => attribute.id === attributeId)?.type;
   const attributeDropdownOptions = options.attributes.map(toDropdownOption);
+  const productTypes = productTypeOptions
+    .map(({ value }) => value)
+    .filter((productType) => formValues.conditions.every(({ attributeId }) =>
+      options.attributes.find((attribute) => attribute.id === attributeId)
+        ?.productTypes.includes(productType) === true));
   const operatorDropdownOptions = attributeType === AttributeType.TEXT
     ? [ReasonOperator["="], ReasonOperator["<>"]].map(toDropdownOption)
     : Object.values(ReasonOperator).map(toDropdownOption);
@@ -172,6 +179,14 @@ export default function EligibilityReasonPage() {
               onAdd={addCondition}
               onRemove={removeCondition}
               onSelectionChanged={(condition) => setSelectedCondition(condition)}
+            />
+            <MultiSelectField
+              disabled
+              options={productTypeOptions}
+              selectedValues={productTypes}
+              title="Applicable Product Types"
+              onAdd={() => undefined}
+              onRemove={() => undefined}
             />
           </div>
           {!inputsDisabled && <div className="crud-page-form-column">

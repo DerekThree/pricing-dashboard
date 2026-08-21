@@ -9,10 +9,13 @@ import type { Id } from './id';
 import type { AttributeCode } from './attributeCode';
 import type { AttributeName } from './attributeName';
 import type { AttributeType } from './attributeType';
+import type { ProductType } from './productType';
 
 export interface AttributeOption {
   id: Id;
   code: AttributeCode;
   name: AttributeName;
   type: AttributeType;
+  /** @minItems 1 */
+  productTypes: ProductType[];
 }
