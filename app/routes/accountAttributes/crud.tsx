@@ -5,6 +5,7 @@ import { useActionData, useLoaderData, useSubmit, type SubmitTarget } from "reac
 
 import Dropdown from "../../components/Dropdown";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
+import MultiSelectField from "../../components/MultiSelectField";
 import useFormValues from "../../hooks/useFormValues";
 import {
   createAttribute,
@@ -12,16 +13,18 @@ import {
   getAttribute,
   updateAttribute,
 } from "../../generated/api/client";
-import { AttributeType, type AttributeRequest } from "../../generated/api/models";
+import { AttributeType, ProductType, type AttributeRequest } from "../../generated/api/models";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
+import { productTypeOptions } from "../products/productTypeLabels";
 import { attributeTypeOptions } from "./attributeTypeLabels";
 
 const emptyFormValues: AttributeRequest = {
   attributeCode: "",
   attributeName: "",
   attributeType: "" as AttributeType,
+  productTypes: [],
   updatedBy: "",
 };
 
@@ -51,6 +54,17 @@ export default function AccountAttributePage() {
     submit(
       { ...formValues, attributeCode: formValues.attributeCode.toUpperCase() } as unknown as SubmitTarget,
       { method: "post", encType: "application/json" },
+    );
+  }
+
+  function addProductType(productType: ProductType) {
+    updateField("productTypes", [...formValues.productTypes, productType]);
+  }
+
+  function removeProductType(productType: ProductType) {
+    updateField(
+      "productTypes",
+      formValues.productTypes.filter((currentProductType) => currentProductType !== productType),
     );
   }
 
@@ -104,6 +118,16 @@ export default function AccountAttributePage() {
                 onChange={(value) => updateField("attributeType", value)}
               />
             </div>
+            <label className="crud-page-form-field">
+              <MultiSelectField
+                disabled={inputsDisabled}
+                options={productTypeOptions}
+                selectedValues={formValues.productTypes}
+                title="Product Types"
+                onAdd={addProductType}
+                onRemove={removeProductType}
+              />
+            </label>
           </div>
         </div>
       </form>

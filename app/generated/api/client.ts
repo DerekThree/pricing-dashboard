@@ -1071,6 +1071,11 @@ export type updateFeeResponse404 = {
   status: 404
 }
 
+export type updateFeeResponse409 = {
+  data: ErrorResponse
+  status: 409
+}
+
 export type updateFeeResponse500 = {
   data: ErrorResponse
   status: 500
@@ -1084,7 +1089,7 @@ export type updateFeeResponse503 = {
 export type updateFeeResponseSuccess = (updateFeeResponse200) & {
   headers: Headers;
 };
-export type updateFeeResponseError = (updateFeeResponse400 | updateFeeResponse404 | updateFeeResponse500 | updateFeeResponse503) & {
+export type updateFeeResponseError = (updateFeeResponse400 | updateFeeResponse404 | updateFeeResponse409 | updateFeeResponse500 | updateFeeResponse503) & {
   headers: Headers;
 };
 
@@ -1727,6 +1732,11 @@ export type updateAttributeResponse404 = {
   status: 404
 }
 
+export type updateAttributeResponse409 = {
+  data: ErrorResponse
+  status: 409
+}
+
 export type updateAttributeResponse500 = {
   data: ErrorResponse
   status: 500
@@ -1740,7 +1750,7 @@ export type updateAttributeResponse503 = {
 export type updateAttributeResponseSuccess = (updateAttributeResponse200) & {
   headers: Headers;
 };
-export type updateAttributeResponseError = (updateAttributeResponse400 | updateAttributeResponse404 | updateAttributeResponse500 | updateAttributeResponse503) & {
+export type updateAttributeResponseError = (updateAttributeResponse400 | updateAttributeResponse404 | updateAttributeResponse409 | updateAttributeResponse500 | updateAttributeResponse503) & {
   headers: Headers;
 };
 
@@ -2123,6 +2133,11 @@ export type updateReasonResponse404 = {
   status: 404
 }
 
+export type updateReasonResponse409 = {
+  data: ErrorResponse
+  status: 409
+}
+
 export type updateReasonResponse500 = {
   data: ErrorResponse
   status: 500
@@ -2136,7 +2151,7 @@ export type updateReasonResponse503 = {
 export type updateReasonResponseSuccess = (updateReasonResponse200) & {
   headers: Headers;
 };
-export type updateReasonResponseError = (updateReasonResponse400 | updateReasonResponse404 | updateReasonResponse500 | updateReasonResponse503) & {
+export type updateReasonResponseError = (updateReasonResponse400 | updateReasonResponse404 | updateReasonResponse409 | updateReasonResponse500 | updateReasonResponse503) & {
   headers: Headers;
 };
 

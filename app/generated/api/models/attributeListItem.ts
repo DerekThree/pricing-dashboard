@@ -8,6 +8,7 @@
 import type { Id } from './id';
 import type { AttributeCodeAndName } from './attributeCodeAndName';
 import type { AttributeType } from './attributeType';
+import type { ProductType } from './productType';
 import type { DateTime } from './dateTime';
 import type { UpdatedBy } from './updatedBy';
 
@@ -15,6 +16,8 @@ export interface AttributeListItem {
   id: Id;
   attribute: AttributeCodeAndName;
   type: AttributeType;
+  /** @minItems 1 */
+  productTypes: ProductType[];
   updatedOn: DateTime;
   updatedBy: UpdatedBy;
 }

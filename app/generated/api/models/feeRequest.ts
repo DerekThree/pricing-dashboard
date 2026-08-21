@@ -15,6 +15,7 @@ export interface FeeRequest {
   feeCode: FeeCode;
   feeName: FeeName;
   feeType: FeeType;
+  /** @minItems 1 */
   productTypes: ProductType[];
   updatedBy: UpdatedBy;
 }

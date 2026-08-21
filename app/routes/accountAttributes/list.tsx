@@ -6,7 +6,7 @@ import { listAttributes } from "../../generated/api/client";
 import { AttributeType, type AttributeListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
-import { dateTimeFormatter } from "../../utils/valueFormatters";
+import { dateTimeFormatter, productTypesFormatter } from "../../utils/valueFormatters";
 import { attributeTypeLabels } from "./attributeTypeLabels";
 
 const columnDefs: ColDef<AttributeListItem>[] = [
@@ -15,6 +15,11 @@ const columnDefs: ColDef<AttributeListItem>[] = [
     field: "type",
     headerName: "Attribute Type",
     valueFormatter: ({ value }) => attributeTypeLabels[value as AttributeType],
+  },
+  {
+    field: "productTypes",
+    headerName: "Product Types",
+    valueFormatter: productTypesFormatter,
   },
   { field: "updatedOn", headerName: "Updated On", valueFormatter: dateTimeFormatter },
   { field: "updatedBy", headerName: "Updated By" },

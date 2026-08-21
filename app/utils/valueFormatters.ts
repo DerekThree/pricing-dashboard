@@ -1,7 +1,16 @@
 import type { ValueFormatterParams } from "ag-grid-community";
 
+import { ProductType } from "../generated/api/models/productType";
+import { productTypeLabels } from "../routes/products/productTypeLabels";
+
 export function listFormatter({ value }: ValueFormatterParams): string {
   return (value as string[]).join(", ");
+}
+
+export function productTypesFormatter({ value }: ValueFormatterParams): string {
+  return (value as ProductType[])
+    .map((productType) => productTypeLabels[productType])
+    .join(", ");
 }
 
 export function dateTimeFormatter({ value }: ValueFormatterParams): string {

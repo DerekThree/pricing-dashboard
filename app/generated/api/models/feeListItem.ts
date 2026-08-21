@@ -16,6 +16,7 @@ export interface FeeListItem {
   id: Id;
   fee: FeeCodeAndName;
   feeType: FeeType;
+  /** @minItems 1 */
   productTypes: ProductType[];
   updatedOn: DateTime;
   updatedBy: UpdatedBy;

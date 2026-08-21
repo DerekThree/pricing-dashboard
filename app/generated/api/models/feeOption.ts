@@ -16,5 +16,6 @@ export interface FeeOption {
   code: FeeCode;
   name: FeeName;
   type: FeeType;
+  /** @minItems 1 */
   productTypes: ProductType[];
 }

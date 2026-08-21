@@ -3,11 +3,10 @@ import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
 import { listFees } from "../../generated/api/client";
-import { FeeType, ProductType, type FeeListItem } from "../../generated/api/models";
+import { FeeType, type FeeListItem } from "../../generated/api/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
-import { dateTimeFormatter } from "../../utils/valueFormatters";
-import { productTypeLabels } from "../products/productTypeLabels";
+import { dateTimeFormatter, productTypesFormatter } from "../../utils/valueFormatters";
 import { feeTypeLabels } from "./feeTypeLabels";
 
 const columnDefs: ColDef<FeeListItem>[] = [
@@ -20,9 +19,7 @@ const columnDefs: ColDef<FeeListItem>[] = [
   {
     field: "productTypes",
     headerName: "Product Types",
-    valueFormatter: ({ value }) => (value as ProductType[])
-      .map((productType) => productTypeLabels[productType])
-      .join(", "),
+    valueFormatter: productTypesFormatter,
   },
   { field: "updatedOn", headerName: "Updated On", valueFormatter: dateTimeFormatter },
   { field: "updatedBy", headerName: "Updated By" },

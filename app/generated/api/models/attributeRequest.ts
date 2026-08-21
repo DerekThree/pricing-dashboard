@@ -8,11 +8,14 @@
 import type { AttributeCode } from './attributeCode';
 import type { AttributeName } from './attributeName';
 import type { AttributeType } from './attributeType';
+import type { ProductType } from './productType';
 import type { UpdatedBy } from './updatedBy';
 
 export interface AttributeRequest {
   attributeCode: AttributeCode;
   attributeName: AttributeName;
   attributeType: AttributeType;
+  /** @minItems 1 */
+  productTypes: ProductType[];
   updatedBy: UpdatedBy;
 }
