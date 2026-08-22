@@ -295,10 +295,7 @@ export default function PricingPlanPage() {
                 disabled={configurationDisabled || activePeriodDisabled}
                 endDate={toPickerDate(formValues.activeThrough)}
                 excludeDateIntervals={excludeDateIntervals}
-                // filterDate={(date) =>
-                //   isActivePeriodAvailable(date, toPickerDate(formValues.activeThrough))}
                 id="active-from"
-                // maxDate={toPickerDate(formValues.activeThrough)}
                 minDate={toPickerDate(secondaryOptions?.currentDate ?? options.currentDate)}
                 required
                 selected={toPickerDate(formValues.activeFrom)}
@@ -342,17 +339,6 @@ export default function PricingPlanPage() {
               disabled={configurationDisabled || !secondaryOptions}
               onChange={(fees) => updateField("fees", fees)}
             />
-          </div>
-          <div className="crud-page-form-column">
-              <EditableListField
-                title="Rates"
-                columnDefs={[{ field: "name" }]}
-                rowData={[]}
-                disabled={inputsDisabled}
-                onAdd={() => ({ name: "new"})}
-                onRemove={() => {}}
-                onSelectionChanged={() => {}}
-              />
           </div>
         </div>
       </form>
