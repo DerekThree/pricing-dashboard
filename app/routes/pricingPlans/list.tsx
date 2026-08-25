@@ -1,5 +1,5 @@
 import { useLoaderData } from "react-router";
-import type { ColDef } from "ag-grid-community";
+import type { ColDef, ValueFormatterParams } from "ag-grid-community";
 import { useNavigate } from "react-router";
 
 import ListPage from "../../components/ListPage";
@@ -12,7 +12,7 @@ import PageTopMenu from "~/app/components/PageTopMenu";
 import DataTable from "~/app/components/DataTable";
 import { useState } from "react";
 
-function formatDate(value: unknown) {
+function dateFormatter({ value }: ValueFormatterParams) {
   return typeof value === "string" ? value : "";
 }
 
@@ -20,8 +20,8 @@ const columnDefs: ColDef<PricingPlanListItem>[] = [
   { field: "pricingPlan", headerName: "Pricing Plan" },
   { field: "product", headerName: "Product" },
   { field: "region", headerName: "Region" },
-  { field: "activeFrom", headerName: "Active From", valueFormatter: dateTimeFormatter },
-  { field: "activeThrough", headerName: "Active Through", valueFormatter: dateTimeFormatter },
+  { field: "activeFrom", headerName: "Active From", valueFormatter: dateFormatter },
+  { field: "activeThrough", headerName: "Active Through", valueFormatter: dateFormatter },
   { field: "updatedOn", headerName: "Updated On", valueFormatter: dateTimeFormatter },
   { field: "updatedBy", headerName: "Updated By" },
 ];
