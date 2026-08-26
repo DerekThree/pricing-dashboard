@@ -5,12 +5,10 @@
  * REST API for managing branches, regions, products, and pricing plans.
  * OpenAPI spec version: 1.0.0
  */
-import type { Id } from './id';
-import type { ReasonOperator } from './reasonOperator';
+import type { AttributeCode } from './attributeCode';
 import type { AccountAttributeValue } from './accountAttributeValue';
 
-export interface ReasonCondition {
-  attributeId: Id;
-  operator: ReasonOperator;
+export interface AccountAttribute {
+  code: AttributeCode;
   value: AccountAttributeValue;
 }

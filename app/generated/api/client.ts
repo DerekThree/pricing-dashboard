@@ -9,6 +9,8 @@ import type {
   AttributeDetailResponse,
   AttributeListItem,
   AttributeRequest,
+  BatchRequest,
+  BatchResult,
   BranchDetailResponse,
   BranchListItem,
   BranchRequest,
@@ -35,10 +37,60 @@ import type {
   RegionOptions,
   RegionRequest,
   SimulatorDate,
+  SimulatorOptions,
   SyntheticServiceUnavailableResponse
 } from './models';
 
 import { apiMutator } from '../../utils/apiMutator';
+/**
+ * @summary Price a batch synchronously
+ */
+export type postBatchResponse200 = {
+  data: BatchResult
+  status: 200
+}
+
+export type postBatchResponse400 = {
+  data: ErrorResponse
+  status: 400
+}
+
+export type postBatchResponse503 = {
+  data: ErrorResponse
+  status: 503
+}
+    
+export type postBatchResponseSuccess = (postBatchResponse200) & {
+  headers: Headers;
+};
+export type postBatchResponseError = (postBatchResponse400 | postBatchResponse503) & {
+  headers: Headers;
+};
+
+export type postBatchResponse = (postBatchResponseSuccess | postBatchResponseError)
+
+export const getPostBatchUrl = () => {
+
+
+  
+
+  return `http://localhost:8080/batch`
+}
+
+export const postBatch = async (batchRequest: BatchRequest, options?: RequestInit): Promise<postBatchResponse> => {
+  
+  return apiMutator<postBatchResponse>(getPostBatchUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      batchRequest,)
+  }
+);}
+
+
+
 /**
  * @summary List all branches
  */
@@ -1907,6 +1959,54 @@ export const setSimulatorDate = async (simulatorDate: SimulatorDate, options?: R
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
       simulatorDate,)
+  }
+);}
+
+
+
+/**
+ * @summary Get available simulator options
+ */
+export type getSimulatorOptionsResponse200 = {
+  data: SimulatorOptions
+  status: 200
+}
+
+export type getSimulatorOptionsResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type getSimulatorOptionsResponse503 = {
+  data: SyntheticServiceUnavailableResponse
+  status: 503
+}
+    
+export type getSimulatorOptionsResponseSuccess = (getSimulatorOptionsResponse200) & {
+  headers: Headers;
+};
+export type getSimulatorOptionsResponseError = (getSimulatorOptionsResponse500 | getSimulatorOptionsResponse503) & {
+  headers: Headers;
+};
+
+export type getSimulatorOptionsResponse = (getSimulatorOptionsResponseSuccess | getSimulatorOptionsResponseError)
+
+export const getGetSimulatorOptionsUrl = () => {
+
+
+  
+
+  return `http://localhost:8080/simulator/options`
+}
+
+export const getSimulatorOptions = async ( options?: RequestInit): Promise<getSimulatorOptionsResponse> => {
+  
+  return apiMutator<getSimulatorOptionsResponse>(getGetSimulatorOptionsUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
   }
 );}
 

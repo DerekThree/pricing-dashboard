@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ReasonConditionValue = string | number | boolean;
+export type AccountAttributeValue = string | number | boolean;
