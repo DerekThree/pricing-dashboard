@@ -102,7 +102,7 @@ export default function RegionPage() {
         />
         {loaderError && <p className="page-error">{loaderError}</p>}
         {actionError && <p className="page-error">{actionError}</p>}
-        <div className="form-grid region-form-grid">
+        <div className="form-grid">
           <div className="crud-page-form-column">
             <label className="crud-page-form-field region-form-field--code">
               <span>Region Code</span>

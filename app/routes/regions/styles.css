@@ -1,11 +1,3 @@
-.region-form-grid {
-  grid-template-columns:
-    minmax(0, 24rem)
-    minmax(0, 1fr)
-    minmax(0, 1fr)
-    minmax(0, 1fr);
-}
-
 .region-form-field--code {
   width: 9.3rem;
 }

@@ -142,7 +142,7 @@ export default function EligibilityReasonPage() {
         />
         {loaderError && <p className="page-error">{loaderError}</p>}
         {actionError && <p className="page-error">{actionError}</p>}
-        <div className="form-grid eligibility-reason-form-grid">
+        <div className="form-grid">
           <div className="crud-page-form-column">
             <label className="crud-page-form-field eligibility-reason-form-field--code">
               <span>Reason Code</span>
