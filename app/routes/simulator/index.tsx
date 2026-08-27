@@ -2,9 +2,14 @@ import "react-datepicker/dist/react-datepicker.css";
 import "./styles.css";
 
 import type { ColDef } from "ag-grid-community";
-import { type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
-import { useLoaderData } from "react-router";
+import {
+  type ClientActionFunctionArgs,
+  type SubmitTarget,
+  useFetcher,
+  useLoaderData,
+} from "react-router";
 
 import Dropdown, { type DropdownOption } from "../../components/Dropdown";
 import EditableListField from "../../components/EditableListField";
@@ -18,9 +23,12 @@ import {
 import {
   AttributeType,
   BatchAccountStatus,
+  BatchFeeStatus,
+  Decision,
   FeeType,
   type AccountAttributeValue,
   type BatchAccountResult,
+  type BatchRequest,
   type SimulatorOptions,
 } from "../../generated/api/models";
 import { getErrorMessage } from "../../utils/apiUtils";
@@ -107,13 +115,21 @@ export async function clientLoader() {
   };
 }
 
+export async function clientAction({ request }: ClientActionFunctionArgs) {
+  const response = await postBatch(await request.json() as BatchRequest);
+
+  return response.status === 200
+    ? { accounts: response.data.accounts, actionError: null }
+    : { accounts: [], actionError: getErrorMessage(response.data, response.status) };
+}
+
 export default function SimulatorPage() {
   const { currentDate, dateLoaded, options, loaderError } = useLoaderData<typeof clientLoader>();
+  const fetcher = useFetcher<typeof clientAction>();
   const [applicationDate, setApplicationDate] = useState(currentDate);
   const [actionError, setActionError] = useState<string | null>(null);
   const [accounts, setAccounts] = useState<AccountDraft[]>([]);
   const [accountResults, setAccountResults] = useState<BatchAccountResult[]>([]);
-  const [pending, setPending] = useState(false);
   const [resultView, setResultView] = useState(false);
   const [selectedAccountNumber, setSelectedAccountNumber] = useState<string | null>(null);
   const nextAccountNumber = useRef(10000001);
@@ -136,6 +152,10 @@ export default function SimulatorPage() {
   const selectedAccountResult = accountResults.find(
     ({ accountNumber }) => accountNumber === selectedAccountNumber,
   );
+  const selectedFeeResult = selectedAccountResult?.fees?.find(
+    ({ feeRequestId }) => feeRequestId === selectedFeeRequest?.feeRequestId,
+  );
+  const pending = fetcher.state !== "idle";
   const canSend = accounts.length > 0 && accounts.every(isSubmittableAccount);
   const productOptions = options.products.map(toCodeDropdownOption);
   const branchOptions = options.branches.map(toCodeDropdownOption);
@@ -167,13 +187,37 @@ export default function SimulatorPage() {
     valueFormatter: ({ data }) =>
       !data || isIncompleteAccount(data) ? "Incomplete" : data.accountNumber,
   }];
-  const feeColumnDefs: ColDef<FeeRequestDraft>[] = [{
-    field: "code",
-    valueFormatter: ({ data }) => !data || isIncompleteFeeRequest(data)
-      ? "Incomplete"
-      : options.fees.find(({ code }) => code === data.code)!.name,
-  }];
+  const feeColumnDefs: ColDef<FeeRequestDraft>[] = [
+    {
+      field: "code",
+      valueFormatter: ({ data }) => !data || isIncompleteFeeRequest(data)
+        ? "Incomplete"
+        : options.fees.find(({ code }) => code === data.code)!.name,
+    },
+    {
+      cellStyle: { paddingRight: "0.5rem", textAlign: "right" },
+      flex: 0,
+      headerName: "Amount",
+      maxWidth: 64,
+      minWidth: 64,
+      valueGetter: ({ data }) => {
+        const result = selectedAccountResult?.fees?.find(
+          ({ feeRequestId }) => feeRequestId === data?.feeRequestId,
+        );
 
+        if (!result) {
+          return;
+        }
+
+        if (result.status !== BatchFeeStatus.OK) {
+          return "Error";
+        }
+
+        return result.decision === Decision.WAIVED ? "Waived" : `$${result.amount}`;
+      },
+      width: 64,
+    },
+  ];
   function addAccount() {
     const account: AccountDraft = {
       accountNumber: String(nextAccountNumber.current++),
@@ -290,7 +334,7 @@ export default function SimulatorPage() {
     }
   }
 
-  async function sendBatch(event: FormEvent<HTMLFormElement>) {
+  function sendBatch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!accounts.every(isSubmittableAccount) || accounts.length === 0) {
       return;
@@ -299,9 +343,7 @@ export default function SimulatorPage() {
     setActionError(null);
     setAccountResults([]);
     setResultView(true);
-    setPending(true);
-
-    const response = await postBatch({
+    fetcher.submit({
       batchId: crypto.randomUUID(),
       accounts: accounts.map(({
         accountNumber,
@@ -324,16 +366,20 @@ export default function SimulatorPage() {
           transactionAmount,
         })),
       })),
-    });
-
-    setPending(false);
-    if (response.status === 200) {
-      setAccountResults(response.data.accounts);
-    } else {
-      setResultView(false);
-      setActionError(getErrorMessage(response.data, response.status));
-    }
+    } as unknown as SubmitTarget, { method: "post", encType: "application/json" });
   }
+
+  useEffect(() => {
+    if (fetcher.state !== "idle" || !fetcher.data) {
+      return;
+    }
+
+    setAccountResults(fetcher.data.accounts);
+    if (fetcher.data.actionError) {
+      setResultView(false);
+      setActionError(fetcher.data.actionError);
+    }
+  }, [fetcher.data, fetcher.state]);
 
   function resetBatch() {
     setActionError(null);
@@ -354,16 +400,19 @@ export default function SimulatorPage() {
       <div className="form-grid simulator-form-grid">
         <div className="simulator-form-column">
           <div className="crud-page-form-column">
-            <label className="crud-page-form-field">
-              <span>Application Date</span>
-              <input
-                type="date"
-                value={applicationDate}
+            <div className="crud-page-form-field">
+              <label htmlFor="application-date">Application Date</label>
+              <DatePicker
+                autoComplete="off"
+                dateFormat="MM/dd/yyy"
                 disabled={!dateLoaded}
+                id="application-date"
                 required
-                onChange={(event) => submitDate(event.target.value)}
+                selected={toPickerDate(applicationDate)}
+                shouldCloseOnSelect
+                onChange={(date: Date | null) => date && submitDate(toRequestDate(date))}
               />
-            </label>
+            </div>
           </div>
           <div className="crud-page-form-column">
             <EditableListField
@@ -476,7 +525,7 @@ export default function SimulatorPage() {
               disabled={!selectedProduct}
               hideButtons={resultView}
               rowData={selectedAccount?.feeRequests ?? []}
-              title="Fee Requests"
+              title="Fees"
               onAdd={addFeeRequest}
               onRemove={removeFeeRequest}
               onSelectionChanged={(feeRequest) => updateSelectedAccount({
@@ -526,6 +575,40 @@ export default function SimulatorPage() {
               </span>
             </div>
           </div>
+          {selectedFeeResult && (
+            <div className="crud-page-form-column simulator-fee-response">
+              <div className="simulator-response-row">
+                <span>Fee Name</span>
+                <span className="simulator-response-value">{selectedFee!.name}</span>
+              </div>
+              <div className="simulator-response-row">
+                <span>Status</span>
+                <span className="simulator-response-value">{selectedFeeResult.status}</span>
+              </div>
+              {selectedFeeResult.status === BatchFeeStatus.OK && (
+                <div className="simulator-response-row">
+                  <span>Decision</span>
+                  <span className="simulator-response-value">{selectedFeeResult.decision}</span>
+                </div>
+              )}
+              {selectedFeeResult.decision === Decision.CHARGED && (
+                <div className="simulator-response-row">
+                  <span>Amount</span>
+                  <span className="simulator-response-value">{selectedFeeResult.amount}</span>
+                </div>
+              )}
+              {selectedFeeResult.decision === Decision.WAIVED && (
+                <EditableListField<{ code: string }>
+                  columnDefs={[{ field: "code" }]}
+                  disabled
+                  rowData={selectedFeeResult.reasons!.map((code) => ({ code }))}
+                  title="Eligibility Reasons"
+                  onAdd={() => undefined}
+                  onRemove={() => undefined}
+                />
+              )}
+            </div>
+          )}
         </div>
       </div>
     </form>

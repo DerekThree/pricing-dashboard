@@ -101,13 +101,31 @@ export default function PricingPlanFeeEditor({
       <Fragment>
         <EditableListField
           addDisabled={disabled || hasIncompleteFee || !hasAvailableFee}
-          columnDefs={[{
-            field: "feeId",
-            valueFormatter: ({ data }) => 
-              !data || isIncompleteFee(data)
-                ? "Incomplete"
-                : feeOptions?.find((fee) => fee.id === data.feeId)?.name ?? "Unavailable",
-          }]}
+          columnDefs={[
+            {
+              field: "feeId",
+              valueFormatter: ({ data }) =>
+                !data || isIncompleteFee(data)
+                  ? "Incomplete"
+                  : feeOptions?.find((fee) => fee.id === data.feeId)?.name ?? "Unavailable",
+            },
+            {
+              cellStyle: { paddingRight: "0.5rem", textAlign: "right" },
+              flex: 0,
+              headerName: "Amount",
+              maxWidth: 64,
+              minWidth: 64,
+              valueGetter: ({ data }) => {
+                const fee = feeOptions?.find(({ id }) => id === data?.feeId);
+                if (!data || isIncompleteFee(data) || !fee) {
+                  return;
+                }
+
+                return fee.type === FeeType.PERCENT ? `${data.amount}%` : `$${data.amount}`;
+              },
+              width: 64,
+            },
+          ]}
           hideButtons={disabled}
           rowData={rows}
           title="Fees"

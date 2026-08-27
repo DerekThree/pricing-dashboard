@@ -5,6 +5,10 @@
   min-width: 0;
 }
 
+.simulator-form-grid .react-datepicker-popper {
+  z-index: 20;
+}
+
 .simulator-response-row {
   color: rgb(51 65 85);
   display: flex;

@@ -559,6 +559,145 @@ test("submits every Account and correlates Account results across Reset", async 
   expect(requests[1].batchId).not.toBe(firstBatchId);
 });
 
+test("correlates reordered Fee Pricing Decisions and shows only outcome fields", async ({
+  page,
+}) => {
+  await page.route("http://localhost:8080/simulator/date", (route) => route.fulfill({
+    json: { currentDate: "2026-08-26" },
+  }));
+  await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
+    json: {
+      products: [{ id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" }],
+      branches: [{ id: 2, code: "BRANCH0001", name: "Main Branch" }],
+      fees: [
+        {
+          id: 3,
+          code: "MONTHLY",
+          name: "Monthly Fee",
+          type: "FLAT",
+          productTypes: ["DEPOSIT"],
+        },
+        {
+          id: 4,
+          code: "WIRE",
+          name: "Wire Fee",
+          type: "PERCENT",
+          productTypes: ["DEPOSIT"],
+        },
+      ],
+      attributes: [],
+    },
+  }));
+  await page.route("http://localhost:8080/batch", async (route) => {
+    const request = route.request().postDataJSON() as BatchRequest;
+
+    expect(request.accounts[0].fees).toEqual([
+      { feeRequestId: 1, code: "MONTHLY" },
+      { feeRequestId: 2, code: "MONTHLY" },
+      { feeRequestId: 3, code: "WIRE", transactionAmount: 100 },
+    ]);
+    expect(request.accounts[1].fees).toEqual([
+      { feeRequestId: 1, code: "MONTHLY" },
+    ]);
+    await route.fulfill({
+      json: {
+        batchId: request.batchId,
+        accounts: [
+          {
+            accountNumber: "10000002",
+            status: "OK",
+            pricingPlanCode: "PLAN0002",
+            fees: [{ feeRequestId: 1, status: "OK", decision: "CHARGED", amount: 3 }],
+          },
+          {
+            accountNumber: "10000001",
+            status: "OK",
+            pricingPlanCode: "PLAN0001",
+            fees: [
+              { feeRequestId: 2, status: "OK", decision: "CHARGED", amount: 12.5 },
+              { feeRequestId: 3, status: "ERROR" },
+              {
+                feeRequestId: 1,
+                status: "OK",
+                decision: "WAIVED",
+                reasons: ["LOYALTY", "VIP"],
+              },
+            ],
+          },
+        ],
+      },
+    });
+  });
+
+  await page.goto("/simulator");
+  const accounts = page.locator(".selection-list").filter({ hasText: "Accounts" });
+  const feeRequests = page.locator(".selection-list").filter({ hasText: "Fee Requests" });
+
+  async function selectOption(label: string, option: string) {
+    await page.getByLabel(label).click();
+    await page.getByText(option, { exact: true }).click();
+  }
+
+  await accounts.getByRole("button", { name: "Add" }).click();
+  await selectOption("Product", "PROD0001 - Checking");
+  await selectOption("Branch", "BRANCH0001 - Main Branch");
+
+  await feeRequests.getByRole("button", { name: "Add" }).click();
+  await selectOption("Fee Name", "MONTHLY - Monthly Fee");
+  await feeRequests.getByRole("button", { name: "Add" }).click();
+  await selectOption("Fee Name", "MONTHLY - Monthly Fee");
+  await feeRequests.getByRole("button", { name: "Add" }).click();
+  await selectOption("Fee Name", "WIRE - Wire Fee");
+  await page.getByLabel("Transaction Amount").fill("100");
+
+  await accounts.getByRole("button", { name: "Add" }).click();
+  await selectOption("Product", "PROD0001 - Checking");
+  await selectOption("Branch", "BRANCH0001 - Main Branch");
+  await feeRequests.getByRole("button", { name: "Add" }).click();
+  await selectOption("Fee Name", "MONTHLY - Monthly Fee");
+
+  await page.getByRole("button", { name: "Send" }).click();
+  await expect(page.getByRole("button", { name: "Reset" })).toBeEnabled();
+  await accounts.getByText("10000001", { exact: true }).click();
+
+  const feeResponse = page.locator(".simulator-fee-response");
+  await expect(feeResponse.getByText("Wire Fee", { exact: true })).toBeVisible();
+  await expect(feeResponse.getByText("ERROR", { exact: true })).toBeVisible();
+  await expect(feeResponse.getByText("Decision", { exact: true })).toHaveCount(0);
+  await expect(feeResponse.getByText("Amount", { exact: true })).toHaveCount(0);
+  await expect(feeResponse.getByText("Eligibility Reasons", { exact: true })).toHaveCount(0);
+  await expect(feeResponse.locator("input")).toHaveCount(0);
+
+  await feeRequests.locator(".ag-row").first().click();
+  await expect(feeResponse.getByText("Monthly Fee", { exact: true })).toBeVisible();
+  await expect(feeResponse.getByText("OK", { exact: true })).toBeVisible();
+  await expect(feeResponse.getByText("Decision", { exact: true })).toBeVisible();
+  await expect(feeResponse.getByText("WAIVED", { exact: true })).toBeVisible();
+  await expect(feeResponse.getByText("Amount", { exact: true })).toHaveCount(0);
+  const reasons = feeResponse.locator(".selection-list").filter({
+    hasText: "Eligibility Reasons",
+  });
+  await expect(reasons.getByText("LOYALTY", { exact: true })).toBeVisible();
+  await expect(reasons.getByText("VIP", { exact: true })).toBeVisible();
+  await expect(reasons.locator(".selection-list-table-disabled")).toBeVisible();
+  await expect(feeResponse.locator("input")).toHaveCount(0);
+
+  await feeRequests.locator(".ag-row").nth(1).click();
+  await expect(feeResponse.getByText("OK", { exact: true })).toBeVisible();
+  await expect(feeResponse.getByText("Decision", { exact: true })).toBeVisible();
+  await expect(feeResponse.getByText("CHARGED", { exact: true })).toBeVisible();
+  await expect(feeResponse.getByText("Amount", { exact: true })).toBeVisible();
+  await expect(feeResponse.getByText("12.5", { exact: true })).toBeVisible();
+  await expect(feeResponse.getByText("Eligibility Reasons", { exact: true })).toHaveCount(0);
+  await expect(feeResponse.locator("input")).toHaveCount(0);
+
+  await accounts.getByText("10000002", { exact: true }).click();
+  await expect(feeResponse.getByText("Monthly Fee", { exact: true })).toBeVisible();
+  await expect(feeResponse.getByText("3", { exact: true })).toBeVisible();
+  await accounts.getByText("10000001", { exact: true }).click();
+  await expect(feeResponse.getByText("12.5", { exact: true })).toBeVisible();
+});
+
 test("restores editable drafts after Batch HTTP and network failures", async ({ page }) => {
   let batchRequests = 0;
 
