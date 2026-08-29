@@ -57,6 +57,50 @@ type FeeRequestDraft = {
   transactionAmount?: number;
 };
 
+type DemoAccount = Pick<AccountDraft, "attributes" | "branchCode" | "productCode"> & {
+  transactionAmount: number;
+};
+
+const demoAccounts: DemoAccount[] = [
+  {
+    productCode: "CHK",
+    branchCode: "BR101",
+    attributes: { AGE: 38, BAL: 8450.75, OPENED: "2020-05-15", TENURE: 6 },
+    transactionAmount: 175.25,
+  },
+  {
+    productCode: "SAV",
+    branchCode: "BR200",
+    attributes: { AGE: 42, BAL: 24450.5, OPENED: "2019-03-12", TENURE: 7 },
+    transactionAmount: 240,
+  },
+  {
+    productCode: "AUTO",
+    branchCode: "BR100",
+    attributes: {
+      AGE: 34,
+      AUTOPAY: true,
+      INCOME: 82000,
+      LTV: 0.72,
+      STATE: "TX",
+      TERM: 60,
+    },
+    transactionAmount: 35000,
+  },
+  {
+    productCode: "CD12",
+    branchCode: "BR300",
+    attributes: { AGE: 62, BAL: 125000, OPENED: "2024-03-01" },
+    transactionAmount: 5000,
+  },
+  {
+    productCode: "CHKPLUS",
+    branchCode: "BR201",
+    attributes: { AGE: 51, BAL: 48500, OPENED: "2017-09-20", TENURE: 9 },
+    transactionAmount: 86.5,
+  },
+];
+
 type SubmittableFeeRequest = FeeRequestDraft & { code: string };
 type SubmittableAccount = Omit<AccountDraft, "branchCode" | "feeRequests" | "productCode"> & {
   branchCode: string;
@@ -185,7 +229,11 @@ export default function SimulatorPage() {
   const accountColumnDefs: ColDef<AccountDraft>[] = [{
     field: "accountNumber",
     valueFormatter: ({ data }) =>
-      !data || isIncompleteAccount(data) ? "Incomplete" : data.accountNumber,
+      !data || isIncompleteAccount(data)
+        ? "Incomplete"
+        : `${data.accountNumber} - ${options.products.find(
+          ({ code }) => code === data.productCode,
+        )!.name}`,
   }];
   const feeColumnDefs: ColDef<FeeRequestDraft>[] = [
     {
@@ -219,17 +267,34 @@ export default function SimulatorPage() {
     },
   ];
   function addAccount() {
-    const account: AccountDraft = {
-      accountNumber: String(nextAccountNumber.current++),
-      attributes: {},
-      feeRequests: [],
-      nextFeeRequestId: 1,
-    };
+    const newAccounts = demoAccounts.map((demoAccount) => {
+      const product = options.products.find(({ code }) => code === demoAccount.productCode)!;
+      const feeRequests = options.fees
+        .filter(({ productTypes }) => productTypes.includes(product.type))
+        .map((fee, index): FeeRequestDraft => ({
+          code: fee.code,
+          feeRequestId: index + 1,
+          transactionAmount: fee.type === FeeType.PERCENT
+            ? demoAccount.transactionAmount
+            : undefined,
+        }));
 
-    setAccounts([...accounts, account]);
-    setSelectedAccountNumber(account.accountNumber);
+      return {
+        accountNumber: String(nextAccountNumber.current++),
+        attributes: { ...demoAccount.attributes },
+        branchCode: demoAccount.branchCode,
+        feeRequests,
+        nextFeeRequestId: feeRequests.length + 1,
+        productCode: demoAccount.productCode,
+        selectedFeeRequestId: feeRequests[0]?.feeRequestId,
+      };
+    });
+    const selectedAccount = newAccounts.at(-1)!;
 
-    return account;
+    setAccounts([...accounts, ...newAccounts]);
+    setSelectedAccountNumber(selectedAccount.accountNumber);
+
+    return selectedAccount;
   }
 
   function removeAccount(account: AccountDraft) {
@@ -324,6 +389,10 @@ export default function SimulatorPage() {
 
   async function submitDate(currentDate: string) {
     setActionError(null);
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(currentDate)) {
+      return;
+    }
 
     const response = await setSimulatorDate({ currentDate });
     if (response.status === 200) {

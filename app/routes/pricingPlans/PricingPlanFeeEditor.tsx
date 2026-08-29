@@ -147,6 +147,7 @@ export default function PricingPlanFeeEditor({
             type="number"
             value={selectedFee?.amount ?? ""}
             min={0}
+            step={0.01}
             disabled={disabled || !selectedFee}
             placeholder={!selectedFee ? "No fee selected" : undefined}
             onChange={(event) => updateSelectedFee({ amount: event.target.value === "" ? NaN : Number(event.target.value) })}

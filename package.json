@@ -5,6 +5,7 @@
   "scripts": {
     "build": "react-router build",
     "clean:api": "powershell -NoProfile -Command \"Remove-Item -Recurse -Force app/generated/api/models -ErrorAction SilentlyContinue; Remove-Item -Force app/generated/api/client.ts -ErrorAction SilentlyContinue\"",
+    "demo:simulator": "node scripts/seed-simulator-demo.mjs",
     "dev": "react-router dev",
     "generate:api": "npm run clean:api && orval",
     "start": "react-router-serve ./build/server/index.js",
