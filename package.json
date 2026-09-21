@@ -7,20 +7,20 @@
     "clean:api": "powershell -NoProfile -Command \"Remove-Item -Recurse -Force app/generated/api/models -ErrorAction SilentlyContinue; Remove-Item -Force app/generated/api/client.ts -ErrorAction SilentlyContinue\"",
     "dev": "react-router dev",
     "generate:api": "npm run clean:api && orval",
-    "start": "react-router-serve ./build/server/index.js",
+    "start": "sirv build/client --single --host 0.0.0.0 --port 5173",
     "test:browser": "playwright test",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
     "@react-router/node": "7.14.0",
-    "@react-router/serve": "7.14.0",
     "ag-grid-react": "^35.3.1",
     "isbot": "^5.1.36",
     "react": "^19.2.4",
     "react-datepicker": "^9.1.0",
     "react-dom": "^19.2.4",
     "react-router": "7.14.0",
-    "react-select": "^5.10.2"
+    "react-select": "^5.10.2",
+    "sirv-cli": "^3.0.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
