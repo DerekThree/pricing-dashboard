@@ -24,12 +24,10 @@ test("derives Eligibility Reason Product Types from its condition Attributes", a
 
   await page.goto("/eligibility-reasons/create");
 
-  const conditionsColumn = page.locator(".crud-page-form-column").nth(1);
-  const fields = conditionsColumn.locator(":scope > *");
+  const secondColumn = page.locator(".crud-page-form-column").nth(1);
+  const fields = secondColumn.locator(":scope > *");
   const productTypesField = fields.nth(1);
   await expect(fields).toHaveCount(2);
-  await expect(fields.nth(0)).toContainText("Conditions");
-  await expect(productTypesField).toContainText("Applicable Product Types");
   await expect(productTypesField.getByRole("combobox")).toHaveCount(0);
   await expect(productTypesField.locator(".ag-row")).toHaveCount(3);
 

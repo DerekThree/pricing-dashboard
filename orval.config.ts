@@ -7,9 +7,7 @@ export default defineConfig({
       target: "app/generated/api/client.ts",
       schemas: "app/generated/api/models",
       client: "fetch",
-      baseUrl: {
-        getBaseUrlFromSpecification: true,
-      },
+      baseUrl: "",
       override: {
         mutator: {
           path: "app/utils/apiMutator.ts",

@@ -1,9 +1,11 @@
+import { getApiUrl } from "../config/api";
+
 export async function apiMutator<TResponse>(
   url: string,
   init?: RequestInit,
 ): Promise<TResponse> {
   try {
-    const response = await fetch(url, init);
+    const response = await fetch(getApiUrl(url), init);
     const body = [204, 205, 304].includes(response.status)
       ? null
       : await response.text();

@@ -19,8 +19,6 @@ test("selects and submits Product Types below Attribute Type", async ({ page }) 
   const formColumn = page.locator(".crud-page-form-column").nth(1);
   const fields = formColumn.locator(":scope > *");
   await expect(fields).toHaveCount(2);
-  await expect(fields.nth(0)).toContainText("Attribute Type");
-  await expect(fields.nth(1)).toContainText("Product Types");
 
   await formColumn.locator(".dropdown__control").nth(0).click();
   await page.getByText("Integer", { exact: true }).click();

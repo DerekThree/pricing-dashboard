@@ -74,7 +74,7 @@ export const getPostBatchUrl = () => {
 
   
 
-  return `http://localhost:8080/batch`
+  return `/batch`
 }
 
 export const postBatch = async (batchRequest: BatchRequest, options?: RequestInit): Promise<postBatchResponse> => {
@@ -123,7 +123,7 @@ export const getListBranchesUrl = () => {
 
   
 
-  return `http://localhost:8080/branches`
+  return `/branches`
 }
 
 export const listBranches = async ( options?: RequestInit): Promise<listBranchesResponse> => {
@@ -176,7 +176,7 @@ export const getCreateBranchUrl = () => {
 
   
 
-  return `http://localhost:8080/branches`
+  return `/branches`
 }
 
 export const createBranch = async (branchRequest: BranchRequest, options?: RequestInit): Promise<createBranchResponse> => {
@@ -230,7 +230,7 @@ export const getGetBranchUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/branches/${id}`
+  return `/branches/${id}`
 }
 
 export const getBranch = async (id: number, options?: RequestInit): Promise<getBranchResponse> => {
@@ -288,7 +288,7 @@ export const getUpdateBranchUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/branches/${id}`
+  return `/branches/${id}`
 }
 
 export const updateBranch = async (id: number,
@@ -343,7 +343,7 @@ export const getDeleteBranchUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/branches/${id}`
+  return `/branches/${id}`
 }
 
 export const deleteBranch = async (id: number, options?: RequestInit): Promise<deleteBranchResponse> => {
@@ -391,7 +391,7 @@ export const getListRegionsUrl = () => {
 
   
 
-  return `http://localhost:8080/regions`
+  return `/regions`
 }
 
 export const listRegions = async ( options?: RequestInit): Promise<listRegionsResponse> => {
@@ -444,7 +444,7 @@ export const getCreateRegionUrl = () => {
 
   
 
-  return `http://localhost:8080/regions`
+  return `/regions`
 }
 
 export const createRegion = async (regionRequest: RegionRequest, options?: RequestInit): Promise<createRegionResponse> => {
@@ -500,7 +500,7 @@ export const getGetRegionOptionsUrl = (params?: GetRegionOptionsParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `http://localhost:8080/regions/options?${stringifiedParams}` : `http://localhost:8080/regions/options`
+  return stringifiedParams.length > 0 ? `/regions/options?${stringifiedParams}` : `/regions/options`
 }
 
 export const getRegionOptions = async (params?: GetRegionOptionsParams, options?: RequestInit): Promise<getRegionOptionsResponse> => {
@@ -553,7 +553,7 @@ export const getGetRegionUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/regions/${id}`
+  return `/regions/${id}`
 }
 
 export const getRegion = async (id: number, options?: RequestInit): Promise<getRegionResponse> => {
@@ -611,7 +611,7 @@ export const getUpdateRegionUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/regions/${id}`
+  return `/regions/${id}`
 }
 
 export const updateRegion = async (id: number,
@@ -666,7 +666,7 @@ export const getDeleteRegionUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/regions/${id}`
+  return `/regions/${id}`
 }
 
 export const deleteRegion = async (id: number, options?: RequestInit): Promise<deleteRegionResponse> => {
@@ -714,7 +714,7 @@ export const getListProductsUrl = () => {
 
   
 
-  return `http://localhost:8080/products`
+  return `/products`
 }
 
 export const listProducts = async ( options?: RequestInit): Promise<listProductsResponse> => {
@@ -767,7 +767,7 @@ export const getCreateProductUrl = () => {
 
   
 
-  return `http://localhost:8080/products`
+  return `/products`
 }
 
 export const createProduct = async (productRequest: ProductRequest, options?: RequestInit): Promise<createProductResponse> => {
@@ -821,7 +821,7 @@ export const getGetProductUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/products/${id}`
+  return `/products/${id}`
 }
 
 export const getProduct = async (id: number, options?: RequestInit): Promise<getProductResponse> => {
@@ -879,7 +879,7 @@ export const getUpdateProductUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/products/${id}`
+  return `/products/${id}`
 }
 
 export const updateProduct = async (id: number,
@@ -934,7 +934,7 @@ export const getDeleteProductUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/products/${id}`
+  return `/products/${id}`
 }
 
 export const deleteProduct = async (id: number, options?: RequestInit): Promise<deleteProductResponse> => {
@@ -982,7 +982,7 @@ export const getListFeesUrl = () => {
 
   
 
-  return `http://localhost:8080/fees`
+  return `/fees`
 }
 
 export const listFees = async ( options?: RequestInit): Promise<listFeesResponse> => {
@@ -1035,7 +1035,7 @@ export const getCreateFeeUrl = () => {
 
   
 
-  return `http://localhost:8080/fees`
+  return `/fees`
 }
 
 export const createFee = async (feeRequest: FeeRequest, options?: RequestInit): Promise<createFeeResponse> => {
@@ -1089,7 +1089,7 @@ export const getGetFeeUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/fees/${id}`
+  return `/fees/${id}`
 }
 
 export const getFee = async (id: number, options?: RequestInit): Promise<getFeeResponse> => {
@@ -1152,7 +1152,7 @@ export const getUpdateFeeUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/fees/${id}`
+  return `/fees/${id}`
 }
 
 export const updateFee = async (id: number,
@@ -1207,7 +1207,7 @@ export const getDeleteFeeUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/fees/${id}`
+  return `/fees/${id}`
 }
 
 export const deleteFee = async (id: number, options?: RequestInit): Promise<deleteFeeResponse> => {
@@ -1255,7 +1255,7 @@ export const getListPricingPlansUrl = () => {
 
   
 
-  return `http://localhost:8080/pricing-plans`
+  return `/pricing-plans`
 }
 
 export const listPricingPlans = async ( options?: RequestInit): Promise<listPricingPlansResponse> => {
@@ -1308,7 +1308,7 @@ export const getCreatePricingPlanUrl = () => {
 
   
 
-  return `http://localhost:8080/pricing-plans`
+  return `/pricing-plans`
 }
 
 export const createPricingPlan = async (pricingPlanRequest: PricingPlanRequest, options?: RequestInit): Promise<createPricingPlanResponse> => {
@@ -1364,7 +1364,7 @@ export const getGetPricingPlanOptionsUrl = (params?: GetPricingPlanOptionsParams
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `http://localhost:8080/pricing-plans/options?${stringifiedParams}` : `http://localhost:8080/pricing-plans/options`
+  return stringifiedParams.length > 0 ? `/pricing-plans/options?${stringifiedParams}` : `/pricing-plans/options`
 }
 
 export const getPricingPlanOptions = async (params?: GetPricingPlanOptionsParams, options?: RequestInit): Promise<getPricingPlanOptionsResponse> => {
@@ -1429,7 +1429,7 @@ export const getGetPricingPlanSecondaryOptionsUrl = (params: GetPricingPlanSecon
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `http://localhost:8080/pricing-plans/options/secondary?${stringifiedParams}` : `http://localhost:8080/pricing-plans/options/secondary`
+  return stringifiedParams.length > 0 ? `/pricing-plans/options/secondary?${stringifiedParams}` : `/pricing-plans/options/secondary`
 }
 
 export const getPricingPlanSecondaryOptions = async (params: GetPricingPlanSecondaryOptionsParams, options?: RequestInit): Promise<getPricingPlanSecondaryOptionsResponse> => {
@@ -1482,7 +1482,7 @@ export const getGetPricingPlanUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/pricing-plans/${id}`
+  return `/pricing-plans/${id}`
 }
 
 export const getPricingPlan = async (id: number, options?: RequestInit): Promise<getPricingPlanResponse> => {
@@ -1540,7 +1540,7 @@ export const getUpdatePricingPlanUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/pricing-plans/${id}`
+  return `/pricing-plans/${id}`
 }
 
 export const updatePricingPlan = async (id: number,
@@ -1595,7 +1595,7 @@ export const getDeletePricingPlanUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/pricing-plans/${id}`
+  return `/pricing-plans/${id}`
 }
 
 export const deletePricingPlan = async (id: number, options?: RequestInit): Promise<deletePricingPlanResponse> => {
@@ -1643,7 +1643,7 @@ export const getListAttributesUrl = () => {
 
   
 
-  return `http://localhost:8080/account-attributes`
+  return `/account-attributes`
 }
 
 export const listAttributes = async ( options?: RequestInit): Promise<listAttributesResponse> => {
@@ -1696,7 +1696,7 @@ export const getCreateAttributeUrl = () => {
 
   
 
-  return `http://localhost:8080/account-attributes`
+  return `/account-attributes`
 }
 
 export const createAttribute = async (attributeRequest: AttributeRequest, options?: RequestInit): Promise<createAttributeResponse> => {
@@ -1750,7 +1750,7 @@ export const getGetAttributeUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/account-attributes/${id}`
+  return `/account-attributes/${id}`
 }
 
 export const getAttribute = async (id: number, options?: RequestInit): Promise<getAttributeResponse> => {
@@ -1813,7 +1813,7 @@ export const getUpdateAttributeUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/account-attributes/${id}`
+  return `/account-attributes/${id}`
 }
 
 export const updateAttribute = async (id: number,
@@ -1868,7 +1868,7 @@ export const getDeleteAttributeUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/account-attributes/${id}`
+  return `/account-attributes/${id}`
 }
 
 export const deleteAttribute = async (id: number, options?: RequestInit): Promise<deleteAttributeResponse> => {
@@ -1904,7 +1904,7 @@ export const getGetSimulatorDateUrl = () => {
 
   
 
-  return `http://localhost:8080/simulator/date`
+  return `/simulator/date`
 }
 
 export const getSimulatorDate = async ( options?: RequestInit): Promise<getSimulatorDateResponse> => {
@@ -1947,7 +1947,7 @@ export const getSetSimulatorDateUrl = () => {
 
   
 
-  return `http://localhost:8080/simulator/date`
+  return `/simulator/date`
 }
 
 export const setSimulatorDate = async (simulatorDate: SimulatorDate, options?: RequestInit): Promise<setSimulatorDateResponse> => {
@@ -1996,7 +1996,7 @@ export const getGetSimulatorOptionsUrl = () => {
 
   
 
-  return `http://localhost:8080/simulator/options`
+  return `/simulator/options`
 }
 
 export const getSimulatorOptions = async ( options?: RequestInit): Promise<getSimulatorOptionsResponse> => {
@@ -2044,7 +2044,7 @@ export const getListReasonsUrl = () => {
 
   
 
-  return `http://localhost:8080/eligibility-reasons`
+  return `/eligibility-reasons`
 }
 
 export const listReasons = async ( options?: RequestInit): Promise<listReasonsResponse> => {
@@ -2097,7 +2097,7 @@ export const getCreateReasonUrl = () => {
 
   
 
-  return `http://localhost:8080/eligibility-reasons`
+  return `/eligibility-reasons`
 }
 
 export const createReason = async (reasonRequest: ReasonRequest, options?: RequestInit): Promise<createReasonResponse> => {
@@ -2146,7 +2146,7 @@ export const getGetReasonOptionsUrl = () => {
 
   
 
-  return `http://localhost:8080/eligibility-reasons/options`
+  return `/eligibility-reasons/options`
 }
 
 export const getReasonOptions = async ( options?: RequestInit): Promise<getReasonOptionsResponse> => {
@@ -2199,7 +2199,7 @@ export const getGetReasonUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/eligibility-reasons/${id}`
+  return `/eligibility-reasons/${id}`
 }
 
 export const getReason = async (id: number, options?: RequestInit): Promise<getReasonResponse> => {
@@ -2262,7 +2262,7 @@ export const getUpdateReasonUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/eligibility-reasons/${id}`
+  return `/eligibility-reasons/${id}`
 }
 
 export const updateReason = async (id: number,
@@ -2317,7 +2317,7 @@ export const getDeleteReasonUrl = (id: number,) => {
 
   
 
-  return `http://localhost:8080/eligibility-reasons/${id}`
+  return `/eligibility-reasons/${id}`
 }
 
 export const deleteReason = async (id: number, options?: RequestInit): Promise<deleteReasonResponse> => {

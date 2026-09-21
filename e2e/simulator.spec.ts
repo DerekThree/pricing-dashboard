@@ -1,6 +1,40 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Locator, test } from "@playwright/test";
 
-import type { BatchRequest } from "../app/generated/api/models";
+import type { BatchRequest, SimulatorOptions } from "../app/generated/api/models";
+
+const demoProducts: SimulatorOptions["products"] = [
+  { id: 101, code: "CHK", name: "Everyday Checking", type: "CD" },
+  { id: 102, code: "SAV", name: "High Yield Savings", type: "CD" },
+  { id: 103, code: "AUTO", name: "Auto Loan", type: "CD" },
+  { id: 104, code: "CD12", name: "12 Month Certificate", type: "CD" },
+  { id: 105, code: "CHKPLUS", name: "Premium Checking", type: "CD" },
+];
+const demoBranches: SimulatorOptions["branches"] = [
+  { id: 101, code: "BR100", name: "Downtown Branch" },
+  { id: 102, code: "BR101", name: "Harbor Branch" },
+  { id: 103, code: "BR200", name: "Lakeside Branch" },
+  { id: 104, code: "BR201", name: "Northside Branch" },
+  { id: 105, code: "BR300", name: "Hill Country Branch" },
+];
+
+function withDemoOptions(options: SimulatorOptions): SimulatorOptions {
+  return {
+    ...options,
+    products: [...options.products, ...demoProducts],
+    branches: [...options.branches, ...demoBranches],
+  };
+}
+
+async function addSingleDraft(accounts: Locator) {
+  await accounts.getByRole("button", { name: "Add" }).click();
+  for (let index = 0; index < 4; index += 1) {
+    await accounts.getByRole("button", { name: "X" }).last().click();
+  }
+}
+
+function accountRow(accounts: Locator, accountNumber: string) {
+  return accounts.locator(".ag-row").filter({ hasText: accountNumber });
+}
 
 test("loads Simulator options and shows the empty four-column screen", async ({ page }) => {
   let currentDate = "2026-08-26";
@@ -40,34 +74,32 @@ test("loads Simulator options and shows the empty four-column screen", async ({ 
   await page.goto("/simulator");
 
   await expect(page.locator(".simulator-form-grid > .simulator-form-column")).toHaveCount(4);
-  await expect(page.getByLabel("Application Date")).toHaveValue("2026-08-26");
+  await expect(page.getByLabel("Application Date")).toHaveValue("08/26/2026");
   await expect(page.getByText("No accounts", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Product")).toBeDisabled();
   await expect(page.getByLabel("Branch")).toBeDisabled();
   await expect(page.getByLabel("Fee Name")).toBeDisabled();
   await expect(page.getByLabel("Transaction Amount")).toBeDisabled();
-  await expect(
-    page.locator(".simulator-form-grid").getByText("Account Attributes", { exact: true }),
-  ).toHaveCount(0);
+  await expect(page.getByLabel("Account Tier")).toHaveCount(0);
   await expect(page.locator(".simulator-response-value")).toHaveText(["", ""]);
   expect(optionsRequests).toBe(1);
 
-  await page.getByLabel("Application Date").fill("2026-08-27");
+  await page.getByLabel("Application Date").fill("08/27/2026");
   await expect.poll(() => currentDate).toBe("2026-08-27");
-  await expect(page.getByLabel("Application Date")).toHaveValue("2026-08-27");
+  await expect(page.getByLabel("Application Date")).toHaveValue("08/27/2026");
 });
 
-test("adds, selects, and removes an incomplete Account draft", async ({ page }) => {
+test("adds, selects, and removes five incomplete demo Account drafts", async ({ page }) => {
   await page.route("http://localhost:8080/simulator/date", (route) => route.fulfill({
     json: { currentDate: "2026-08-26" },
   }));
   await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
-    json: {
+    json: withDemoOptions({
       products: [{ id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" }],
       branches: [{ id: 2, code: "BRANCH0001", name: "Main Branch" }],
       fees: [],
       attributes: [],
-    },
+    }),
   }));
 
   await page.goto("/simulator");
@@ -75,13 +107,16 @@ test("adds, selects, and removes an incomplete Account draft", async ({ page }) 
   const accounts = page.locator(".selection-list").filter({ hasText: "Accounts" });
   await accounts.getByRole("button", { name: "Add" }).click();
 
-  await expect(accounts.getByText("Incomplete", { exact: true })).toBeVisible();
+  await expect(accounts.locator(".ag-row")).toHaveCount(5);
+  await expect(accounts.getByText("Incomplete", { exact: true })).toHaveCount(5);
   await expect(accounts.getByRole("button", { name: "Add" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Send" })).toBeVisible();
   await expect(page.getByLabel("Product")).toBeEnabled();
   await expect(page.getByLabel("Branch")).toBeEnabled();
 
-  await accounts.getByRole("button", { name: "X" }).click();
+  for (let index = 0; index < 5; index += 1) {
+    await accounts.getByRole("button", { name: "X" }).last().click();
+  }
 
   await expect(accounts.getByText("No accounts", { exact: true })).toBeVisible();
   await expect(accounts.getByRole("button", { name: "Add" })).toBeEnabled();
@@ -94,7 +129,7 @@ test("edits typed Product-dependent Account Attributes", async ({ page }) => {
     json: { currentDate: "2026-08-26" },
   }));
   await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
-    json: {
+    json: withDemoOptions({
       products: [
         { id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" },
         { id: 2, code: "PROD0002", name: "Credit Card", type: "CREDIT" },
@@ -142,21 +177,18 @@ test("edits typed Product-dependent Account Attributes", async ({ page }) => {
           productTypes: ["DEPOSIT"],
         },
       ],
-    },
+    }),
   }));
 
   await page.goto("/simulator");
-  const form = page.locator(".simulator-form-grid");
-  await page.locator(".selection-list").filter({ hasText: "Accounts" })
-    .getByRole("button", { name: "Add" }).click();
+  const accounts = page.locator(".selection-list").filter({ hasText: "Accounts" });
+  await addSingleDraft(accounts);
 
   await page.getByLabel("Product").click();
   await page.getByText("PROD0001 - Checking", { exact: true }).click();
-  await expect(form.getByText("Account Attributes", { exact: true })).toHaveCount(0);
   await page.getByLabel("Branch").click();
   await page.getByText("BRANCH0001 - Main Branch", { exact: true }).click();
 
-  await expect(form.getByText("Account Attributes", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Account Tier")).toHaveAttribute("required", "");
   await expect(page.getByLabel("Balance")).toHaveAttribute("type", "number");
   await expect(page.getByLabel("Balance")).toHaveAttribute("step", "any");
@@ -191,7 +223,7 @@ test("edits typed Product-dependent Account Attributes", async ({ page }) => {
 
   await page.getByLabel("Product").click();
   await page.getByText("PROD0003 - Certificate", { exact: true }).click();
-  await expect(form.getByText("Account Attributes", { exact: true })).toHaveCount(0);
+  await expect(page.getByLabel("Account Tier")).toHaveCount(0);
 });
 
 test("composes repeated Product-dependent Fee Requests", async ({ page }) => {
@@ -199,7 +231,7 @@ test("composes repeated Product-dependent Fee Requests", async ({ page }) => {
     json: { currentDate: "2026-08-26" },
   }));
   await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
-    json: {
+    json: withDemoOptions({
       products: [
         { id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" },
         { id: 2, code: "PROD0002", name: "Credit Card", type: "CREDIT" },
@@ -225,13 +257,13 @@ test("composes repeated Product-dependent Fee Requests", async ({ page }) => {
         },
       ],
       attributes: [],
-    },
+    }),
   }));
 
   await page.goto("/simulator");
   const accounts = page.locator(".selection-list").filter({ hasText: "Accounts" });
-  const feeRequests = page.locator(".selection-list").filter({ hasText: "Fee Requests" });
-  await accounts.getByRole("button", { name: "Add" }).click();
+  const feeRequests = page.locator(".selection-list").filter({ hasText: "Fees" });
+  await addSingleDraft(accounts);
   await page.getByLabel("Product").click();
   await page.getByText("PROD0001 - Checking", { exact: true }).click();
 
@@ -276,7 +308,7 @@ test("composes repeated Product-dependent Fee Requests", async ({ page }) => {
   await page.getByText("BRANCH0002 - West Branch", { exact: true }).click();
   await expect(feeRequests.getByText("Wire Fee", { exact: true })).toHaveCount(2);
   await expect(feeRequests.getByText("Monthly Fee", { exact: true })).toBeVisible();
-  await expect(accounts.getByText("10000001", { exact: true })).toBeVisible();
+  await expect(accountRow(accounts, "10000001")).toBeVisible();
   await expect(accounts.getByRole("button", { name: "Add" })).toBeEnabled();
 
   await page.getByLabel("Product").click();
@@ -289,7 +321,7 @@ test("composes repeated Product-dependent Fee Requests", async ({ page }) => {
   await feeRequests.locator(".ag-row").nth(1).getByRole("button", { name: "X" }).click();
   await expect(feeRequests.getByText("Wire Fee", { exact: true })).toHaveCount(1);
   await feeRequests.getByRole("button", { name: "X" }).click();
-  await expect(feeRequests.getByText("No fee requests", { exact: true })).toBeVisible();
+  await expect(feeRequests.getByText("No fees", { exact: true })).toBeVisible();
   await expect(accounts.getByText("Incomplete", { exact: true })).toBeVisible();
   await expect(accounts.getByRole("button", { name: "Add" })).toBeDisabled();
 });
@@ -299,7 +331,7 @@ test("retains independent Account drafts and never reuses Account Numbers", asyn
     json: { currentDate: "2026-08-26" },
   }));
   await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
-    json: {
+    json: withDemoOptions({
       products: [
         { id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" },
         { id: 2, code: "PROD0002", name: "Credit Card", type: "CREDIT" },
@@ -322,12 +354,12 @@ test("retains independent Account drafts and never reuses Account Numbers", asyn
         type: "TEXT",
         productTypes: ["DEPOSIT", "CREDIT"],
       }],
-    },
+    }),
   }));
 
   await page.goto("/simulator");
   const accounts = page.locator(".selection-list").filter({ hasText: "Accounts" });
-  const feeRequests = page.locator(".selection-list").filter({ hasText: "Fee Requests" });
+  const feeRequests = page.locator(".selection-list").filter({ hasText: "Fees" });
 
   async function completeAccount(product: string, branch: string, note: string) {
     await page.getByLabel("Product").click();
@@ -340,21 +372,21 @@ test("retains independent Account drafts and never reuses Account Numbers", asyn
     await page.getByText("MONTHLY - Monthly Fee", { exact: true }).click();
   }
 
-  await accounts.getByRole("button", { name: "Add" }).click();
+  await addSingleDraft(accounts);
   await completeAccount("PROD0001 - Checking", "BRANCH0001 - Main Branch", "First");
-  await expect(accounts.getByText("10000001", { exact: true })).toBeVisible();
+  await expect(accountRow(accounts, "10000001")).toBeVisible();
 
-  await accounts.getByRole("button", { name: "Add" }).click();
+  await addSingleDraft(accounts);
   await expect(page.getByLabel("Product")).toHaveValue("");
-  await expect(feeRequests.getByText("No fee requests", { exact: true })).toBeVisible();
+  await expect(feeRequests.getByText("No fees", { exact: true })).toBeVisible();
   await expect(accounts.getByRole("button", { name: "Add" })).toBeDisabled();
-  await accounts.getByText("10000001", { exact: true }).click();
+  await accountRow(accounts, "10000001").click();
   await expect(page.getByLabel("Account Note")).toHaveValue("First");
   await accounts.getByText("Incomplete", { exact: true }).click();
   await completeAccount("PROD0002 - Credit Card", "BRANCH0002 - West Branch", "Second");
-  await expect(accounts.getByText("10000002", { exact: true })).toBeVisible();
+  await expect(accountRow(accounts, "10000006")).toBeVisible();
 
-  await accounts.getByText("10000001", { exact: true }).click();
+  await accountRow(accounts, "10000001").click();
   await expect(page.getByText("Checking", { exact: true })).toBeVisible();
   await expect(page.getByText("Main Branch", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Account Note")).toHaveValue("First");
@@ -366,10 +398,10 @@ test("retains independent Account drafts and never reuses Account Numbers", asyn
   await expect(page.getByText("West Branch", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Account Note")).toHaveValue("Second");
 
-  await accounts.getByRole("button", { name: "Add" }).click();
+  await addSingleDraft(accounts);
   await completeAccount("PROD0001 - Checking", "BRANCH0001 - Main Branch", "Third");
-  await expect(accounts.getByText("10000003", { exact: true })).toBeVisible();
-  await accounts.locator(".ag-row").filter({ hasText: "10000003" })
+  await expect(accountRow(accounts, "10000011")).toBeVisible();
+  await accounts.locator(".ag-row").filter({ hasText: "10000011" })
     .getByRole("button", { name: "X" }).click();
   await expect(page.getByLabel("Account Note")).toHaveValue("Second");
 
@@ -377,17 +409,13 @@ test("retains independent Account drafts and never reuses Account Numbers", asyn
   await expect(accounts.getByText("No accounts", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Product")).toBeDisabled();
 
-  await accounts.getByRole("button", { name: "Add" }).click();
+  await addSingleDraft(accounts);
   await completeAccount("PROD0001 - Checking", "BRANCH0001 - Main Branch", "Fourth");
-  await expect(accounts.getByText("10000004", { exact: true })).toBeVisible();
+  await expect(accountRow(accounts, "10000016")).toBeVisible();
 });
 
 test("submits every Account and correlates Account results across Reset", async ({ page }) => {
   let currentDate = "2026-08-26";
-  let releaseFirstBatch: () => void;
-  const firstBatchPending = new Promise<void>((resolve) => {
-    releaseFirstBatch = resolve;
-  });
   const requests: BatchRequest[] = [];
 
   await page.route("http://localhost:8080/simulator/date", async (route) => {
@@ -398,7 +426,7 @@ test("submits every Account and correlates Account results across Reset", async 
     await route.fulfill({ json: { currentDate } });
   });
   await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
-    json: {
+    json: withDemoOptions({
       products: [
         { id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" },
         { id: 2, code: "PROD0002", name: "Credit Card", type: "CREDIT" },
@@ -430,20 +458,16 @@ test("submits every Account and correlates Account results across Reset", async 
         type: "TEXT",
         productTypes: ["DEPOSIT", "CREDIT"],
       }],
-    },
+    }),
   }));
   await page.route("http://localhost:8080/batch", async (route) => {
     requests.push(route.request().postDataJSON() as BatchRequest);
-    if (requests.length === 1) {
-      await firstBatchPending;
-    }
-
     await route.fulfill({
       json: {
         batchId: requests.at(-1)!.batchId,
         accounts: [
           {
-            accountNumber: "10000002",
+            accountNumber: "10000006",
             status: "OK",
             pricingPlanCode: "PLAN0002",
             fees: [],
@@ -456,7 +480,7 @@ test("submits every Account and correlates Account results across Reset", async 
 
   await page.goto("/simulator");
   const accounts = page.locator(".selection-list").filter({ hasText: "Accounts" });
-  const feeRequests = page.locator(".selection-list").filter({ hasText: "Fee Requests" });
+  const feeRequests = page.locator(".selection-list").filter({ hasText: "Fees" });
 
   async function selectOption(label: string, option: string) {
     await page.getByLabel(label).click();
@@ -464,7 +488,7 @@ test("submits every Account and correlates Account results across Reset", async 
   }
 
   await expect(page.getByText("No accounts", { exact: true })).toBeVisible();
-  await accounts.getByRole("button", { name: "Add" }).click();
+  await addSingleDraft(accounts);
   await selectOption("Product", "PROD0001 - Checking");
   await selectOption("Branch", "BRANCH0001 - Main Branch");
   await page.getByLabel("Account Tier").fill("Gold");
@@ -476,7 +500,7 @@ test("submits every Account and correlates Account results across Reset", async 
   await feeRequests.getByRole("button", { name: "Add" }).click();
   await selectOption("Fee Name", "MONTHLY - Monthly Fee");
 
-  await accounts.getByRole("button", { name: "Add" }).click();
+  await addSingleDraft(accounts);
   await selectOption("Product", "PROD0002 - Credit Card");
   await selectOption("Branch", "BRANCH0002 - West Branch");
   await page.getByLabel("Account Tier").fill("Silver");
@@ -485,6 +509,8 @@ test("submits every Account and correlates Account results across Reset", async 
   await page.getByLabel("Transaction Amount").fill("250.5");
 
   await page.getByRole("button", { name: "Send" }).click();
+  const reset = page.getByRole("button", { name: "Reset" });
+  await expect(reset).toBeEnabled();
   await expect.poll(() => requests.length).toBe(1);
 
   const firstBatchId = requests[0].batchId;
@@ -507,7 +533,7 @@ test("submits every Account and correlates Account results across Reset", async 
         ],
       },
       {
-        accountNumber: "10000002",
+        accountNumber: "10000006",
         productCode: "PROD0002",
         branchCode: "BRANCH0002",
         pricingDate: "2026-08-26",
@@ -516,7 +542,7 @@ test("submits every Account and correlates Account results across Reset", async 
       },
     ],
   });
-  await expect(page.getByRole("button", { name: "Send" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Send" })).toHaveCount(0);
   await expect(page.getByLabel("Application Date")).toBeEnabled();
   await expect(page.getByLabel("Product")).toBeDisabled();
   await expect(page.getByLabel("Branch")).toBeDisabled();
@@ -527,23 +553,14 @@ test("submits every Account and correlates Account results across Reset", async 
   await expect(accounts.getByRole("button", { name: "X" })).toHaveCount(0);
   await expect(feeRequests.getByRole("button", { name: "Add" })).toHaveCount(0);
   await expect(feeRequests.getByRole("button", { name: "X" })).toHaveCount(0);
-  await expect(page.locator(".simulator-response-value")).toHaveText(["", ""]);
-
-  await accounts.getByText("10000001", { exact: true }).click();
-  await expect(accounts.locator(".ag-row-selected")).toContainText("10000001");
-  await feeRequests.locator(".ag-row").last().click();
-  await expect(feeRequests.locator(".ag-row-selected")).toHaveCount(1);
-  releaseFirstBatch!();
-
-  const reset = page.getByRole("button", { name: "Reset" });
-  await expect(reset).toBeEnabled();
   await expect(reset).toHaveClass(/page-top-menu-action--cancel/);
+  await expect(page.locator(".simulator-response-value")).toHaveText(["OK", "PLAN0002"]);
+  await accountRow(accounts, "10000001").click();
   await expect(page.locator(".simulator-response-value")).toHaveText([
     "MISSING_ATTRIBUTE",
     "",
   ]);
-  await accounts.getByText("10000002", { exact: true }).click();
-  await expect(page.locator(".simulator-response-value")).toHaveText(["OK", "PLAN0002"]);
+  await accountRow(accounts, "10000006").click();
 
   await reset.click();
   await expect(page.locator(".simulator-response-value")).toHaveText(["", ""]);
@@ -566,7 +583,7 @@ test("correlates reordered Fee Pricing Decisions and shows only outcome fields",
     json: { currentDate: "2026-08-26" },
   }));
   await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
-    json: {
+    json: withDemoOptions({
       products: [{ id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" }],
       branches: [{ id: 2, code: "BRANCH0001", name: "Main Branch" }],
       fees: [
@@ -586,7 +603,7 @@ test("correlates reordered Fee Pricing Decisions and shows only outcome fields",
         },
       ],
       attributes: [],
-    },
+    }),
   }));
   await page.route("http://localhost:8080/batch", async (route) => {
     const request = route.request().postDataJSON() as BatchRequest;
@@ -604,7 +621,7 @@ test("correlates reordered Fee Pricing Decisions and shows only outcome fields",
         batchId: request.batchId,
         accounts: [
           {
-            accountNumber: "10000002",
+            accountNumber: "10000006",
             status: "OK",
             pricingPlanCode: "PLAN0002",
             fees: [{ feeRequestId: 1, status: "OK", decision: "CHARGED", amount: 3 }],
@@ -631,14 +648,14 @@ test("correlates reordered Fee Pricing Decisions and shows only outcome fields",
 
   await page.goto("/simulator");
   const accounts = page.locator(".selection-list").filter({ hasText: "Accounts" });
-  const feeRequests = page.locator(".selection-list").filter({ hasText: "Fee Requests" });
+  const feeRequests = page.locator(".selection-list").filter({ hasText: "Fees" });
 
   async function selectOption(label: string, option: string) {
     await page.getByLabel(label).click();
     await page.getByText(option, { exact: true }).click();
   }
 
-  await accounts.getByRole("button", { name: "Add" }).click();
+  await addSingleDraft(accounts);
   await selectOption("Product", "PROD0001 - Checking");
   await selectOption("Branch", "BRANCH0001 - Main Branch");
 
@@ -650,7 +667,7 @@ test("correlates reordered Fee Pricing Decisions and shows only outcome fields",
   await selectOption("Fee Name", "WIRE - Wire Fee");
   await page.getByLabel("Transaction Amount").fill("100");
 
-  await accounts.getByRole("button", { name: "Add" }).click();
+  await addSingleDraft(accounts);
   await selectOption("Product", "PROD0001 - Checking");
   await selectOption("Branch", "BRANCH0001 - Main Branch");
   await feeRequests.getByRole("button", { name: "Add" }).click();
@@ -658,7 +675,7 @@ test("correlates reordered Fee Pricing Decisions and shows only outcome fields",
 
   await page.getByRole("button", { name: "Send" }).click();
   await expect(page.getByRole("button", { name: "Reset" })).toBeEnabled();
-  await accounts.getByText("10000001", { exact: true }).click();
+  await accountRow(accounts, "10000001").click();
 
   const feeResponse = page.locator(".simulator-fee-response");
   await expect(feeResponse.getByText("Wire Fee", { exact: true })).toBeVisible();
@@ -691,10 +708,10 @@ test("correlates reordered Fee Pricing Decisions and shows only outcome fields",
   await expect(feeResponse.getByText("Eligibility Reasons", { exact: true })).toHaveCount(0);
   await expect(feeResponse.locator("input")).toHaveCount(0);
 
-  await accounts.getByText("10000002", { exact: true }).click();
+  await accountRow(accounts, "10000006").click();
   await expect(feeResponse.getByText("Monthly Fee", { exact: true })).toBeVisible();
   await expect(feeResponse.getByText("3", { exact: true })).toBeVisible();
-  await accounts.getByText("10000001", { exact: true }).click();
+  await accountRow(accounts, "10000001").click();
   await expect(feeResponse.getByText("12.5", { exact: true })).toBeVisible();
 });
 
@@ -705,7 +722,7 @@ test("restores editable drafts after Batch HTTP and network failures", async ({ 
     json: { currentDate: "2026-08-26" },
   }));
   await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
-    json: {
+    json: withDemoOptions({
       products: [{ id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" }],
       branches: [{ id: 2, code: "BRANCH0001", name: "Main Branch" }],
       fees: [{
@@ -716,7 +733,7 @@ test("restores editable drafts after Batch HTTP and network failures", async ({ 
         productTypes: ["DEPOSIT"],
       }],
       attributes: [],
-    },
+    }),
   }));
   await page.route("http://localhost:8080/batch", (route) => {
     batchRequests += 1;
@@ -727,8 +744,8 @@ test("restores editable drafts after Batch HTTP and network failures", async ({ 
 
   await page.goto("/simulator");
   const accounts = page.locator(".selection-list").filter({ hasText: "Accounts" });
-  const feeRequests = page.locator(".selection-list").filter({ hasText: "Fee Requests" });
-  await accounts.getByRole("button", { name: "Add" }).click();
+  const feeRequests = page.locator(".selection-list").filter({ hasText: "Fees" });
+  await addSingleDraft(accounts);
   await page.getByLabel("Product").click();
   await page.getByText("PROD0001 - Checking", { exact: true }).click();
   await page.getByLabel("Branch").click();
@@ -795,7 +812,7 @@ test("shows an options loader error while keeping the loaded date available", as
   await expect(page.getByLabel("Branch")).toBeDisabled();
   await expect(page.getByLabel("Fee Name")).toBeDisabled();
 
-  await page.getByLabel("Application Date").fill("2026-08-27");
+  await page.getByLabel("Application Date").fill("08/27/2026");
   await expect(
     page.getByText("Status 400: Application Date was rejected", { exact: true }),
   ).toBeVisible();
