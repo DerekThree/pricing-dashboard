@@ -1,5 +1,6 @@
 import { expect, type Locator, test } from "@playwright/test";
 
+import { API_PATH_PREFIX } from "../app/config/apiConfig";
 import type { BatchRequest, SimulatorOptions } from "../app/generated/api/models";
 
 const demoProducts: SimulatorOptions["products"] = [
@@ -40,14 +41,14 @@ test("loads Simulator options and shows the empty four-column screen", async ({ 
   let currentDate = "2026-08-26";
   let optionsRequests = 0;
 
-  await page.route("http://localhost:8080/simulator/date", async (route) => {
+  await page.route(`**${API_PATH_PREFIX}/simulator/date`, async (route) => {
     if (route.request().method() === "PUT") {
       currentDate = route.request().postDataJSON().currentDate;
     }
 
     await route.fulfill({ json: { currentDate } });
   });
-  await page.route("http://localhost:8080/simulator/options", async (route) => {
+  await page.route(`**${API_PATH_PREFIX}/simulator/options`, async (route) => {
     optionsRequests += 1;
     await route.fulfill({
       json: {
@@ -90,10 +91,10 @@ test("loads Simulator options and shows the empty four-column screen", async ({ 
 });
 
 test("adds, selects, and removes five incomplete demo Account drafts", async ({ page }) => {
-  await page.route("http://localhost:8080/simulator/date", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/date`, (route) => route.fulfill({
     json: { currentDate: "2026-08-26" },
   }));
-  await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/options`, (route) => route.fulfill({
     json: withDemoOptions({
       products: [{ id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" }],
       branches: [{ id: 2, code: "BRANCH0001", name: "Main Branch" }],
@@ -125,10 +126,10 @@ test("adds, selects, and removes five incomplete demo Account drafts", async ({ 
 });
 
 test("edits typed Product-dependent Account Attributes", async ({ page }) => {
-  await page.route("http://localhost:8080/simulator/date", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/date`, (route) => route.fulfill({
     json: { currentDate: "2026-08-26" },
   }));
-  await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/options`, (route) => route.fulfill({
     json: withDemoOptions({
       products: [
         { id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" },
@@ -227,10 +228,10 @@ test("edits typed Product-dependent Account Attributes", async ({ page }) => {
 });
 
 test("composes repeated Product-dependent Fee Requests", async ({ page }) => {
-  await page.route("http://localhost:8080/simulator/date", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/date`, (route) => route.fulfill({
     json: { currentDate: "2026-08-26" },
   }));
-  await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/options`, (route) => route.fulfill({
     json: withDemoOptions({
       products: [
         { id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" },
@@ -327,10 +328,10 @@ test("composes repeated Product-dependent Fee Requests", async ({ page }) => {
 });
 
 test("retains independent Account drafts and never reuses Account Numbers", async ({ page }) => {
-  await page.route("http://localhost:8080/simulator/date", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/date`, (route) => route.fulfill({
     json: { currentDate: "2026-08-26" },
   }));
-  await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/options`, (route) => route.fulfill({
     json: withDemoOptions({
       products: [
         { id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" },
@@ -418,14 +419,14 @@ test("submits every Account and correlates Account results across Reset", async 
   let currentDate = "2026-08-26";
   const requests: BatchRequest[] = [];
 
-  await page.route("http://localhost:8080/simulator/date", async (route) => {
+  await page.route(`**${API_PATH_PREFIX}/simulator/date`, async (route) => {
     if (route.request().method() === "PUT") {
       currentDate = route.request().postDataJSON().currentDate;
     }
 
     await route.fulfill({ json: { currentDate } });
   });
-  await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/options`, (route) => route.fulfill({
     json: withDemoOptions({
       products: [
         { id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" },
@@ -460,7 +461,7 @@ test("submits every Account and correlates Account results across Reset", async 
       }],
     }),
   }));
-  await page.route("http://localhost:8080/batch", async (route) => {
+  await page.route(`**${API_PATH_PREFIX}/batch`, async (route) => {
     requests.push(route.request().postDataJSON() as BatchRequest);
     await route.fulfill({
       json: {
@@ -579,10 +580,10 @@ test("submits every Account and correlates Account results across Reset", async 
 test("correlates reordered Fee Pricing Decisions and shows only outcome fields", async ({
   page,
 }) => {
-  await page.route("http://localhost:8080/simulator/date", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/date`, (route) => route.fulfill({
     json: { currentDate: "2026-08-26" },
   }));
-  await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/options`, (route) => route.fulfill({
     json: withDemoOptions({
       products: [{ id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" }],
       branches: [{ id: 2, code: "BRANCH0001", name: "Main Branch" }],
@@ -605,7 +606,7 @@ test("correlates reordered Fee Pricing Decisions and shows only outcome fields",
       attributes: [],
     }),
   }));
-  await page.route("http://localhost:8080/batch", async (route) => {
+  await page.route(`**${API_PATH_PREFIX}/batch`, async (route) => {
     const request = route.request().postDataJSON() as BatchRequest;
 
     expect(request.accounts[0].fees).toEqual([
@@ -718,10 +719,10 @@ test("correlates reordered Fee Pricing Decisions and shows only outcome fields",
 test("restores editable drafts after Batch HTTP and network failures", async ({ page }) => {
   let batchRequests = 0;
 
-  await page.route("http://localhost:8080/simulator/date", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/date`, (route) => route.fulfill({
     json: { currentDate: "2026-08-26" },
   }));
-  await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/options`, (route) => route.fulfill({
     json: withDemoOptions({
       products: [{ id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" }],
       branches: [{ id: 2, code: "BRANCH0001", name: "Main Branch" }],
@@ -735,7 +736,7 @@ test("restores editable drafts after Batch HTTP and network failures", async ({ 
       attributes: [],
     }),
   }));
-  await page.route("http://localhost:8080/batch", (route) => {
+  await page.route(`**${API_PATH_PREFIX}/batch`, (route) => {
     batchRequests += 1;
     return batchRequests === 1
       ? route.fulfill({ status: 503, json: { message: "Batch unavailable" } })
@@ -775,10 +776,10 @@ test("restores editable drafts after Batch HTTP and network failures", async ({ 
 });
 
 test("accepts empty Simulator option categories", async ({ page }) => {
-  await page.route("http://localhost:8080/simulator/date", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/date`, (route) => route.fulfill({
     json: { currentDate: "2026-08-26" },
   }));
-  await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/options`, (route) => route.fulfill({
     json: { products: [], branches: [], fees: [], attributes: [] },
   }));
 
@@ -790,14 +791,14 @@ test("accepts empty Simulator option categories", async ({ page }) => {
 });
 
 test("shows an options loader error while keeping the loaded date available", async ({ page }) => {
-  await page.route("http://localhost:8080/simulator/date", (route) => {
+  await page.route(`**${API_PATH_PREFIX}/simulator/date`, (route) => {
     if (route.request().method() === "PUT") {
       return route.fulfill({ status: 400, json: { message: "Application Date was rejected" } });
     }
 
     return route.fulfill({ json: { currentDate: "2026-08-26" } });
   });
-  await page.route("http://localhost:8080/simulator/options", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/simulator/options`, (route) => route.fulfill({
     status: 503,
     json: { message: "Simulator options are unavailable" },
   }));

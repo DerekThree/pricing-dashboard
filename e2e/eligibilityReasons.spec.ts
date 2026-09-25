@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
+import { API_PATH_PREFIX } from "../app/config/apiConfig";
 
 test("derives Eligibility Reason Product Types from its condition Attributes", async ({ page }) => {
-  await page.route("http://localhost:8080/eligibility-reasons/options", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/eligibility-reasons/options`, (route) => route.fulfill({
     json: {
       attributes: [
         {

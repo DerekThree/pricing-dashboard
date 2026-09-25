@@ -9,7 +9,19 @@ export async function apiMutator<TResponse>(
     const body = [204, 205, 304].includes(response.status)
       ? null
       : await response.text();
-    const data = body ? JSON.parse(body) : {};
+    let data = {};
+
+    if (body !== null) {
+      if (!body.trim()) {
+        data = "Empty response";
+      } else {
+        try {
+          data = JSON.parse(body);
+        } catch {
+          data = body;
+        }
+      }
+    }
 
     return {
       data,

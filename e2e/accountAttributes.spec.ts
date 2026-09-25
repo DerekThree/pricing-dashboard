@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
+import { API_PATH_PREFIX } from "../app/config/apiConfig";
 
 test("selects and submits Product Types below Attribute Type", async ({ page }) => {
   let requestBody: unknown;
-  await page.route("http://localhost:8080/account-attributes", async (route) => {
+  await page.route(`**${API_PATH_PREFIX}/account-attributes`, async (route) => {
     if (route.request().method() === "POST") {
       requestBody = route.request().postDataJSON();
       await route.fulfill({ status: 201, json: {} });
@@ -41,7 +42,7 @@ test("selects and submits Product Types below Attribute Type", async ({ page }) 
 });
 
 test("displays Account Attribute Product Types on the list", async ({ page }) => {
-  await page.route("http://localhost:8080/account-attributes", (route) => route.fulfill({
+  await page.route(`**${API_PATH_PREFIX}/account-attributes`, (route) => route.fulfill({
     json: [{
       id: 1,
       attribute: "ATTR0001 - Account Age",
