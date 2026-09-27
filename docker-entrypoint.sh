@@ -1,8 +1,6 @@
 #!/bin/sh
 set -eu
 
-: "${API_URL:?API_URL must be set}"
-
 node -e '
 const fs = require("fs");
 fs.writeFileSync(
