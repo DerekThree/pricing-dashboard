@@ -1,12 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-import { API_PATH_PREFIX } from "../app/config/apiConfig";
-
 const httpErrorStatuses = [400, 401, 403, 404, 500];
 
 for (const status of httpErrorStatuses) {
   test(`preserves HTTP ${status} when the response body is invalid JSON`, async ({ page }) => {
-    await page.route(`**${API_PATH_PREFIX}/branches`, (route) => route.fulfill({
+    await page.route("**/api/v1/branches", (route) => route.fulfill({
       status,
       contentType: "text/plain",
       body: "Access denied by gateway",
@@ -21,7 +19,7 @@ for (const status of httpErrorStatuses) {
 
 for (const status of httpErrorStatuses) {
   test(`preserves HTTP ${status} when the response body is empty`, async ({ page }) => {
-    await page.route(`**${API_PATH_PREFIX}/branches`, (route) => route.fulfill({
+    await page.route("**/api/v1/branches", (route) => route.fulfill({
       status,
       body: "",
     }));
@@ -34,7 +32,7 @@ for (const status of httpErrorStatuses) {
 }
 
 test("returns a synthetic 503 when the backend cannot be reached", async ({ page }) => {
-  await page.route(`**${API_PATH_PREFIX}/branches`, (route) => route.abort());
+  await page.route("**/api/v1/branches", (route) => route.abort());
 
   await page.goto("/branches");
 
