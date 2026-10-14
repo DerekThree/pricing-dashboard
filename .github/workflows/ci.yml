@@ -36,3 +36,13 @@ jobs:
       - name: Build Docker image
         run: docker build -t pricing-dashboard:ci .
     
+      - name: Save Docker image
+        run: docker save pricing-dashboard:ci -o pricing-dashboard-image.tar
+
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v7
+        with:
+          name: pricing-dashboard-image
+          path: pricing-dashboard-image.tar
+          if-no-files-found: error
+          retention-days: 1
