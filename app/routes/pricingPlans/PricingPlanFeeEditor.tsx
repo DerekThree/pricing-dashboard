@@ -8,7 +8,7 @@ import {
   type FeeOption,
   type PricingPlanFee,
   type ReasonOption,
-} from "../../generated/api/models";
+} from "../../generated/backend/models";
 import { toDropdownOption } from "../../utils/formUtils";
 
 type PricingPlanFeeEditorProps = {

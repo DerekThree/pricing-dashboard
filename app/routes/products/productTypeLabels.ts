@@ -1,4 +1,4 @@
-import { ProductType } from "../../generated/api/models/productType";
+import { ProductType } from "../../generated/backend/models/productType";
 
 export const productTypeLabels: Record<ProductType, string> = {
   [ProductType.DEPOSIT]: "Standard Deposit",

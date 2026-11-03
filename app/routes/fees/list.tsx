@@ -2,8 +2,8 @@ import { useLoaderData } from "react-router";
 import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
-import { listFees } from "../../generated/api/client";
-import { FeeType, type FeeListItem } from "../../generated/api/models";
+import { listFees } from "../../generated/backend/client";
+import { FeeType, type FeeListItem } from "../../generated/backend/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { dateTimeFormatter, productTypesFormatter } from "../../utils/valueFormatters";

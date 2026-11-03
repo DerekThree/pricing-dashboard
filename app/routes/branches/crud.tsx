@@ -5,11 +5,16 @@ import { useActionData, useLoaderData, useSubmit, type SubmitTarget } from "reac
 
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
-import { createBranch, deleteBranch, getBranch, updateBranch } from "../../generated/api/client";
+import {
+  createBranch,
+  deleteBranch,
+  getBranch,
+  updateBranch,
+} from "../../generated/backend/client";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";
-import type { BranchRequest } from "~/app/generated/api/models";
+import type { BranchRequest } from "~/app/generated/backend/models";
 
 const emptyFormValues: BranchRequest = {
   branchCode: "",

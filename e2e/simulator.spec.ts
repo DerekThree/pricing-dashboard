@@ -1,6 +1,7 @@
 import { expect, type Locator, test } from "@playwright/test";
 
-import type { BatchRequest, SimulatorOptions } from "../app/generated/api/models";
+import type { SimulatorOptions } from "../app/generated/backend/models";
+import type { BatchRequest } from "../app/generated/accountProcessor/models";
 
 const demoProducts: SimulatorOptions["products"] = [
   { id: 101, code: "CHK", name: "Everyday Checking", type: "CD" },
@@ -414,309 +415,229 @@ test("retains independent Account drafts and never reuses Account Numbers", asyn
   await expect(accountRow(accounts, "10000016")).toBeVisible();
 });
 
-test("submits every Account and correlates Account results across Reset", async ({ page }) => {
-  let currentDate = "2026-08-26";
-  const requests: BatchRequest[] = [];
+for (const configuration of ["native", "runtime", "same-origin"] as const) {
+  test(`routes every Account and locks acceptance until Reset (${configuration})`, async ({
+    page,
+    baseURL,
+  }) => {
+    const appOrigin = new URL(baseURL!).origin;
+    const backendOrigin = configuration === "native"
+      ? "http://127.0.0.1:18080"
+      : configuration === "runtime" ? "http://127.0.0.1:19080" : appOrigin;
+    const processorOrigin = configuration === "native"
+      ? "http://127.0.0.1:18081"
+      : configuration === "runtime" ? "http://127.0.0.1:19081" : appOrigin;
+    if (configuration !== "native") {
+      await page.addInitScript((configuration) => {
+        window.__APP_CONFIG__ = configuration === "runtime"
+          ? {
+            BACKEND_API_URL: "http://127.0.0.1:19080/",
+            ACCOUNT_PROCESSOR_API_URL: "http://127.0.0.1:19081/",
+          }
+          : { BACKEND_API_URL: "", ACCOUNT_PROCESSOR_API_URL: "" };
+      }, configuration);
+    }
+    const backendRequests: string[] = [];
+    page.on("request", (request) => {
+      if (request.url().includes("/api/v1/simulator/")) {
+        backendRequests.push(request.url());
+      }
+    });
+    let acceptSubmission!: () => void;
+    const acceptanceReady = new Promise<void>((resolve) => { acceptSubmission = resolve; });
+    let currentDate = "2026-08-26";
+    const requests: BatchRequest[] = [];
 
-  await page.route("**/api/v1/simulator/date", async (route) => {
-    if (route.request().method() === "PUT") {
-      currentDate = route.request().postDataJSON().currentDate;
+    await page.route("**/api/v1/branches", (route) => {
+      expect(route.request().url()).toBe(`${backendOrigin}/api/v1/branches`);
+      return route.fulfill({ json: [] });
+    });
+    await page.route("**/api/v1/simulator/date", async (route) => {
+      if (route.request().method() === "PUT") {
+        currentDate = route.request().postDataJSON().currentDate;
+      }
+
+      await route.fulfill({ json: { currentDate } });
+    });
+    await page.route("**/api/v1/simulator/options", (route) => route.fulfill({
+      json: withDemoOptions({
+        products: [
+          { id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" },
+          { id: 2, code: "PROD0002", name: "Credit Card", type: "CREDIT" },
+        ],
+        branches: [
+          { id: 3, code: "BRANCH0001", name: "Main Branch" },
+          { id: 4, code: "BRANCH0002", name: "West Branch" },
+        ],
+        fees: [
+          {
+            id: 5,
+            code: "MONTHLY",
+            name: "Monthly Fee",
+            type: "FLAT",
+            productTypes: ["DEPOSIT", "CREDIT"],
+          },
+          {
+            id: 6,
+            code: "WIRE",
+            name: "Wire Fee",
+            type: "PERCENT",
+            productTypes: ["DEPOSIT", "CREDIT"],
+          },
+        ],
+        attributes: [{
+          id: 7,
+          code: "TIER",
+          name: "Account Tier",
+          type: "TEXT",
+          productTypes: ["DEPOSIT", "CREDIT"],
+        }],
+      }),
+    }));
+    await page.route("**/api/v1/mock/acc/batch", async (route) => {
+      expect(route.request().url()).toBe(`${processorOrigin}/api/v1/mock/acc/batch`);
+      expect(route.request().method()).toBe("POST");
+      requests.push(route.request().postDataJSON() as BatchRequest);
+      await acceptanceReady;
+      await route.fulfill({
+        status: 202,
+        json: { batchId: requests.at(-1)!.batchId, message: "Pricing Batch accepted." },
+      });
+    });
+
+    await page.goto("/branches");
+    await expect(page.getByRole("heading", { name: "Branches", exact: true })).toBeVisible();
+    await page.goto("/simulator");
+    const accounts = page.locator(".selection-list").filter({ hasText: "Accounts" });
+    const feeRequests = page.locator(".selection-list").filter({ hasText: "Fees" });
+
+    async function selectOption(label: string, option: string) {
+      await page.getByLabel(label).click();
+      await page.getByText(option, { exact: true }).click();
     }
 
-    await route.fulfill({ json: { currentDate } });
-  });
-  await page.route("**/api/v1/simulator/options", (route) => route.fulfill({
-    json: withDemoOptions({
-      products: [
-        { id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" },
-        { id: 2, code: "PROD0002", name: "Credit Card", type: "CREDIT" },
-      ],
-      branches: [
-        { id: 3, code: "BRANCH0001", name: "Main Branch" },
-        { id: 4, code: "BRANCH0002", name: "West Branch" },
-      ],
-      fees: [
+    await expect(page.getByText("No accounts", { exact: true })).toBeVisible();
+    await addSingleDraft(accounts);
+    await selectOption("Product", "PROD0001 - Checking");
+    await selectOption("Branch", "BRANCH0001 - Main Branch");
+    await page.getByLabel("Account Tier").fill("Gold");
+    await feeRequests.getByRole("button", { name: "Add" }).click();
+    await selectOption("Fee Name", "MONTHLY - Monthly Fee");
+    await feeRequests.getByRole("button", { name: "Add" }).click();
+    await selectOption("Fee Name", "MONTHLY - Monthly Fee");
+    await feeRequests.locator(".ag-row").first().getByRole("button", { name: "X" }).click();
+    await feeRequests.getByRole("button", { name: "Add" }).click();
+    await selectOption("Fee Name", "MONTHLY - Monthly Fee");
+
+    await addSingleDraft(accounts);
+    await selectOption("Product", "PROD0002 - Credit Card");
+    await selectOption("Branch", "BRANCH0002 - West Branch");
+    await page.getByLabel("Account Tier").fill("Silver");
+    await feeRequests.getByRole("button", { name: "Add" }).click();
+    await selectOption("Fee Name", "WIRE - Wire Fee");
+    await page.getByLabel("Transaction Amount").fill("250.5");
+    await page.getByLabel("Application Date").fill("08/27/2026");
+    await expect.poll(() => currentDate).toBe("2026-08-27");
+
+    await page.getByRole("button", { name: "Send" }).click();
+    const reset = page.getByRole("button", { name: "Reset" });
+    await expect(reset).toBeVisible();
+    await expect(reset).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Send" })).toHaveCount(0);
+    await expect(page.getByLabel("Product")).toBeDisabled();
+    await expect(page.getByLabel("Application Date")).toBeDisabled();
+    await expect.poll(() => requests.length).toBe(1);
+    expect(backendRequests).toEqual([
+      `${backendOrigin}/api/v1/simulator/date`,
+      `${backendOrigin}/api/v1/simulator/options`,
+      `${backendOrigin}/api/v1/simulator/date`,
+    ]);
+    acceptSubmission();
+    await expect(reset).toBeEnabled();
+
+    const firstBatchId = requests[0].batchId;
+    expect(firstBatchId).toEqual(expect.any(String));
+    expect(firstBatchId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    );
+    expect(requests[0]).toEqual({
+      batchId: firstBatchId,
+      accounts: [
         {
-          id: 5,
-          code: "MONTHLY",
-          name: "Monthly Fee",
-          type: "FLAT",
-          productTypes: ["DEPOSIT", "CREDIT"],
+          accountNumber: "10000001",
+          productCode: "PROD0001",
+          branchCode: "BRANCH0001",
+          pricingDate: "2026-08-27",
+          attributes: [{ code: "TIER", value: "Gold" }],
+          fees: [
+            { feeRequestId: 2, code: "MONTHLY" },
+            { feeRequestId: 3, code: "MONTHLY" },
+          ],
         },
         {
-          id: 6,
-          code: "WIRE",
-          name: "Wire Fee",
-          type: "PERCENT",
-          productTypes: ["DEPOSIT", "CREDIT"],
+          accountNumber: "10000006",
+          productCode: "PROD0002",
+          branchCode: "BRANCH0002",
+          pricingDate: "2026-08-27",
+          attributes: [{ code: "TIER", value: "Silver" }],
+          fees: [{ feeRequestId: 1, code: "WIRE", transactionAmount: 250.5 }],
         },
       ],
-      attributes: [{
-        id: 7,
-        code: "TIER",
-        name: "Account Tier",
-        type: "TEXT",
-        productTypes: ["DEPOSIT", "CREDIT"],
-      }],
-    }),
-  }));
-  await page.route("**/api/v1/batch", async (route) => {
-    requests.push(route.request().postDataJSON() as BatchRequest);
-    await route.fulfill({
-      json: {
-        batchId: requests.at(-1)!.batchId,
-        accounts: [
-          {
-            accountNumber: "10000006",
-            status: "OK",
-            pricingPlanCode: "PLAN0002",
-            fees: [],
-          },
-          { accountNumber: "10000001", status: "MISSING_ATTRIBUTE" },
-        ],
-      },
     });
+    await expect(page.getByRole("button", { name: "Send" })).toHaveCount(0);
+    await expect(page.getByLabel("Application Date")).toBeDisabled();
+    await expect(page.getByLabel("Product")).toBeDisabled();
+    await expect(page.getByLabel("Branch")).toBeDisabled();
+    await expect(page.getByLabel("Account Tier")).toBeDisabled();
+    await expect(page.getByLabel("Fee Name")).toBeDisabled();
+    await expect(page.getByLabel("Transaction Amount")).toBeDisabled();
+    await expect(accounts.getByRole("button", { name: "Add" })).toHaveCount(0);
+    await expect(accounts.getByRole("button", { name: "X" })).toHaveCount(0);
+    await expect(feeRequests.getByRole("button", { name: "Add" })).toHaveCount(0);
+    await expect(feeRequests.getByRole("button", { name: "X" })).toHaveCount(0);
+    await expect(reset).toHaveClass(/page-top-menu-action--cancel/);
+    await expect(page.locator(".simulator-response-value")).toHaveText([
+      firstBatchId,
+      "Pricing Batch accepted.",
+    ]);
+    await expect(page.getByText("Account Status", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Pricing Plan Code", { exact: true })).toHaveCount(0);
+    await expect(page.locator(".simulator-fee-response")).toHaveCount(0);
+    await accountRow(accounts, "10000001").click();
+    await expect(page.locator(".simulator-response-value")).toHaveText([
+      firstBatchId,
+      "Pricing Batch accepted.",
+    ]);
+    await accountRow(accounts, "10000006").click();
+
+    await reset.click();
+    await expect(page.locator(".simulator-response-value")).toHaveText(["", ""]);
+    await expect(page.getByLabel("Product")).toBeEnabled();
+    await expect(page.getByLabel("Account Tier")).toHaveValue("Silver");
+    await expect(page.getByLabel("Application Date")).toBeEnabled();
+    await expect(page.getByLabel("Transaction Amount")).toHaveValue("250.5");
+    await expect(accounts.getByRole("button", { name: "Add" })).toBeVisible();
+    await expect(feeRequests.getByRole("button", { name: "Add" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Send" }).click();
+    await expect(page.getByRole("button", { name: "Reset" })).toBeEnabled();
+    expect(requests).toHaveLength(2);
+    expect(requests[1].batchId).not.toBe(firstBatchId);
   });
 
-  await page.goto("/simulator");
-  const accounts = page.locator(".selection-list").filter({ hasText: "Accounts" });
-  const feeRequests = page.locator(".selection-list").filter({ hasText: "Fees" });
+}
 
-  async function selectOption(label: string, option: string) {
-    await page.getByLabel(label).click();
-    await page.getByText(option, { exact: true }).click();
-  }
-
-  await expect(page.getByText("No accounts", { exact: true })).toBeVisible();
-  await addSingleDraft(accounts);
-  await selectOption("Product", "PROD0001 - Checking");
-  await selectOption("Branch", "BRANCH0001 - Main Branch");
-  await page.getByLabel("Account Tier").fill("Gold");
-  await feeRequests.getByRole("button", { name: "Add" }).click();
-  await selectOption("Fee Name", "MONTHLY - Monthly Fee");
-  await feeRequests.getByRole("button", { name: "Add" }).click();
-  await selectOption("Fee Name", "MONTHLY - Monthly Fee");
-  await feeRequests.locator(".ag-row").first().getByRole("button", { name: "X" }).click();
-  await feeRequests.getByRole("button", { name: "Add" }).click();
-  await selectOption("Fee Name", "MONTHLY - Monthly Fee");
-
-  await addSingleDraft(accounts);
-  await selectOption("Product", "PROD0002 - Credit Card");
-  await selectOption("Branch", "BRANCH0002 - West Branch");
-  await page.getByLabel("Account Tier").fill("Silver");
-  await feeRequests.getByRole("button", { name: "Add" }).click();
-  await selectOption("Fee Name", "WIRE - Wire Fee");
-  await page.getByLabel("Transaction Amount").fill("250.5");
-
-  await page.getByRole("button", { name: "Send" }).click();
-  const reset = page.getByRole("button", { name: "Reset" });
-  await expect(reset).toBeEnabled();
-  await expect.poll(() => requests.length).toBe(1);
-
-  const firstBatchId = requests[0].batchId;
-  expect(firstBatchId).toEqual(expect.any(String));
-  expect(firstBatchId).toMatch(
-    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
-  );
-  expect(requests[0]).toEqual({
-    batchId: firstBatchId,
-    accounts: [
-      {
-        accountNumber: "10000001",
-        productCode: "PROD0001",
-        branchCode: "BRANCH0001",
-        pricingDate: "2026-08-26",
-        attributes: [{ code: "TIER", value: "Gold" }],
-        fees: [
-          { feeRequestId: 2, code: "MONTHLY" },
-          { feeRequestId: 3, code: "MONTHLY" },
-        ],
-      },
-      {
-        accountNumber: "10000006",
-        productCode: "PROD0002",
-        branchCode: "BRANCH0002",
-        pricingDate: "2026-08-26",
-        attributes: [{ code: "TIER", value: "Silver" }],
-        fees: [{ feeRequestId: 1, code: "WIRE", transactionAmount: 250.5 }],
-      },
-    ],
-  });
-  await expect(page.getByRole("button", { name: "Send" })).toHaveCount(0);
-  await expect(page.getByLabel("Application Date")).toBeEnabled();
-  await expect(page.getByLabel("Product")).toBeDisabled();
-  await expect(page.getByLabel("Branch")).toBeDisabled();
-  await expect(page.getByLabel("Account Tier")).toBeDisabled();
-  await expect(page.getByLabel("Fee Name")).toBeDisabled();
-  await expect(page.getByLabel("Transaction Amount")).toBeDisabled();
-  await expect(accounts.getByRole("button", { name: "Add" })).toHaveCount(0);
-  await expect(accounts.getByRole("button", { name: "X" })).toHaveCount(0);
-  await expect(feeRequests.getByRole("button", { name: "Add" })).toHaveCount(0);
-  await expect(feeRequests.getByRole("button", { name: "X" })).toHaveCount(0);
-  await expect(reset).toHaveClass(/page-top-menu-action--cancel/);
-  await expect(page.locator(".simulator-response-value")).toHaveText(["OK", "PLAN0002"]);
-  await accountRow(accounts, "10000001").click();
-  await expect(page.locator(".simulator-response-value")).toHaveText([
-    "MISSING_ATTRIBUTE",
-    "",
-  ]);
-  await accountRow(accounts, "10000006").click();
-
-  await reset.click();
-  await expect(page.locator(".simulator-response-value")).toHaveText(["", ""]);
-  await expect(page.getByLabel("Product")).toBeEnabled();
-  await expect(page.getByLabel("Account Tier")).toHaveValue("Silver");
-  await expect(page.getByLabel("Transaction Amount")).toHaveValue("250.5");
-  await expect(accounts.getByRole("button", { name: "Add" })).toBeVisible();
-  await expect(feeRequests.getByRole("button", { name: "Add" })).toBeVisible();
-
-  await page.getByRole("button", { name: "Send" }).click();
-  await expect(page.getByRole("button", { name: "Reset" })).toBeEnabled();
-  expect(requests).toHaveLength(2);
-  expect(requests[1].batchId).not.toBe(firstBatchId);
-});
-
-test("correlates reordered Fee Pricing Decisions and shows only outcome fields", async ({
+test("retries corrected Batch drafts with the same ID after HTTP and transport failures", async ({
   page,
 }) => {
-  await page.route("**/api/v1/simulator/date", (route) => route.fulfill({
-    json: { currentDate: "2026-08-26" },
-  }));
-  await page.route("**/api/v1/simulator/options", (route) => route.fulfill({
-    json: withDemoOptions({
-      products: [{ id: 1, code: "PROD0001", name: "Checking", type: "DEPOSIT" }],
-      branches: [{ id: 2, code: "BRANCH0001", name: "Main Branch" }],
-      fees: [
-        {
-          id: 3,
-          code: "MONTHLY",
-          name: "Monthly Fee",
-          type: "FLAT",
-          productTypes: ["DEPOSIT"],
-        },
-        {
-          id: 4,
-          code: "WIRE",
-          name: "Wire Fee",
-          type: "PERCENT",
-          productTypes: ["DEPOSIT"],
-        },
-      ],
-      attributes: [],
-    }),
-  }));
-  await page.route("**/api/v1/batch", async (route) => {
-    const request = route.request().postDataJSON() as BatchRequest;
-
-    expect(request.accounts[0].fees).toEqual([
-      { feeRequestId: 1, code: "MONTHLY" },
-      { feeRequestId: 2, code: "MONTHLY" },
-      { feeRequestId: 3, code: "WIRE", transactionAmount: 100 },
-    ]);
-    expect(request.accounts[1].fees).toEqual([
-      { feeRequestId: 1, code: "MONTHLY" },
-    ]);
-    await route.fulfill({
-      json: {
-        batchId: request.batchId,
-        accounts: [
-          {
-            accountNumber: "10000006",
-            status: "OK",
-            pricingPlanCode: "PLAN0002",
-            fees: [{ feeRequestId: 1, status: "OK", decision: "CHARGED", amount: 3 }],
-          },
-          {
-            accountNumber: "10000001",
-            status: "OK",
-            pricingPlanCode: "PLAN0001",
-            fees: [
-              { feeRequestId: 2, status: "OK", decision: "CHARGED", amount: 12.5 },
-              { feeRequestId: 3, status: "ERROR" },
-              {
-                feeRequestId: 1,
-                status: "OK",
-                decision: "WAIVED",
-                reasons: ["LOYALTY", "VIP"],
-              },
-            ],
-          },
-        ],
-      },
-    });
-  });
-
-  await page.goto("/simulator");
-  const accounts = page.locator(".selection-list").filter({ hasText: "Accounts" });
-  const feeRequests = page.locator(".selection-list").filter({ hasText: "Fees" });
-
-  async function selectOption(label: string, option: string) {
-    await page.getByLabel(label).click();
-    await page.getByText(option, { exact: true }).click();
-  }
-
-  await addSingleDraft(accounts);
-  await selectOption("Product", "PROD0001 - Checking");
-  await selectOption("Branch", "BRANCH0001 - Main Branch");
-
-  await feeRequests.getByRole("button", { name: "Add" }).click();
-  await selectOption("Fee Name", "MONTHLY - Monthly Fee");
-  await feeRequests.getByRole("button", { name: "Add" }).click();
-  await selectOption("Fee Name", "MONTHLY - Monthly Fee");
-  await feeRequests.getByRole("button", { name: "Add" }).click();
-  await selectOption("Fee Name", "WIRE - Wire Fee");
-  await page.getByLabel("Transaction Amount").fill("100");
-
-  await addSingleDraft(accounts);
-  await selectOption("Product", "PROD0001 - Checking");
-  await selectOption("Branch", "BRANCH0001 - Main Branch");
-  await feeRequests.getByRole("button", { name: "Add" }).click();
-  await selectOption("Fee Name", "MONTHLY - Monthly Fee");
-
-  await page.getByRole("button", { name: "Send" }).click();
-  await expect(page.getByRole("button", { name: "Reset" })).toBeEnabled();
-  await accountRow(accounts, "10000001").click();
-
-  const feeResponse = page.locator(".simulator-fee-response");
-  await expect(feeResponse.getByText("Wire Fee", { exact: true })).toBeVisible();
-  await expect(feeResponse.getByText("ERROR", { exact: true })).toBeVisible();
-  await expect(feeResponse.getByText("Decision", { exact: true })).toHaveCount(0);
-  await expect(feeResponse.getByText("Amount", { exact: true })).toHaveCount(0);
-  await expect(feeResponse.getByText("Eligibility Reasons", { exact: true })).toHaveCount(0);
-  await expect(feeResponse.locator("input")).toHaveCount(0);
-
-  await feeRequests.locator(".ag-row").first().click();
-  await expect(feeResponse.getByText("Monthly Fee", { exact: true })).toBeVisible();
-  await expect(feeResponse.getByText("OK", { exact: true })).toBeVisible();
-  await expect(feeResponse.getByText("Decision", { exact: true })).toBeVisible();
-  await expect(feeResponse.getByText("WAIVED", { exact: true })).toBeVisible();
-  await expect(feeResponse.getByText("Amount", { exact: true })).toHaveCount(0);
-  const reasons = feeResponse.locator(".selection-list").filter({
-    hasText: "Eligibility Reasons",
-  });
-  await expect(reasons.getByText("LOYALTY", { exact: true })).toBeVisible();
-  await expect(reasons.getByText("VIP", { exact: true })).toBeVisible();
-  await expect(reasons.locator(".selection-list-table-disabled")).toBeVisible();
-  await expect(feeResponse.locator("input")).toHaveCount(0);
-
-  await feeRequests.locator(".ag-row").nth(1).click();
-  await expect(feeResponse.getByText("OK", { exact: true })).toBeVisible();
-  await expect(feeResponse.getByText("Decision", { exact: true })).toBeVisible();
-  await expect(feeResponse.getByText("CHARGED", { exact: true })).toBeVisible();
-  await expect(feeResponse.getByText("Amount", { exact: true })).toBeVisible();
-  await expect(feeResponse.getByText("12.5", { exact: true })).toBeVisible();
-  await expect(feeResponse.getByText("Eligibility Reasons", { exact: true })).toHaveCount(0);
-  await expect(feeResponse.locator("input")).toHaveCount(0);
-
-  await accountRow(accounts, "10000006").click();
-  await expect(feeResponse.getByText("Monthly Fee", { exact: true })).toBeVisible();
-  await expect(feeResponse.getByText("3", { exact: true })).toBeVisible();
-  await accountRow(accounts, "10000001").click();
-  await expect(feeResponse.getByText("12.5", { exact: true })).toBeVisible();
-});
-
-test("restores editable drafts after Batch HTTP and network failures", async ({ page }) => {
-  let batchRequests = 0;
+  const requests: BatchRequest[] = [];
+  const failures = [
+    { status: 400, code: "INVALID_BATCH", message: "Invalid Batch" },
+    { status: 409, code: "SUBMISSION_CONFLICT", message: "Submission conflict" },
+    { status: 503, code: "ACCOUNT_STORE_UNAVAILABLE", message: "Batch unavailable" },
+    { transport: "failed" },
+    { transport: "timedout" },
+  ] as const;
 
   await page.route("**/api/v1/simulator/date", (route) => route.fulfill({
     json: { currentDate: "2026-08-26" },
@@ -732,14 +653,36 @@ test("restores editable drafts after Batch HTTP and network failures", async ({ 
         type: "FLAT",
         productTypes: ["DEPOSIT"],
       }],
-      attributes: [],
+      attributes: [{
+        id: 4,
+        code: "TIER",
+        name: "Account Tier",
+        type: "TEXT",
+        productTypes: ["DEPOSIT"],
+      }],
     }),
   }));
-  await page.route("**/api/v1/batch", (route) => {
-    batchRequests += 1;
-    return batchRequests === 1
-      ? route.fulfill({ status: 503, json: { message: "Batch unavailable" } })
-      : route.abort("failed");
+  await page.route("**/api/v1/mock/acc/batch", (route) => {
+    const failure = failures[requests.length];
+    requests.push(route.request().postDataJSON() as BatchRequest);
+    if (!failure) {
+      if (requests.length === failures.length + 1) {
+        return route.fulfill({
+          status: 409,
+          json: {
+            code: "BATCH_ALREADY_ACCEPTED",
+            message: "This Pricing Batch has already been accepted",
+          },
+        });
+      }
+      return route.fulfill({
+        status: 202,
+        json: { batchId: requests.at(-1)!.batchId, message: "Pricing Batch accepted." },
+      });
+    }
+    return "transport" in failure
+      ? route.abort(failure.transport)
+      : route.fulfill({ status: failure.status, json: failure });
   });
 
   await page.goto("/simulator");
@@ -750,28 +693,61 @@ test("restores editable drafts after Batch HTTP and network failures", async ({ 
   await page.getByText("PROD0001 - Checking", { exact: true }).click();
   await page.getByLabel("Branch").click();
   await page.getByText("BRANCH0001 - Main Branch", { exact: true }).click();
+  await page.getByLabel("Account Tier").fill("Gold");
   await feeRequests.getByRole("button", { name: "Add" }).click();
   await page.getByLabel("Fee Name").click();
   await page.getByText("MONTHLY - Monthly Fee", { exact: true }).click();
 
   const send = page.getByRole("button", { name: "Send" });
+  for (const [index, failure] of failures.entries()) {
+    await send.click();
+    await expect(page.locator(".page-error")).toHaveText("transport" in failure
+      ? "Status 503: The app could not complete the backend request. Please try again later."
+      : `Status ${failure.status}: ${failure.message}`);
+    await expect(send).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Reset" })).toHaveCount(0);
+    await expect(page.getByLabel("Application Date")).toBeEnabled();
+    await expect(page.getByLabel("Product")).toBeEnabled();
+    await expect(page.getByLabel("Branch")).toBeEnabled();
+    await expect(page.getByLabel("Fee Name")).toBeEnabled();
+    await expect(page.locator(".simulator-response-value")).toHaveText(["", ""]);
+    await expect(page.locator(".simulator-fee-response")).toHaveCount(0);
+    await expect(accounts.getByRole("button", { name: "Add" })).toBeVisible();
+    await expect(feeRequests.getByRole("button", { name: "Add" })).toBeVisible();
+    expect(requests[index].batchId).toBe(requests[0].batchId);
+    expect(requests[index].accounts[0].attributes).toEqual([
+      { code: "TIER", value: index === 0 ? "Gold" : `Corrected ${index - 1}` },
+    ]);
+    await page.getByLabel("Account Tier").fill(`Corrected ${index}`);
+  }
   await send.click();
-  await expect(page.getByText("Status 503: Batch unavailable", { exact: true })).toBeVisible();
-  await expect(send).toBeEnabled();
+  await expect(page.locator(".page-error")).toHaveText(
+    "Status 409: This Pricing Batch has already been accepted",
+  );
+  await expect(page.getByRole("button", { name: "Send" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Reset" })).toBeEnabled();
+  await expect(page.getByLabel("Application Date")).toBeDisabled();
+  await expect(page.getByLabel("Product")).toBeDisabled();
+  await expect(page.getByLabel("Branch")).toBeDisabled();
+  await expect(page.getByLabel("Account Tier")).toBeDisabled();
+  await expect(page.getByLabel("Fee Name")).toBeDisabled();
+  await expect(accounts.getByRole("button", { name: "Add" })).toHaveCount(0);
+  await expect(accounts.getByRole("button", { name: "X" })).toHaveCount(0);
+  await expect(feeRequests.getByRole("button", { name: "Add" })).toHaveCount(0);
+  await expect(feeRequests.getByRole("button", { name: "X" })).toHaveCount(0);
+  await expect(page.locator(".simulator-response-value")).toHaveText(["", ""]);
+  await expect(page.locator(".simulator-fee-response")).toHaveCount(0);
+  expect(requests.at(-1)!.batchId).toBe(requests[0].batchId);
+  await page.getByRole("button", { name: "Reset" }).click();
+  await expect(page.locator(".page-error")).toHaveCount(0);
   await expect(page.getByLabel("Product")).toBeEnabled();
   await expect(page.locator(".simulator-response-value")).toHaveText(["", ""]);
-  await expect(accounts.getByRole("button", { name: "Add" })).toBeVisible();
-  await expect(feeRequests.getByRole("button", { name: "Add" })).toBeVisible();
-
   await send.click();
-  await expect(page.getByText(
-    "Status 503: The app could not complete the backend request. Please try again later.",
-    { exact: true },
-  )).toBeVisible();
-  await expect(send).toBeEnabled();
-  await expect(page.getByLabel("Product")).toBeEnabled();
-  await expect(page.locator(".simulator-response-value")).toHaveText(["", ""]);
-  expect(batchRequests).toBe(2);
+  await expect(page.locator(".simulator-response-value")).toHaveText([
+    requests.at(-1)!.batchId,
+    "Pricing Batch accepted.",
+  ]);
+  expect(requests.at(-1)!.batchId).not.toBe(requests[0].batchId);
 });
 
 test("accepts empty Simulator option categories", async ({ page }) => {

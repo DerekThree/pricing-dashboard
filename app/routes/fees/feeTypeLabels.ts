@@ -1,4 +1,4 @@
-import { FeeType } from "../../generated/api/models";
+import { FeeType } from "../../generated/backend/models";
 
 export const feeTypeLabels: Record<FeeType, string> = {
   [FeeType.FLAT]: "Flat",

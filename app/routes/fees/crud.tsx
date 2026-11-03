@@ -6,8 +6,8 @@ import { useActionData, useLoaderData, useSubmit, type SubmitTarget } from "reac
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import Dropdown from "../../components/Dropdown";
 import useFormValues from "../../hooks/useFormValues";
-import { createFee, deleteFee, getFee, updateFee } from "../../generated/api/client";
-import { FeeType, ProductType, type FeeRequest } from "../../generated/api/models";
+import { createFee, deleteFee, getFee, updateFee } from "../../generated/backend/client";
+import { FeeType, ProductType, type FeeRequest } from "../../generated/backend/models";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { productTypeOptions } from "../products/productTypeLabels";

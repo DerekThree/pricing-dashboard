@@ -21,12 +21,12 @@ import {
   getPricingPlanOptions,
   getPricingPlanSecondaryOptions,
   updatePricingPlan,
-} from "../../generated/api/client";
+} from "../../generated/backend/client";
 import {
   type PricingPlanDetail,
   type PricingPlanRequest,
   type PricingPlanOptions,
-} from "../../generated/api/models";
+} from "../../generated/backend/models";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { createClientAction, createClientLoader, crudOps, validateCrudRouteParams } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";

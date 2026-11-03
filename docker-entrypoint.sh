@@ -6,7 +6,10 @@ const fs = require("fs");
 fs.writeFileSync(
   "build/client/config.js",
   "window.__APP_CONFIG__ = " +
-    JSON.stringify({ API_URL: process.env.API_URL }) +
+    JSON.stringify({
+      BACKEND_API_URL: process.env.BACKEND_API_URL,
+      ACCOUNT_PROCESSOR_API_URL: process.env.ACCOUNT_PROCESSOR_API_URL,
+    }) +
     ";\n"
 );
 '

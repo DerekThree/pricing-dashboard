@@ -1,11 +1,20 @@
-import { getApiUrl } from "../config/api";
+import { getApiUrl, type ApiProvider } from "../config/api";
 
-export async function apiMutator<TResponse>(
+export function backendMutator<TResponse>(url: string, init?: RequestInit) {
+  return apiMutator<TResponse>(url, init, "BACKEND_API_URL");
+}
+
+export function accountProcessorMutator<TResponse>(url: string, init?: RequestInit) {
+  return apiMutator<TResponse>(url, init, "ACCOUNT_PROCESSOR_API_URL");
+}
+
+async function apiMutator<TResponse>(
   url: string,
-  init?: RequestInit,
+  init: RequestInit | undefined,
+  provider: ApiProvider,
 ): Promise<TResponse> {
   try {
-    const response = await fetch(getApiUrl(url), init);
+    const response = await fetch(getApiUrl(url, provider), init);
     const body = [204, 205, 304].includes(response.status)
       ? null
       : await response.text();

@@ -1,6 +1,6 @@
 import type { ValueFormatterParams } from "ag-grid-community";
 
-import { ProductType } from "../generated/api/models/productType";
+import { ProductType } from "../generated/backend/models/productType";
 import { productTypeLabels } from "../routes/products/productTypeLabels";
 
 export function listFormatter({ value }: ValueFormatterParams): string {

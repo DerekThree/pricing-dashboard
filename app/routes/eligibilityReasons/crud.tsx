@@ -20,7 +20,7 @@ import {
   getReason,
   getReasonOptions,
   updateReason,
-} from "../../generated/api/client";
+} from "../../generated/backend/client";
 import {
   AttributeType,
   type Id,
@@ -28,7 +28,7 @@ import {
   ReasonOperator,
   type ReasonOptions,
   type ReasonRequest,
-} from "../../generated/api/models";
+} from "../../generated/backend/models";
 import { routeUrls } from "../../routes";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";

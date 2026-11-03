@@ -12,8 +12,8 @@ import {
   deleteAttribute,
   getAttribute,
   updateAttribute,
-} from "../../generated/api/client";
-import { AttributeType, ProductType, type AttributeRequest } from "../../generated/api/models";
+} from "../../generated/backend/client";
+import { AttributeType, ProductType, type AttributeRequest } from "../../generated/backend/models";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";

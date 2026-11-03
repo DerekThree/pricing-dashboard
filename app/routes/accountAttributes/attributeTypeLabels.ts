@@ -1,4 +1,4 @@
-import { AttributeType } from "../../generated/api/models";
+import { AttributeType } from "../../generated/backend/models";
 
 export const attributeTypeLabels: Record<AttributeType, string> = {
   [AttributeType.TEXT]: "Text",

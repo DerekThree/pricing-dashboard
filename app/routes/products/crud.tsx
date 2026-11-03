@@ -6,8 +6,13 @@ import { useActionData, useLoaderData, useSubmit, type SubmitTarget } from "reac
 import Dropdown from "../../components/Dropdown";
 import CrudPageTopMenu from "../../components/CrudPageTopMenu";
 import useFormValues from "../../hooks/useFormValues";
-import { createProduct, deleteProduct, getProduct, updateProduct, } from "../../generated/api/client";
-import { ProductType, type ProductRequest } from "../../generated/api/models";
+import {
+  createProduct,
+  deleteProduct,
+  getProduct,
+  updateProduct,
+} from "../../generated/backend/client";
+import { ProductType, type ProductRequest } from "../../generated/backend/models";
 import { createClientAction, createClientLoader, crudOps, } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit } from "../../utils/formUtils";
 import { productTypeOptions } from "./productTypeLabels";

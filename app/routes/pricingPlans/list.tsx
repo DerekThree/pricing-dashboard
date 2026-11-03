@@ -3,8 +3,8 @@ import type { ColDef, ValueFormatterParams } from "ag-grid-community";
 import { useNavigate } from "react-router";
 
 import ListPage from "../../components/ListPage";
-import { listPricingPlans } from "../../generated/api/client";
-import type { PricingPlanListItem } from "../../generated/api/models";
+import { listPricingPlans } from "../../generated/backend/client";
+import type { PricingPlanListItem } from "../../generated/backend/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { dateTimeFormatter } from "../../utils/valueFormatters";

@@ -2,8 +2,8 @@ import { useLoaderData } from "react-router";
 import type { ColDef } from "ag-grid-community";
 
 import ListPage from "../../components/ListPage";
-import { listProducts } from "../../generated/api/client";
-import { ProductType, type ProductListItem } from "../../generated/api/models";
+import { listProducts } from "../../generated/backend/client";
+import { ProductType, type ProductListItem } from "../../generated/backend/models";
 import { routeUrls } from "../../routes";
 import { getErrorMessage } from "../../utils/apiUtils";
 import { dateTimeFormatter } from "../../utils/valueFormatters";

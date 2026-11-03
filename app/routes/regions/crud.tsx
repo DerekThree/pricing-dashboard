@@ -17,8 +17,8 @@ import {
   getRegionOptions,
   updateRegion,
   deleteRegion,
-} from "../../generated/api/client";
-import type { RegionOptions, RegionRequest } from "../../generated/api/models";
+} from "../../generated/backend/client";
+import type { RegionOptions, RegionRequest } from "../../generated/backend/models";
 import { createClientAction, createClientLoader, crudOps } from "../../utils/crudRouteUtils";
 import { preventEnterSubmit, toDropdownOption } from "../../utils/formUtils";
 import { routeUrls } from "../../routes";

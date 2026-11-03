@@ -41,7 +41,7 @@ import type {
   SyntheticServiceUnavailableResponse
 } from './models';
 
-import { apiMutator } from '../../utils/apiMutator';
+import { backendMutator } from '../../utils/apiMutator';
 /**
  * @summary Price a batch synchronously
  */
@@ -79,7 +79,7 @@ export const getPostBatchUrl = () => {
 
 export const postBatch = async (batchRequest: BatchRequest, options?: RequestInit): Promise<postBatchResponse> => {
   
-  return apiMutator<postBatchResponse>(getPostBatchUrl(),
+  return backendMutator<postBatchResponse>(getPostBatchUrl(),
   {      
     ...options,
     method: 'POST',
@@ -128,7 +128,7 @@ export const getListBranchesUrl = () => {
 
 export const listBranches = async ( options?: RequestInit): Promise<listBranchesResponse> => {
   
-  return apiMutator<listBranchesResponse>(getListBranchesUrl(),
+  return backendMutator<listBranchesResponse>(getListBranchesUrl(),
   {      
     ...options,
     method: 'GET'
@@ -181,7 +181,7 @@ export const getCreateBranchUrl = () => {
 
 export const createBranch = async (branchRequest: BranchRequest, options?: RequestInit): Promise<createBranchResponse> => {
   
-  return apiMutator<createBranchResponse>(getCreateBranchUrl(),
+  return backendMutator<createBranchResponse>(getCreateBranchUrl(),
   {      
     ...options,
     method: 'POST',
@@ -235,7 +235,7 @@ export const getGetBranchUrl = (id: number,) => {
 
 export const getBranch = async (id: number, options?: RequestInit): Promise<getBranchResponse> => {
   
-  return apiMutator<getBranchResponse>(getGetBranchUrl(id),
+  return backendMutator<getBranchResponse>(getGetBranchUrl(id),
   {      
     ...options,
     method: 'GET'
@@ -294,7 +294,7 @@ export const getUpdateBranchUrl = (id: number,) => {
 export const updateBranch = async (id: number,
     branchRequest: BranchRequest, options?: RequestInit): Promise<updateBranchResponse> => {
   
-  return apiMutator<updateBranchResponse>(getUpdateBranchUrl(id),
+  return backendMutator<updateBranchResponse>(getUpdateBranchUrl(id),
   {      
     ...options,
     method: 'PUT',
@@ -348,7 +348,7 @@ export const getDeleteBranchUrl = (id: number,) => {
 
 export const deleteBranch = async (id: number, options?: RequestInit): Promise<deleteBranchResponse> => {
   
-  return apiMutator<deleteBranchResponse>(getDeleteBranchUrl(id),
+  return backendMutator<deleteBranchResponse>(getDeleteBranchUrl(id),
   {      
     ...options,
     method: 'DELETE'
@@ -396,7 +396,7 @@ export const getListRegionsUrl = () => {
 
 export const listRegions = async ( options?: RequestInit): Promise<listRegionsResponse> => {
   
-  return apiMutator<listRegionsResponse>(getListRegionsUrl(),
+  return backendMutator<listRegionsResponse>(getListRegionsUrl(),
   {      
     ...options,
     method: 'GET'
@@ -449,7 +449,7 @@ export const getCreateRegionUrl = () => {
 
 export const createRegion = async (regionRequest: RegionRequest, options?: RequestInit): Promise<createRegionResponse> => {
   
-  return apiMutator<createRegionResponse>(getCreateRegionUrl(),
+  return backendMutator<createRegionResponse>(getCreateRegionUrl(),
   {      
     ...options,
     method: 'POST',
@@ -505,7 +505,7 @@ export const getGetRegionOptionsUrl = (params?: GetRegionOptionsParams,) => {
 
 export const getRegionOptions = async (params?: GetRegionOptionsParams, options?: RequestInit): Promise<getRegionOptionsResponse> => {
   
-  return apiMutator<getRegionOptionsResponse>(getGetRegionOptionsUrl(params),
+  return backendMutator<getRegionOptionsResponse>(getGetRegionOptionsUrl(params),
   {      
     ...options,
     method: 'GET'
@@ -558,7 +558,7 @@ export const getGetRegionUrl = (id: number,) => {
 
 export const getRegion = async (id: number, options?: RequestInit): Promise<getRegionResponse> => {
   
-  return apiMutator<getRegionResponse>(getGetRegionUrl(id),
+  return backendMutator<getRegionResponse>(getGetRegionUrl(id),
   {      
     ...options,
     method: 'GET'
@@ -617,7 +617,7 @@ export const getUpdateRegionUrl = (id: number,) => {
 export const updateRegion = async (id: number,
     regionRequest: RegionRequest, options?: RequestInit): Promise<updateRegionResponse> => {
   
-  return apiMutator<updateRegionResponse>(getUpdateRegionUrl(id),
+  return backendMutator<updateRegionResponse>(getUpdateRegionUrl(id),
   {      
     ...options,
     method: 'PUT',
@@ -671,7 +671,7 @@ export const getDeleteRegionUrl = (id: number,) => {
 
 export const deleteRegion = async (id: number, options?: RequestInit): Promise<deleteRegionResponse> => {
   
-  return apiMutator<deleteRegionResponse>(getDeleteRegionUrl(id),
+  return backendMutator<deleteRegionResponse>(getDeleteRegionUrl(id),
   {      
     ...options,
     method: 'DELETE'
@@ -719,7 +719,7 @@ export const getListProductsUrl = () => {
 
 export const listProducts = async ( options?: RequestInit): Promise<listProductsResponse> => {
   
-  return apiMutator<listProductsResponse>(getListProductsUrl(),
+  return backendMutator<listProductsResponse>(getListProductsUrl(),
   {      
     ...options,
     method: 'GET'
@@ -772,7 +772,7 @@ export const getCreateProductUrl = () => {
 
 export const createProduct = async (productRequest: ProductRequest, options?: RequestInit): Promise<createProductResponse> => {
   
-  return apiMutator<createProductResponse>(getCreateProductUrl(),
+  return backendMutator<createProductResponse>(getCreateProductUrl(),
   {      
     ...options,
     method: 'POST',
@@ -826,7 +826,7 @@ export const getGetProductUrl = (id: number,) => {
 
 export const getProduct = async (id: number, options?: RequestInit): Promise<getProductResponse> => {
   
-  return apiMutator<getProductResponse>(getGetProductUrl(id),
+  return backendMutator<getProductResponse>(getGetProductUrl(id),
   {      
     ...options,
     method: 'GET'
@@ -885,7 +885,7 @@ export const getUpdateProductUrl = (id: number,) => {
 export const updateProduct = async (id: number,
     productRequest: ProductRequest, options?: RequestInit): Promise<updateProductResponse> => {
   
-  return apiMutator<updateProductResponse>(getUpdateProductUrl(id),
+  return backendMutator<updateProductResponse>(getUpdateProductUrl(id),
   {      
     ...options,
     method: 'PUT',
@@ -939,7 +939,7 @@ export const getDeleteProductUrl = (id: number,) => {
 
 export const deleteProduct = async (id: number, options?: RequestInit): Promise<deleteProductResponse> => {
   
-  return apiMutator<deleteProductResponse>(getDeleteProductUrl(id),
+  return backendMutator<deleteProductResponse>(getDeleteProductUrl(id),
   {      
     ...options,
     method: 'DELETE'
@@ -987,7 +987,7 @@ export const getListFeesUrl = () => {
 
 export const listFees = async ( options?: RequestInit): Promise<listFeesResponse> => {
   
-  return apiMutator<listFeesResponse>(getListFeesUrl(),
+  return backendMutator<listFeesResponse>(getListFeesUrl(),
   {      
     ...options,
     method: 'GET'
@@ -1040,7 +1040,7 @@ export const getCreateFeeUrl = () => {
 
 export const createFee = async (feeRequest: FeeRequest, options?: RequestInit): Promise<createFeeResponse> => {
   
-  return apiMutator<createFeeResponse>(getCreateFeeUrl(),
+  return backendMutator<createFeeResponse>(getCreateFeeUrl(),
   {      
     ...options,
     method: 'POST',
@@ -1094,7 +1094,7 @@ export const getGetFeeUrl = (id: number,) => {
 
 export const getFee = async (id: number, options?: RequestInit): Promise<getFeeResponse> => {
   
-  return apiMutator<getFeeResponse>(getGetFeeUrl(id),
+  return backendMutator<getFeeResponse>(getGetFeeUrl(id),
   {      
     ...options,
     method: 'GET'
@@ -1158,7 +1158,7 @@ export const getUpdateFeeUrl = (id: number,) => {
 export const updateFee = async (id: number,
     feeRequest: FeeRequest, options?: RequestInit): Promise<updateFeeResponse> => {
   
-  return apiMutator<updateFeeResponse>(getUpdateFeeUrl(id),
+  return backendMutator<updateFeeResponse>(getUpdateFeeUrl(id),
   {      
     ...options,
     method: 'PUT',
@@ -1212,7 +1212,7 @@ export const getDeleteFeeUrl = (id: number,) => {
 
 export const deleteFee = async (id: number, options?: RequestInit): Promise<deleteFeeResponse> => {
   
-  return apiMutator<deleteFeeResponse>(getDeleteFeeUrl(id),
+  return backendMutator<deleteFeeResponse>(getDeleteFeeUrl(id),
   {      
     ...options,
     method: 'DELETE'
@@ -1260,7 +1260,7 @@ export const getListPricingPlansUrl = () => {
 
 export const listPricingPlans = async ( options?: RequestInit): Promise<listPricingPlansResponse> => {
   
-  return apiMutator<listPricingPlansResponse>(getListPricingPlansUrl(),
+  return backendMutator<listPricingPlansResponse>(getListPricingPlansUrl(),
   {      
     ...options,
     method: 'GET'
@@ -1313,7 +1313,7 @@ export const getCreatePricingPlanUrl = () => {
 
 export const createPricingPlan = async (pricingPlanRequest: PricingPlanRequest, options?: RequestInit): Promise<createPricingPlanResponse> => {
   
-  return apiMutator<createPricingPlanResponse>(getCreatePricingPlanUrl(),
+  return backendMutator<createPricingPlanResponse>(getCreatePricingPlanUrl(),
   {      
     ...options,
     method: 'POST',
@@ -1369,7 +1369,7 @@ export const getGetPricingPlanOptionsUrl = (params?: GetPricingPlanOptionsParams
 
 export const getPricingPlanOptions = async (params?: GetPricingPlanOptionsParams, options?: RequestInit): Promise<getPricingPlanOptionsResponse> => {
   
-  return apiMutator<getPricingPlanOptionsResponse>(getGetPricingPlanOptionsUrl(params),
+  return backendMutator<getPricingPlanOptionsResponse>(getGetPricingPlanOptionsUrl(params),
   {      
     ...options,
     method: 'GET'
@@ -1434,7 +1434,7 @@ export const getGetPricingPlanSecondaryOptionsUrl = (params: GetPricingPlanSecon
 
 export const getPricingPlanSecondaryOptions = async (params: GetPricingPlanSecondaryOptionsParams, options?: RequestInit): Promise<getPricingPlanSecondaryOptionsResponse> => {
   
-  return apiMutator<getPricingPlanSecondaryOptionsResponse>(getGetPricingPlanSecondaryOptionsUrl(params),
+  return backendMutator<getPricingPlanSecondaryOptionsResponse>(getGetPricingPlanSecondaryOptionsUrl(params),
   {      
     ...options,
     method: 'GET'
@@ -1487,7 +1487,7 @@ export const getGetPricingPlanUrl = (id: number,) => {
 
 export const getPricingPlan = async (id: number, options?: RequestInit): Promise<getPricingPlanResponse> => {
   
-  return apiMutator<getPricingPlanResponse>(getGetPricingPlanUrl(id),
+  return backendMutator<getPricingPlanResponse>(getGetPricingPlanUrl(id),
   {      
     ...options,
     method: 'GET'
@@ -1546,7 +1546,7 @@ export const getUpdatePricingPlanUrl = (id: number,) => {
 export const updatePricingPlan = async (id: number,
     pricingPlanRequest: PricingPlanRequest, options?: RequestInit): Promise<updatePricingPlanResponse> => {
   
-  return apiMutator<updatePricingPlanResponse>(getUpdatePricingPlanUrl(id),
+  return backendMutator<updatePricingPlanResponse>(getUpdatePricingPlanUrl(id),
   {      
     ...options,
     method: 'PUT',
@@ -1600,7 +1600,7 @@ export const getDeletePricingPlanUrl = (id: number,) => {
 
 export const deletePricingPlan = async (id: number, options?: RequestInit): Promise<deletePricingPlanResponse> => {
   
-  return apiMutator<deletePricingPlanResponse>(getDeletePricingPlanUrl(id),
+  return backendMutator<deletePricingPlanResponse>(getDeletePricingPlanUrl(id),
   {      
     ...options,
     method: 'DELETE'
@@ -1648,7 +1648,7 @@ export const getListAttributesUrl = () => {
 
 export const listAttributes = async ( options?: RequestInit): Promise<listAttributesResponse> => {
   
-  return apiMutator<listAttributesResponse>(getListAttributesUrl(),
+  return backendMutator<listAttributesResponse>(getListAttributesUrl(),
   {      
     ...options,
     method: 'GET'
@@ -1701,7 +1701,7 @@ export const getCreateAttributeUrl = () => {
 
 export const createAttribute = async (attributeRequest: AttributeRequest, options?: RequestInit): Promise<createAttributeResponse> => {
   
-  return apiMutator<createAttributeResponse>(getCreateAttributeUrl(),
+  return backendMutator<createAttributeResponse>(getCreateAttributeUrl(),
   {      
     ...options,
     method: 'POST',
@@ -1755,7 +1755,7 @@ export const getGetAttributeUrl = (id: number,) => {
 
 export const getAttribute = async (id: number, options?: RequestInit): Promise<getAttributeResponse> => {
   
-  return apiMutator<getAttributeResponse>(getGetAttributeUrl(id),
+  return backendMutator<getAttributeResponse>(getGetAttributeUrl(id),
   {      
     ...options,
     method: 'GET'
@@ -1819,7 +1819,7 @@ export const getUpdateAttributeUrl = (id: number,) => {
 export const updateAttribute = async (id: number,
     attributeRequest: AttributeRequest, options?: RequestInit): Promise<updateAttributeResponse> => {
   
-  return apiMutator<updateAttributeResponse>(getUpdateAttributeUrl(id),
+  return backendMutator<updateAttributeResponse>(getUpdateAttributeUrl(id),
   {      
     ...options,
     method: 'PUT',
@@ -1873,7 +1873,7 @@ export const getDeleteAttributeUrl = (id: number,) => {
 
 export const deleteAttribute = async (id: number, options?: RequestInit): Promise<deleteAttributeResponse> => {
   
-  return apiMutator<deleteAttributeResponse>(getDeleteAttributeUrl(id),
+  return backendMutator<deleteAttributeResponse>(getDeleteAttributeUrl(id),
   {      
     ...options,
     method: 'DELETE'
@@ -1909,7 +1909,7 @@ export const getGetSimulatorDateUrl = () => {
 
 export const getSimulatorDate = async ( options?: RequestInit): Promise<getSimulatorDateResponse> => {
   
-  return apiMutator<getSimulatorDateResponse>(getGetSimulatorDateUrl(),
+  return backendMutator<getSimulatorDateResponse>(getGetSimulatorDateUrl(),
   {      
     ...options,
     method: 'GET'
@@ -1952,7 +1952,7 @@ export const getSetSimulatorDateUrl = () => {
 
 export const setSimulatorDate = async (simulatorDate: SimulatorDate, options?: RequestInit): Promise<setSimulatorDateResponse> => {
   
-  return apiMutator<setSimulatorDateResponse>(getSetSimulatorDateUrl(),
+  return backendMutator<setSimulatorDateResponse>(getSetSimulatorDateUrl(),
   {      
     ...options,
     method: 'PUT',
@@ -2001,7 +2001,7 @@ export const getGetSimulatorOptionsUrl = () => {
 
 export const getSimulatorOptions = async ( options?: RequestInit): Promise<getSimulatorOptionsResponse> => {
   
-  return apiMutator<getSimulatorOptionsResponse>(getGetSimulatorOptionsUrl(),
+  return backendMutator<getSimulatorOptionsResponse>(getGetSimulatorOptionsUrl(),
   {      
     ...options,
     method: 'GET'
@@ -2049,7 +2049,7 @@ export const getListReasonsUrl = () => {
 
 export const listReasons = async ( options?: RequestInit): Promise<listReasonsResponse> => {
   
-  return apiMutator<listReasonsResponse>(getListReasonsUrl(),
+  return backendMutator<listReasonsResponse>(getListReasonsUrl(),
   {      
     ...options,
     method: 'GET'
@@ -2102,7 +2102,7 @@ export const getCreateReasonUrl = () => {
 
 export const createReason = async (reasonRequest: ReasonRequest, options?: RequestInit): Promise<createReasonResponse> => {
   
-  return apiMutator<createReasonResponse>(getCreateReasonUrl(),
+  return backendMutator<createReasonResponse>(getCreateReasonUrl(),
   {      
     ...options,
     method: 'POST',
@@ -2151,7 +2151,7 @@ export const getGetReasonOptionsUrl = () => {
 
 export const getReasonOptions = async ( options?: RequestInit): Promise<getReasonOptionsResponse> => {
   
-  return apiMutator<getReasonOptionsResponse>(getGetReasonOptionsUrl(),
+  return backendMutator<getReasonOptionsResponse>(getGetReasonOptionsUrl(),
   {      
     ...options,
     method: 'GET'
@@ -2204,7 +2204,7 @@ export const getGetReasonUrl = (id: number,) => {
 
 export const getReason = async (id: number, options?: RequestInit): Promise<getReasonResponse> => {
   
-  return apiMutator<getReasonResponse>(getGetReasonUrl(id),
+  return backendMutator<getReasonResponse>(getGetReasonUrl(id),
   {      
     ...options,
     method: 'GET'
@@ -2268,7 +2268,7 @@ export const getUpdateReasonUrl = (id: number,) => {
 export const updateReason = async (id: number,
     reasonRequest: ReasonRequest, options?: RequestInit): Promise<updateReasonResponse> => {
   
-  return apiMutator<updateReasonResponse>(getUpdateReasonUrl(id),
+  return backendMutator<updateReasonResponse>(getUpdateReasonUrl(id),
   {      
     ...options,
     method: 'PUT',
@@ -2322,7 +2322,7 @@ export const getDeleteReasonUrl = (id: number,) => {
 
 export const deleteReason = async (id: number, options?: RequestInit): Promise<deleteReasonResponse> => {
   
-  return apiMutator<deleteReasonResponse>(getDeleteReasonUrl(id),
+  return backendMutator<deleteReasonResponse>(getDeleteReasonUrl(id),
   {      
     ...options,
     method: 'DELETE'
