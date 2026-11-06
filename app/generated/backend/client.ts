@@ -9,8 +9,6 @@ import type {
   AttributeDetailResponse,
   AttributeListItem,
   AttributeRequest,
-  BatchRequest,
-  BatchResult,
   BranchDetailResponse,
   BranchListItem,
   BranchRequest,
@@ -42,55 +40,6 @@ import type {
 } from './models';
 
 import { backendMutator } from '../../utils/apiMutator';
-/**
- * @summary Price a batch synchronously
- */
-export type postBatchResponse200 = {
-  data: BatchResult
-  status: 200
-}
-
-export type postBatchResponse400 = {
-  data: ErrorResponse
-  status: 400
-}
-
-export type postBatchResponse503 = {
-  data: ErrorResponse
-  status: 503
-}
-    
-export type postBatchResponseSuccess = (postBatchResponse200) & {
-  headers: Headers;
-};
-export type postBatchResponseError = (postBatchResponse400 | postBatchResponse503) & {
-  headers: Headers;
-};
-
-export type postBatchResponse = (postBatchResponseSuccess | postBatchResponseError)
-
-export const getPostBatchUrl = () => {
-
-
-  
-
-  return `/api/v1/batch`
-}
-
-export const postBatch = async (batchRequest: BatchRequest, options?: RequestInit): Promise<postBatchResponse> => {
-  
-  return backendMutator<postBatchResponse>(getPostBatchUrl(),
-  {      
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      batchRequest,)
-  }
-);}
-
-
-
 /**
  * @summary List all branches
  */
