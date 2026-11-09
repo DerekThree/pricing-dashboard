@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "react-router build",
+    "build": "react-router build && node scripts/compress-assets.mjs",
     "clean:api": "powershell -NoProfile -Command \"Get-Item -LiteralPath app/generated/backend,app/generated/accountProcessor -ErrorAction Ignore | Remove-Item -Recurse -Force -ErrorAction Stop\"",
     "dev": "react-router dev",
     "generate:api": "npm run clean:api && orval",

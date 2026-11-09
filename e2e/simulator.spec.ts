@@ -742,12 +742,14 @@ test("retries corrected Batch drafts with the same ID after HTTP and transport f
   await expect(page.locator(".page-error")).toHaveCount(0);
   await expect(page.getByLabel("Product")).toBeEnabled();
   await expect(page.locator(".simulator-response-value")).toHaveText(["", ""]);
+  const finalRequest = page.waitForRequest("**/api/v1/mock/acc/batch");
   await send.click();
+  const finalBatch = (await finalRequest).postDataJSON() as BatchRequest;
   await expect(page.locator(".simulator-response-value")).toHaveText([
-    requests.at(-1)!.batchId,
+    finalBatch.batchId,
     "Pricing Batch accepted.",
   ]);
-  expect(requests.at(-1)!.batchId).not.toBe(requests[0].batchId);
+  expect(finalBatch.batchId).not.toBe(requests[0].batchId);
 });
 
 test("accepts empty Simulator option categories", async ({ page }) => {
