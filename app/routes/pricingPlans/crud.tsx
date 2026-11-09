@@ -149,7 +149,7 @@ export default function PricingPlanPage() {
     ? getLifecycle(options.currentDate!, initialFormValues.activeFrom, initialFormValues.activeThrough)
     : null;
   const inputsDisabled = !!loaderError || operation === crudOps.view || operation === crudOps.delete;
-  const configurationDisabled = inputsDisabled || lifecycle === "active" || lifecycle === "past";
+  const pricingDataDisabled = inputsDisabled || lifecycle === "active" || lifecycle === "past";
   const activePeriodDisabled = inputsDisabled || lifecycle === "past" || !secondaryOptions;
   const excludeDateIntervals = secondaryOptions?.intervals.map(({ activeFrom, activeThrough }) => ({
       start: toPickerDate(activeFrom)!,
@@ -248,7 +248,7 @@ export default function PricingPlanPage() {
                 title="Plan code must be 1 to 25 letters or digits."
                 type="text"
                 value={formValues.planCode}
-                disabled={configurationDisabled}
+                disabled={pricingDataDisabled}
                 maxLength={25}
                 pattern="[A-Za-z0-9]{1,25}"
                 required
@@ -274,7 +274,7 @@ export default function PricingPlanPage() {
             <Dropdown
               label="Product"
               value={formValues.productId}
-              disabled={configurationDisabled}
+              disabled={pricingDataDisabled}
               required
               options={options.products.map(toDropdownOption)}
               onChange={(value) => selectContext(Number(value), formValues.regionId)}
@@ -282,7 +282,7 @@ export default function PricingPlanPage() {
             <Dropdown
               label="Region"
               value={formValues.regionId}
-              disabled={configurationDisabled}
+              disabled={pricingDataDisabled}
               required
               options={options.regions.map(toDropdownOption)}
               onChange={(value) => selectContext(formValues.productId, Number(value))}
@@ -292,7 +292,7 @@ export default function PricingPlanPage() {
               <DatePicker
                 autoComplete="off"
                 dateFormat="MM/dd/yyy"
-                disabled={configurationDisabled || activePeriodDisabled}
+                disabled={pricingDataDisabled || activePeriodDisabled}
                 endDate={toPickerDate(formValues.activeThrough)}
                 excludeDateIntervals={excludeDateIntervals}
                 id="active-from"
@@ -336,7 +336,7 @@ export default function PricingPlanPage() {
               feeOptions={secondaryOptions?.fees ?? options.fees}
               reasonOptions={(secondaryOptions?.reasons ?? options.reasons)?.filter(({ productTypes }) =>
                 productTypes.includes(options.products.find(({ id }) => id === formValues.productId)!.type))}
-              disabled={configurationDisabled || !secondaryOptions}
+              disabled={pricingDataDisabled || !secondaryOptions}
               onChange={(fees) => updateField("fees", fees)}
             />
           </div>

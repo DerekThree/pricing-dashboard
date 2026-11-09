@@ -1,6 +1,6 @@
 # pricing-dashboard
 
-Configuration, Simulator options, and Application Date requests use the Backend. Simulator batches
+Pricing data, Simulator options, and Application Date requests use the Backend. Simulator batches
 use the Mock Account Processor and display its HTTP 202 batch ID and acceptance message.
 
 For native development, set `BACKEND_API_URL` and `ACCOUNT_PROCESSOR_API_URL` in the environment
