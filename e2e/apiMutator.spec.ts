@@ -2,6 +2,29 @@ import { expect, test } from "@playwright/test";
 
 const httpErrorStatuses = [400, 401, 403, 404, 500];
 
+for (const { contentType, body } of [
+  {
+    contentType: "application/xml",
+    body: '<?xml version="1.0"?><Error><Message>Access Denied</Message></Error>',
+  },
+  {
+    contentType: "text/html",
+    body: "<html><body><h1>Access Denied</h1></body></html>",
+  },
+]) {
+  test(`shows a plain error for ${contentType} gateway responses`, async ({ page }) => {
+    await page.route("**/api/v1/branches", (route) => route.fulfill({
+      status: 403,
+      contentType,
+      body,
+    }));
+
+    await page.goto("/branches");
+
+    await expect(page.locator(".page-error")).toHaveText("The backend returned status 403.");
+  });
+}
+
 for (const status of httpErrorStatuses) {
   test(`preserves HTTP ${status} when the response body is invalid JSON`, async ({ page }) => {
     await page.route("**/api/v1/branches", (route) => route.fulfill({

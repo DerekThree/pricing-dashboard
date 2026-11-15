@@ -1,5 +1,5 @@
 export function getErrorMessage(data: unknown, status?: number): string {
-  if (typeof data === "string" && data) {
+  if (typeof data === "string" && data && !data.trimStart().startsWith("<")) {
     return data;
   }
 
