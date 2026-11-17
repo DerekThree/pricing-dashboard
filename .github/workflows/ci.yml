@@ -33,13 +33,16 @@ jobs:
           npm run typecheck
           npm run test:browser
 
-      - name: Build browser assets
-        run: npm run build
+      - name: Build Docker image
+        run: docker build -t pricing-dashboard:ci .
 
-      - name: Upload browser assets
+      - name: Save Docker image
+        run: docker save pricing-dashboard:ci -o pricing-dashboard-image.tar
+
+      - name: Upload Docker image
         uses: actions/upload-artifact@v7
         with:
-          name: dashboard-static
-          path: build/client
+          name: pricing-dashboard-image
+          path: pricing-dashboard-image.tar
           if-no-files-found: error
           retention-days: 1

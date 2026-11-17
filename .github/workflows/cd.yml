@@ -25,9 +25,6 @@ jobs:
         github.event.workflow_run.head_repository.full_name == github.repository
       }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
 
     steps:
       - name: Authenticate to AWS
@@ -36,84 +33,156 @@ jobs:
           role-to-assume: arn:aws:iam::064550674390:role/pricing-backend-github-deploy
           aws-region: us-east-1
 
-      - name: Discover current static hosting
-        id: hosting
+      - name: Verify ECS service state
+        id: ecs_state
         run: |
-          hosting=$(aws cloudfront list-distributions --output text --query \
-            "DistributionList.Items[?Origins.Items[?Id=='dashboard-s3']].\
-          [Id,DomainName,Origins.Items[?Id=='dashboard-s3'].DomainName | [0]]")
-          if [[ -z "$hosting" || "$hosting" == *$'\n'* ]]; then
-            echo '::error::Expected exactly one distribution with the dashboard-s3 origin.'
-            exit 1
-          fi
-          read -r distribution_id domain origin <<< "$hosting"
-          bucket=${origin%%.s3.*}
-          if [[ -z "$distribution_id" || "$domain" != *.cloudfront.net ||
-                "$origin" != "${bucket}.s3.${AWS_REGION}.amazonaws.com" ]]; then
-            echo '::error::Dashboard distribution has an unexpected S3 origin.'
-            exit 1
-          fi
-          echo "bucket=$bucket" >> "$GITHUB_OUTPUT"
-          echo "distribution_id=$distribution_id" >> "$GITHUB_OUTPUT"
-          echo "url=https://$domain" >> "$GITHUB_OUTPUT"
+          service_json=$(aws ecs describe-services \
+            --cluster pricing-app-cluster \
+            --services pricing-dashboard-service \
+            --output json)
 
-      - name: Download CI browser assets
+          if ! jq -e '
+            (.services | length == 1) and
+            (.services[0].status == "ACTIVE") and
+            (
+              (.services[0].desiredCount == 0 and
+               .services[0].runningCount == 0 and
+               .services[0].pendingCount == 0) or
+              (.services[0].desiredCount > 0 and
+               .services[0].runningCount >= .services[0].desiredCount and
+               (.services[0].deployments | length == 1) and
+               .services[0].deployments[0].rolloutState == "COMPLETED")
+            )
+          ' <<< "$service_json" > /dev/null; then
+            echo "::error::ECS service is missing or not ready."
+            exit 1
+          fi
+
+          desired_count=$(jq -r '.services[0].desiredCount' <<< "$service_json")
+          echo "desired_count=$desired_count" >> "$GITHUB_OUTPUT"
+
+      - name: Download CI image
         uses: actions/download-artifact@v7
         with:
-          name: dashboard-static
-          path: build/client
+          name: pricing-dashboard-image
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish browser assets and runtime configuration
-        env:
-          BUCKET: ${{ steps.hosting.outputs.bucket }}
-        run: |
-          test -s build/client/index.html
-          test -d build/client/assets
-          printf '%s\n' \
-            'window.__APP_CONFIG__ = {"BACKEND_API_URL":"","ACCOUNT_PROCESSOR_API_URL":""};' \
-            > build/client/config.js
+      - name: Load CI image
+        run: docker load --input pricing-dashboard-image.tar
 
-          aws s3 sync build/client "s3://$BUCKET" \
-            --exclude 'assets/*' --exclude '*.gz' \
-            --exclude index.html --exclude config.js \
-            --cache-control 'public,max-age=300' --only-show-errors
-          aws s3 sync build/client/assets "s3://$BUCKET/assets" \
-            --exclude '*.gz' \
-            --cache-control 'public,max-age=31536000,immutable' --only-show-errors
-          aws s3 cp build/client/config.js "s3://$BUCKET/config.js" \
-            --content-type application/javascript \
-            --cache-control 'no-cache,max-age=0,must-revalidate' --only-show-errors
-          aws s3 cp build/client/index.html "s3://$BUCKET/index.html" \
-            --content-type text/html \
-            --cache-control 'no-cache,max-age=0,must-revalidate' --only-show-errors
-
-      - name: Invalidate CloudFront and wait for completion
+      - name: Publish CI image to ECR
         env:
-          DISTRIBUTION_ID: ${{ steps.hosting.outputs.distribution_id }}
-        run: |
-          invalidation=$(aws cloudfront create-invalidation \
-            --distribution-id "$DISTRIBUTION_ID" --paths '/*' \
-            --query 'Invalidation.Id' --output text)
-          test -n "$invalidation"
-          test "$invalidation" != None
-          aws cloudfront wait invalidation-completed \
-            --distribution-id "$DISTRIBUTION_ID" --id "$invalidation"
-
-      - name: Verify deployed release through CloudFront
-        env:
-          DASHBOARD_URL: ${{ steps.hosting.outputs.url }}
           COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
-          while IFS= read -r -d '' file; do
-            path=${file#build/client/}
-            curl --fail --silent --show-error --compressed \
-              --connect-timeout 10 --max-time 60 \
-              "$DASHBOARD_URL/$path" -o "$RUNNER_TEMP/deployed-asset"
-            if ! cmp -s "$file" "$RUNNER_TEMP/deployed-asset"; then
-              echo "::error::CloudFront content differs from CI release: $path"
-              exit 1
-            fi
-          done < <(find build/client -type f ! -name '*.gz' -print0)
-          echo "Verified Dashboard release $COMMIT_SHA at $DASHBOARD_URL"
+          registry=064550674390.dkr.ecr.us-east-1.amazonaws.com
+          image="$registry/pricing-dashboard"
+
+          aws ecr get-login-password |
+            docker login --username AWS --password-stdin "$registry"
+
+          docker tag pricing-dashboard:ci "$image:$COMMIT_SHA"
+          docker tag pricing-dashboard:ci "$image:latest"
+
+          docker push "$image:$COMMIT_SHA"
+          docker push "$image:latest"
+
+      - name: Deploy and verify ECS
+        if: steps.ecs_state.outputs.desired_count != '0'
+        run: |
+          deployment_id=$(aws ecs update-service \
+            --cluster pricing-app-cluster \
+            --service pricing-dashboard-service \
+            --force-new-deployment \
+            --query "service.deployments[?status=='PRIMARY'].id | [0]" \
+            --output text)
+
+          aws ecs wait services-stable \
+            --cluster pricing-app-cluster \
+            --services pricing-dashboard-service
+
+          active_id=$(aws ecs describe-services \
+            --cluster pricing-app-cluster \
+            --services pricing-dashboard-service \
+            --query "services[0].deployments[?status=='PRIMARY'].id | [0]" \
+            --output text)
+
+          if [ "$active_id" != "$deployment_id" ]; then
+            echo "::error::New ECS deployment did not succeed. Possible rollback."
+            exit 1
+          fi
+
+      - name: Verify ECR image and ECS task definition
+        env:
+          COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          expected=$(aws ecr batch-get-image \
+            --repository-name pricing-dashboard \
+            --image-ids "imageTag=$COMMIT_SHA" \
+            --query 'images[0].imageId.imageDigest' \
+            --output text)
+
+          latest=$(aws ecr batch-get-image \
+            --repository-name pricing-dashboard \
+            --image-ids "imageTag=latest" \
+            --query 'images[0].imageId.imageDigest' \
+            --output text)
+
+          if [[ "$expected" != sha256:* || "$latest" != "$expected" ]]; then
+            echo "::error::ECR latest does not match the image published by CI."
+            exit 1
+          fi
+
+          task_definition=$(aws ecs describe-services \
+            --cluster pricing-app-cluster \
+            --services pricing-dashboard-service \
+            --query 'services[0].taskDefinition' \
+            --output text)
+
+          configured_image=$(aws ecs describe-task-definition \
+            --task-definition "$task_definition" \
+            --query "taskDefinition.containerDefinitions[?name=='Main'].image | [0]" \
+            --output text)
+
+          if [[ "$configured_image" != "064550674390.dkr.ecr.us-east-1.amazonaws.com/pricing-dashboard:latest" ]]; then
+            echo "::error::ECS task definition does not reference the expected latest image."
+            exit 1
+          fi
+
+          if [[ "${{ steps.ecs_state.outputs.desired_count }}" == "0" ]]; then
+            echo "ECS is scaled to zero. ECR and ECS configuration verified; runtime checks skipped."
+          fi
+
+      - name: Verify running task image
+        if: steps.ecs_state.outputs.desired_count != '0'
+        env:
+          COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          expected=$(aws ecr batch-get-image \
+            --repository-name pricing-dashboard \
+            --image-ids "imageTag=$COMMIT_SHA" \
+            --query 'images[0].imageId.imageDigest' \
+            --output text)
+
+          task=$(aws ecs list-tasks \
+            --cluster pricing-app-cluster \
+            --service-name pricing-dashboard-service \
+            --desired-status RUNNING \
+            --query 'taskArns[0]' \
+            --output text)
+
+          if [[ -z "$task" || "$task" == "None" ]]; then
+            echo "::error::No running ECS task was found to verify."
+            exit 1
+          fi
+
+          actual=$(aws ecs describe-tasks \
+            --cluster pricing-app-cluster \
+            --tasks "$task" \
+            --query "tasks[0].containers[?name=='Main'].imageDigest | [0]" \
+            --output text)
+
+          if [[ "$expected" != sha256:* || "$actual" != "$expected" ]]; then
+            echo "::error::Running ECS task does not match the image published to ECR."
+            exit 1
+          fi
