@@ -1,4 +1,4 @@
-import { expect, type Locator, test } from "@playwright/test";
+import { expect, type Locator, test, type WebSocketRoute } from "@playwright/test";
 
 import type { SimulatorOptions } from "../app/generated/backend/models";
 import type { BatchRequest } from "../app/generated/accountProcessor/models";
@@ -421,6 +421,10 @@ for (const configuration of ["native", "runtime", "same-origin"] as const) {
     baseURL,
   }) => {
     const appOrigin = new URL(baseURL!).origin;
+    let resultSocket: WebSocketRoute | undefined;
+    await page.routeWebSocket("**/api/v1/mock/txn/batches", (socket) => {
+      resultSocket = socket;
+    });
     const backendOrigin = configuration === "native"
       ? "http://127.0.0.1:18080"
       : configuration === "runtime" ? "http://127.0.0.1:19080" : appOrigin;
@@ -433,8 +437,11 @@ for (const configuration of ["native", "runtime", "same-origin"] as const) {
           ? {
             BACKEND_API_URL: "http://127.0.0.1:19080/",
             ACCOUNT_PROCESSOR_API_URL: "http://127.0.0.1:19081/",
+            TRANSACTION_PROCESSOR_WS_URL: "ws://127.0.0.1:19081/api/v1/mock/txn/batches",
           }
-          : { BACKEND_API_URL: "", ACCOUNT_PROCESSOR_API_URL: "" };
+          : {
+            BACKEND_API_URL: "", ACCOUNT_PROCESSOR_API_URL: "", TRANSACTION_PROCESSOR_WS_URL: "",
+          };
       }, configuration);
     }
     const backendRequests: string[] = [];
@@ -610,7 +617,28 @@ for (const configuration of ["native", "runtime", "same-origin"] as const) {
     ]);
     await accountRow(accounts, "10000006").click();
 
+    await expect.poll(() => Boolean(resultSocket)).toBe(true);
+    expect(resultSocket!.url()).toBe(
+      `${processorOrigin.replace(/^http/, "ws")}/api/v1/mock/txn/batches`,
+    );
+    resultSocket!.send(JSON.stringify({
+      batchId: firstBatchId,
+      accounts: [{
+        accountNumber: "10000006",
+        status: "OK",
+        pricingPlanCode: "STANDARD",
+        fees: [{ feeRequestId: 1, status: "CHARGED", amount: 12.5, reasons: null }],
+      }],
+    }));
+    const completed = page.getByRole("region", { name: "Transaction Batch", exact: true });
+    await expect(completed.getByText(firstBatchId, { exact: true })).toBeVisible();
+    await expect(completed.getByText("10000006", { exact: true })).toBeVisible();
+    await expect(completed.getByText("STANDARD", { exact: true })).toBeVisible();
+    await expect(completed.getByText("CHARGED", { exact: true })).toBeVisible();
+    await expect(completed.getByText("12.5", { exact: true })).toBeVisible();
+
     await reset.click();
+    await expect(completed).toHaveCount(0);
     await expect(page.locator(".simulator-response-value")).toHaveText(["", ""]);
     await expect(page.getByLabel("Product")).toBeEnabled();
     await expect(page.getByLabel("Account Tier")).toHaveValue("Silver");

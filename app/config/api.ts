@@ -3,8 +3,24 @@ declare global {
     __APP_CONFIG__?: {
       BACKEND_API_URL?: string;
       ACCOUNT_PROCESSOR_API_URL?: string;
+      TRANSACTION_PROCESSOR_WS_URL?: string;
     };
   }
+}
+
+export function getTransactionBatchesUrl() {
+  const configured = window.__APP_CONFIG__?.TRANSACTION_PROCESSOR_WS_URL ??
+    (import.meta.env.DEV
+      ? import.meta.env.TRANSACTION_PROCESSOR_WS_URL ?? "ws://localhost:8081/api/v1/mock/txn/batches"
+      : "");
+
+  if (configured) {
+    return configured;
+  }
+
+  const url = new URL("/api/v1/mock/txn/batches", window.location.origin);
+  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+  return url.toString();
 }
 
 export type ApiProvider = "BACKEND_API_URL" | "ACCOUNT_PROCESSOR_API_URL";

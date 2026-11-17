@@ -9,6 +9,7 @@ fs.writeFileSync(
     JSON.stringify({
       BACKEND_API_URL: process.env.BACKEND_API_URL,
       ACCOUNT_PROCESSOR_API_URL: process.env.ACCOUNT_PROCESSOR_API_URL,
+      TRANSACTION_PROCESSOR_WS_URL: process.env.TRANSACTION_PROCESSOR_WS_URL,
     }) +
     ";\n"
 );

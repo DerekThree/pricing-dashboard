@@ -7,6 +7,7 @@
     "clean:api": "powershell -NoProfile -Command \"Get-Item -LiteralPath app/generated/backend,app/generated/accountProcessor -ErrorAction Ignore | Remove-Item -Recurse -Force -ErrorAction Stop\"",
     "dev": "react-router dev",
     "generate:api": "npm run clean:api && orval",
+    "generate:transaction-batch": "node scripts/generate-transaction-batch.mjs",
     "start": "sirv build/client --single --host 0.0.0.0 --port 5173",
     "test:browser": "playwright test",
     "typecheck": "react-router typegen && tsc"
@@ -14,6 +15,8 @@
   "dependencies": {
     "@react-router/node": "7.14.0",
     "ag-grid-react": "^35.3.1",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "isbot": "^5.1.36",
     "react": "^19.2.4",
     "react-datepicker": "^9.1.0",
@@ -29,6 +32,7 @@
     "@types/node": "^22",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "json-schema-to-typescript": "^15.0.4",
     "orval": "^7.13.2",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",

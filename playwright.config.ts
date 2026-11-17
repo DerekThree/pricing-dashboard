@@ -15,6 +15,7 @@ export default defineConfig({
     env: {
       BACKEND_API_URL: "http://127.0.0.1:18080",
       ACCOUNT_PROCESSOR_API_URL: "http://127.0.0.1:18081",
+      TRANSACTION_PROCESSOR_WS_URL: "ws://127.0.0.1:18081/api/v1/mock/txn/batches",
     },
   },
   projects: [{ name: "chromium", use: devices["Desktop Chrome"] }],

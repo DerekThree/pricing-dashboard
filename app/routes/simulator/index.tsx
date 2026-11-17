@@ -31,6 +31,8 @@ import type {
   BatchRequest,
 } from "../../generated/accountProcessor/models";
 import { getErrorMessage } from "../../utils/apiUtils";
+import { connectTransactionBatches } from "../../utils/transactionBatches";
+import type { TransactionBatch } from "../../generated/transactionProcessor/models";
 import { showToast } from "../../utils/toast";
 
 const emptyOptions: SimulatorOptions = {
@@ -177,6 +179,7 @@ export default function SimulatorPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [accounts, setAccounts] = useState<AccountDraft[]>([]);
   const [acceptance, setAcceptance] = useState<BatchAcceptance | null>(null);
+  const [transactionBatch, setTransactionBatch] = useState<TransactionBatch | null>(null);
   const [resultView, setResultView] = useState(false);
   const [selectedAccountNumber, setSelectedAccountNumber] = useState<string | null>(null);
   const nextAccountNumber = useRef(10000001);
@@ -446,10 +449,17 @@ export default function SimulatorPage() {
     }
   }, [fetcher.data, fetcher.state]);
 
+  useEffect(() => connectTransactionBatches((result) => {
+    if (result.batchId === batchId.current) {
+      setTransactionBatch(result);
+    }
+  }), []);
+
   function resetBatch() {
     batchId.current = null;
     setActionError(null);
     setAcceptance(null);
+    setTransactionBatch(null);
     setResultView(false);
   }
 
@@ -636,6 +646,47 @@ export default function SimulatorPage() {
               <span>Message</span>
               <span className="simulator-response-value">{acceptance?.message}</span>
             </div>
+            {transactionBatch && (
+              <section aria-label="Transaction Batch">
+                <div className="selection-list-header">
+                  <span className="selection-list-title">Transaction Batch</span>
+                </div>
+                <div className="simulator-response-row">
+                  <span>Batch ID</span><span>{transactionBatch.batchId}</span>
+                </div>
+                {transactionBatch.accounts.map(({
+                  accountNumber, status, pricingPlanCode, fees,
+                }) => (
+                  <div key={accountNumber}>
+                    <div className="simulator-response-row">
+                      <span>Account Number</span><span>{accountNumber}</span>
+                    </div>
+                    <div className="simulator-response-row">
+                      <span>Account Status</span><span>{status}</span>
+                    </div>
+                    <div className="simulator-response-row">
+                      <span>Pricing Plan Code</span><span>{pricingPlanCode}</span>
+                    </div>
+                    {fees?.map(({ feeRequestId, status, amount, reasons }) => (
+                      <div key={feeRequestId}>
+                        <div className="simulator-response-row">
+                          <span>Fee Request ID</span><span>{feeRequestId}</span>
+                        </div>
+                        <div className="simulator-response-row">
+                          <span>Fee Status</span><span>{status}</span>
+                        </div>
+                        <div className="simulator-response-row">
+                          <span>Amount</span><span>{amount}</span>
+                        </div>
+                        <div className="simulator-response-row">
+                          <span>Eligibility Reasons</span><span>{reasons?.join(", ")}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </section>
+            )}
           </div>
         </div>
       </div>
