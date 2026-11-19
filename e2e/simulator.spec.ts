@@ -2,6 +2,7 @@ import { expect, type Locator, test, type WebSocketRoute } from "@playwright/tes
 
 import type { SimulatorOptions } from "../app/generated/backend/models";
 import type { BatchRequest } from "../app/generated/accountProcessor/models";
+import type { TransactionBatch } from "../app/generated/transactionProcessor/models";
 
 const demoProducts: SimulatorOptions["products"] = [
   { id: 101, code: "CHK", name: "Everyday Checking", type: "CD" },
@@ -422,8 +423,10 @@ for (const configuration of ["native", "runtime", "same-origin"] as const) {
   }) => {
     const appOrigin = new URL(baseURL!).origin;
     let resultSocket: WebSocketRoute | undefined;
+    const resultRequests: string[] = [];
     await page.routeWebSocket("**/api/v1/mock/txn/batches", (socket) => {
       resultSocket = socket;
+      socket.onMessage((message) => resultRequests.push(message.toString()));
     });
     const backendOrigin = configuration === "native"
       ? "http://127.0.0.1:18080"
@@ -621,24 +624,128 @@ for (const configuration of ["native", "runtime", "same-origin"] as const) {
     expect(resultSocket!.url()).toBe(
       `${processorOrigin.replace(/^http/, "ws")}/api/v1/mock/txn/batches`,
     );
-    resultSocket!.send(JSON.stringify({
+    const result: TransactionBatch = {
       batchId: firstBatchId,
-      accounts: [{
-        accountNumber: "10000006",
-        status: "OK",
-        pricingPlanCode: "STANDARD",
-        fees: [{ feeRequestId: 1, status: "CHARGED", amount: 12.5, reasons: null }],
-      }],
-    }));
+      accounts: [
+        {
+          accountNumber: "10000006",
+          status: "OK",
+          pricingPlanCode: "PREMIUM",
+          fees: [{ feeRequestId: 1, status: "CHARGED", amount: 0, reasons: null }],
+        },
+        {
+          accountNumber: "10000001",
+          status: "OK",
+          pricingPlanCode: "STANDARD",
+          fees: [
+            { feeRequestId: 3, status: "WAIVED", amount: null, reasons: ["LOYALTY", "BALANCE"] },
+            { feeRequestId: 2, status: "CHARGED", amount: 12.5, reasons: null },
+          ],
+        },
+      ],
+    };
     const completed = page.getByRole("region", { name: "Transaction Batch", exact: true });
+    resultSocket!.send(JSON.stringify({
+      ...result, batchId: "00000000-0000-4000-8000-000000000001",
+    }));
+    const wrongBatchSentAt = Date.now();
+    await expect.poll(async () => ({
+      count: await completed.count(), observed: Date.now() - wrongBatchSentAt >= 250,
+    })).toEqual({ count: 0, observed: true });
+    resultSocket!.send(JSON.stringify(result));
     await expect(completed.getByText(firstBatchId, { exact: true })).toBeVisible();
-    await expect(completed.getByText("10000006", { exact: true })).toBeVisible();
-    await expect(completed.getByText("STANDARD", { exact: true })).toBeVisible();
-    await expect(completed.getByText("CHARGED", { exact: true })).toBeVisible();
-    await expect(completed.getByText("12.5", { exact: true })).toBeVisible();
+    const firstAccount = completed.locator(":scope > div").filter({
+      has: page.getByText("10000001", { exact: true }),
+    });
+    const secondAccount = completed.locator(":scope > div").filter({
+      has: page.getByText("10000006", { exact: true }),
+    });
+    const firstValues = firstAccount.locator(".simulator-response-row > span:last-child");
+    const secondValues = secondAccount.locator(".simulator-response-row > span:last-child");
+    await expect(firstValues).toHaveText([
+      "10000001", "OK", "STANDARD", "3", "WAIVED", "", "LOYALTY, BALANCE",
+      "2", "CHARGED", "12.5", "",
+    ]);
+    await expect(secondValues).toHaveText(["10000006", "OK", "PREMIUM", "1", "CHARGED", "0", ""]);
+
+    for (const status of [
+      "BRANCH_NOT_FOUND", "REGION_NOT_FOUND", "PLAN_NOT_FOUND", "DUPLICATE_ATTRIBUTE",
+      "INVALID_ATTRIBUTE_TYPE", "MISSING_ATTRIBUTE", "ERROR",
+    ] as const) {
+      resultSocket!.send(JSON.stringify({
+        ...result,
+        accounts: [
+          { accountNumber: "10000006", status, pricingPlanCode: null, fees: null },
+          result.accounts[1],
+        ],
+      } satisfies TransactionBatch));
+      await expect(secondValues).toHaveText(["10000006", status, ""]);
+      await expect(firstValues).toHaveText([
+        "10000001", "OK", "STANDARD", "3", "WAIVED", "", "LOYALTY, BALANCE",
+        "2", "CHARGED", "12.5", "",
+      ]);
+    }
+
+    for (const status of [
+      "FEE_NOT_FOUND", "MISSING_TRANSACTION", "INVALID_TRANSACTION_AMOUNT",
+      "INVALID_ELIGIBILITY_CONDITION", "ERROR",
+    ] as const) {
+      resultSocket!.send(JSON.stringify({
+        ...result,
+        accounts: [
+          {
+            ...result.accounts[0],
+            fees: [{ feeRequestId: 1, status, amount: null, reasons: null }],
+          },
+          result.accounts[1],
+        ],
+      } satisfies TransactionBatch));
+      await expect(secondValues).toHaveText(["10000006", "OK", "PREMIUM", "1", status, "", ""]);
+    }
+
+    const account = result.accounts[0];
+    const fee = account.fees![0];
+    const invalidMessages = [
+      "{", "null", "[]",
+      JSON.stringify({ ...result, batchId: "invalid" }),
+      JSON.stringify({ ...result, decision: "CHARGED" }),
+      JSON.stringify({ ...result, accounts: [{ accountNumber: "10000006", status: "OK" }] }),
+      ...[
+        { ...account, status: "UNKNOWN" },
+        { ...account, pricingPlanCode: null },
+        { ...account, fees: null },
+        { ...account, status: "PLAN_NOT_FOUND" },
+        ...[
+          { ...fee, feeRequestId: "1" },
+          { ...fee, status: "UNKNOWN" },
+          { ...fee, amount: null },
+          { ...fee, reasons: [] },
+          { ...fee, status: "WAIVED", amount: null, reasons: null },
+          { ...fee, status: "WAIVED", reasons: ["LOYALTY"] },
+          { ...fee, status: "ERROR" },
+          { ...fee, decision: "CHARGED" },
+          { feeRequestId: 1, status: "CHARGED", amount: 0 },
+        ].map((fee) => ({ ...account, fees: [fee] })),
+      ].map((account) => JSON.stringify({ ...result, accounts: [account] })),
+    ];
+    for (const message of invalidMessages) {
+      resultSocket!.send(message);
+    }
+    const invalidSentAt = Date.now();
+    await expect.poll(async () => ({
+      values: await secondValues.allTextContents(),
+      observed: Date.now() - invalidSentAt >= 250,
+    })).toEqual({
+      values: ["10000006", "OK", "PREMIUM", "1", "ERROR", "", ""], observed: true,
+    });
+    await expect(firstValues).toHaveCount(11);
+    await expect(page.locator(".simulator-response-value")).toHaveText([
+      firstBatchId, "Pricing Batch accepted.",
+    ]);
 
     await reset.click();
     await expect(completed).toHaveCount(0);
+    resultSocket!.send(JSON.stringify(result));
     await expect(page.locator(".simulator-response-value")).toHaveText(["", ""]);
     await expect(page.getByLabel("Product")).toBeEnabled();
     await expect(page.getByLabel("Account Tier")).toHaveValue("Silver");
@@ -647,10 +754,36 @@ for (const configuration of ["native", "runtime", "same-origin"] as const) {
     await expect(accounts.getByRole("button", { name: "Add" })).toBeVisible();
     await expect(feeRequests.getByRole("button", { name: "Add" })).toBeVisible();
 
+    const disconnectedSocket = resultSocket!;
+    const requestsAfterDisconnect: string[] = [];
+    page.on("request", (request) => {
+      if (request.resourceType() === "fetch" || request.resourceType() === "xhr") {
+        requestsAfterDisconnect.push(`${request.method()} ${request.url()}`);
+      }
+    });
+    await disconnectedSocket.close({ code: 1012 });
+    await expect.poll(() => resultSocket !== disconnectedSocket).toBe(true);
+    expect(resultSocket!.url()).toBe(disconnectedSocket.url());
+    await expect(completed).toHaveCount(0);
+    expect(requestsAfterDisconnect).toEqual([]);
+
     await page.getByRole("button", { name: "Send" }).click();
     await expect(page.getByRole("button", { name: "Reset" })).toBeEnabled();
     expect(requests).toHaveLength(2);
     expect(requests[1].batchId).not.toBe(firstBatchId);
+    resultSocket!.send(JSON.stringify(result));
+    const staleResultSentAt = Date.now();
+    await expect.poll(async () => ({
+      count: await completed.count(), observed: Date.now() - staleResultSentAt >= 250,
+    })).toEqual({ count: 0, observed: true });
+    resultSocket!.send(JSON.stringify({ ...result, batchId: requests[1].batchId }));
+    await expect(completed.getByText(requests[1].batchId, { exact: true })).toBeVisible();
+    await expect.poll(() => requestsAfterDisconnect).toEqual([
+      `POST ${processorOrigin}/api/v1/mock/acc/batch`,
+      `GET ${backendOrigin}/api/v1/simulator/date`,
+      `GET ${backendOrigin}/api/v1/simulator/options`,
+    ]);
+    expect(resultRequests).toEqual([]);
   });
 
 }

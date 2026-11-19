@@ -14,21 +14,36 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pricing-dashboard
 
     steps:
       - name: Check out source code
         uses: actions/checkout@v5
-        
+        with:
+          path: pricing-dashboard
+
+      - name: Check out Transaction Batch schema
+        uses: actions/checkout@v5
+        with:
+          repository: DerekThree/pricing-mock-server
+          ref: main
+          path: pricing-mock-server
+          sparse-checkout: schemas/transaction-batch-v1.json
+          sparse-checkout-cone-mode: false
+
       - name: Set up Node.js 24
         uses: actions/setup-node@v5
         with:
           node-version: '24'
           cache: npm
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: pricing-dashboard/package-lock.json
 
       - name: Run typecheck and tests
         run: |
           npm ci
+          npm run generate:transaction-batch
           npx playwright install --with-deps chromium
           npm run typecheck
           npm run test:browser
@@ -43,6 +58,6 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: pricing-dashboard-image
-          path: pricing-dashboard-image.tar
+          path: pricing-dashboard/pricing-dashboard-image.tar
           if-no-files-found: error
           retention-days: 1

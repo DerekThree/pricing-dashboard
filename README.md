@@ -25,10 +25,16 @@ provider-owned OpenAPI contracts.
 TypeScript models from `pricing-mock-server/schemas/transaction-batch-v1.json`, and copies that
 schema for browser validation. Run from the sibling repository workspace, as with HTTP generation.
 The Mock Server's `asyncapi.yaml` references this provider-owned schema.
+Dashboard CI checks out the schema from the Mock Server before generating the models for
+typechecking, browser tests, and the Docker image build.
 
 `TRANSACTION_PROCESSOR_WS_URL` supplies the full browser-visible WebSocket URL, independently of
 the HTTP providers, in native development or Docker's startup-generated `/config.js`.
 Development defaults to `ws://localhost:8081/api/v1/mock/txn/batches`. An empty runtime value,
 or an unset production value, uses `/api/v1/mock/txn/batches` on the Dashboard's current host,
-with `ws` for HTTP or `wss` for HTTPS. Production retains the current ECS/ALB baseline following
-the S3/CloudFront rollback. Automatic reconnection and deployed verification are later tickets.
+with `ws` for HTTP or `wss` for HTTPS. The ECS task supplies the existing ALB's `ws://` URL through
+the mock API routing prefix.
+
+The Simulator reconnects automatically for future live results only.
+`TXN_PROCESSOR_WS_RECONNECT_DELAY_MS` sets the delay through the same native development or Docker
+runtime configuration. The default is 1,000 ms.

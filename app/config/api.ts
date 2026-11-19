@@ -4,6 +4,7 @@ declare global {
       BACKEND_API_URL?: string;
       ACCOUNT_PROCESSOR_API_URL?: string;
       TRANSACTION_PROCESSOR_WS_URL?: string;
+      TXN_PROCESSOR_WS_RECONNECT_DELAY_MS?: string;
     };
   }
 }
@@ -21,6 +22,12 @@ export function getTransactionBatchesUrl() {
   const url = new URL("/api/v1/mock/txn/batches", window.location.origin);
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
   return url.toString();
+}
+
+export function getTransactionBatchesReconnectDelay() {
+  const delay = Number(window.__APP_CONFIG__?.TXN_PROCESSOR_WS_RECONNECT_DELAY_MS ??
+    (import.meta.env.DEV ? import.meta.env.TXN_PROCESSOR_WS_RECONNECT_DELAY_MS : undefined));
+  return Number.isInteger(delay) && delay > 0 && delay <= 2_147_483_647 ? delay : 1_000;
 }
 
 export type ApiProvider = "BACKEND_API_URL" | "ACCOUNT_PROCESSOR_API_URL";
